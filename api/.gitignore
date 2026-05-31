@@ -28,3 +28,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Temp
+tmp/
+temp/

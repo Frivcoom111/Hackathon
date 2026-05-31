@@ -1,9 +1,11 @@
-import express from "express";
+import express, { type Express } from "express";
+import { errorHandler } from "./shared/middlewares/errorHandler";
 
-export const appBuild = async () => {
-    const app = express();
-    app.use(express.json())
+export const appBuild = async (): Promise<Express> => {
+  const app = express();
+  app.use(express.json());
 
-    return app
-}
+  app.use(errorHandler);
 
+  return app;
+};
