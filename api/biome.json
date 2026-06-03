@@ -10,7 +10,7 @@
   },
   "formatter": {
     "enabled": true,
-    "lineWidth": 100,
+    "lineWidth": 120,
     "indentStyle": "space",
     "indentWidth": 2
   },
@@ -21,13 +21,6 @@
       "style": {
         "noNonNullAssertion": "off",
         "useTemplate": "warn"
-      },
-      "suspicious": {
-        "noExplicitAny": "off",
-        "noConsoleLog": "off"
-      },
-      "complexity": {
-        "noForEach": "off"
       },
       "correctness": {
         "noUnusedVariables": "warn",

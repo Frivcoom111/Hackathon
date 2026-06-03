@@ -7,7 +7,11 @@
     "dev": "tsx watch src/server.ts",
     "format": "biome format --write",
     "lint": "biome lint --write",
-    "check": "biome check --write"
+    "check": "biome check --write",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
