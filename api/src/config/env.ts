@@ -9,6 +9,10 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("1d"),
   SALT: z.coerce.number().default(10),
   CORS_ORIGIN: z.string().url("CORS_ORIGIN inválido.").default("*"),
+  GOOGLE_CLIENT_ID: z.string().min(16, "GOOGLE_CLIENT_ID inválida."),
+  GOOGLE_CLIENT_SECRET: z.string().min(16, "GOOGLE_CLIENT_SECRET"),
+  BASE_URL: z.string().url("BASE_URL inválida").default("http://localhost:3000"),
+  PHP_URL: z.string().url("PHP_URL inválida").default("http://localhost:8080"),
 });
 
 const parsed = envSchema.safeParse(process.env);

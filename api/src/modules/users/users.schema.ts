@@ -1,4 +1,7 @@
 import { z } from "../../lib/zod";
+import { response } from "../../shared/utils/response";
+
+// ─── Password Helper ──────────────────────────────────────────────────────────
 
 const passwordSchema = z
   .string()
@@ -8,6 +11,8 @@ const passwordSchema = z
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
     "A senha deve conter letras maiúsculas, minúsculas, números e um caractere especial (@$!%*?&#).",
   );
+
+// ─── Input Schemas ────────────────────────────────────────────────────────────
 
 export const createUserSchema = z
   .object({
@@ -30,6 +35,7 @@ export const updateUserSchema = z
       .optional(),
     email: z.email("E-mail inválido.").optional(),
   })
+  .refine((data) => Object.keys(data).length > 0, response.error("Nenhum dado para atualizar."))
   .openapi({ title: "UpdateUser" });
 
 export const changePasswordSchema = z
@@ -60,6 +66,8 @@ export const updateStatusSchema = z
   })
   .openapi({ title: "UpdateStatus" });
 
+// ─── Response Schema ──────────────────────────────────────────────────────────
+
 export const userResponseSchema = z
   .object({
     id: z.uuid(),
@@ -68,9 +76,10 @@ export const userResponseSchema = z
     role: z.enum(["ADMIN", "USER"]),
     isActive: z.boolean(),
     createdAt: z.date(),
-    updatedAt: z.date(),
   })
   .openapi({ title: "UserResponse" });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
