@@ -11,6 +11,11 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url("CORS_ORIGIN inválido.").default("*"),
   GOOGLE_CLIENT_ID: z.string().min(16, "GOOGLE_CLIENT_ID inválida."),
   GOOGLE_CLIENT_SECRET: z.string().min(16, "GOOGLE_CLIENT_SECRET"),
+  GOOGLE_CALLBACK_URL: z
+    .string()
+    .url("GOOGLE_CALLBACK_URL inválida.")
+    .default("http://localhost:3000/auth/google/callback"),
+  SESSION_SECRET: z.string().min(16, "SESSION_SECRET mínimo de 16 caracteres."),
   BASE_URL: z.string().url("BASE_URL inválida").default("http://localhost:3000"),
   PHP_URL: z.string().url("PHP_URL inválida").default("http://localhost:8080"),
 });

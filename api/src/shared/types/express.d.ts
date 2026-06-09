@@ -2,10 +2,12 @@ import "express";
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-      };
+    // Augmenta o `Express.User` usado tanto pelo Passport quanto pelo `req.user`.
+    interface User {
+      id: string;
+      email: string;
+      role: "USER" | "ADMIN";
+      mfaVerified: boolean;
     }
   }
 }

@@ -1,23 +1,47 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
-import { AppError } from "../errors/AppError";
+import { ForbiddenError, UnauthorizedError } from "../errors/AppError";
+import type { JwtPayload } from "../utils/generateToken";
 
 export const authMiddleware = async (req: Request, _res: Response, next: NextFunction) => {
   try {
-    const heardersAuthorization = req.headers.authorization as string;
+    const authorization = req.headers.authorization;
 
-    if (!heardersAuthorization?.startsWith("Bearer ")) {
-      throw new AppError("Token não fornecido", 401);
+    if (!authorization?.startsWith("Bearer ")) {
+      throw new UnauthorizedError("Token não fornecido.");
     }
 
-    const token = heardersAuthorization.split(" ")[1] as string;
+    const token = authorization.split(" ")[1] as string;
 
-    const decoded = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload;
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
 
     req.user = {
-      id: decoded.id,
+      id: decoded.sub,
+      email: decoded.email,
+      role: decoded.role,
+      mfaVerified: decoded.mfaVerified,
     };
+
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return next(new UnauthorizedError("Token inválido ou expirado."));
+    }
+    next(error);
+  }
+};
+
+// Exige usuário ADMIN com MFA (TOTP) já verificada no token.
+export const requireAdmin = async (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Token não fornecido.");
+    }
+
+    if (req.user.role !== "ADMIN" || !req.user.mfaVerified) {
+      throw new ForbiddenError("Acesso restrito a administradores com verificação MFA.");
+    }
 
     next();
   } catch (error) {

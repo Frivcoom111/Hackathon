@@ -81,4 +81,3 @@ export class UserController {
     res.status(200).json(response.success(user, "Status atualizado com sucesso."));
   };
 }
-

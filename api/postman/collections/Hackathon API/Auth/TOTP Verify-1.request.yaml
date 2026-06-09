@@ -1,0 +1,26 @@
+$kind: http-request
+name: TOTP Verify
+description: "FASE 3 — Apenas ADMIN. Recebe um código de 6 dígitos e, se válido, retorna um NOVO JWT com mfaVerified: true (token final usado para acessar rotas admin). Use o TOKEN_ADMIN (o token do login, ainda com mfaVerified: false). O script de post-response sobrescreve TOKEN_ADMIN com o token final já verificado."
+method: POST
+url: "{{BASE_URL}}/auth/totp/verify"
+order: 7000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_ADMIN}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "123456"
+    }
+scripts:
+  postResponse: |-
+    const res = pm.response.json();
+    if (res && res.success && res.data && res.data.token) {
+      pm.environment.set("TOKEN_ADMIN", res.data.token);
+      console.log("TOKEN_ADMIN atualizado (mfaVerified=true)");
+    }

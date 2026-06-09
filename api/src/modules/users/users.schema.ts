@@ -1,16 +1,5 @@
 import { z } from "../../lib/zod";
-import { response } from "../../shared/utils/response";
-
-// ─── Password Helper ──────────────────────────────────────────────────────────
-
-const passwordSchema = z
-  .string()
-  .min(8, "A senha deve ter no mínimo 8 caracteres.")
-  .max(100, "A senha deve ter no máximo 100 caracteres.")
-  .regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
-    "A senha deve conter letras maiúsculas, minúsculas, números e um caractere especial (@$!%*?&#).",
-  );
+import { passwordSchema } from "../../shared/schemas/common.schema";
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 
@@ -35,7 +24,9 @@ export const updateUserSchema = z
       .optional(),
     email: z.email("E-mail inválido.").optional(),
   })
-  .refine((data) => Object.keys(data).length > 0, response.error("Nenhum dado para atualizar."))
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Nenhum dado para atualizar.",
+  })
   .openapi({ title: "UpdateUser" });
 
 export const changePasswordSchema = z
@@ -79,7 +70,7 @@ export const userResponseSchema = z
   })
   .openapi({ title: "UserResponse" });
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Inferência de Types ────────────────────────────────────────────────────────────────────
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

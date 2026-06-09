@@ -1,0 +1,11 @@
+name: Local
+values:
+  - key: BASE_URL
+    value: 'http://localhost:3000'
+  - key: PHP_URL
+    value: 'http://localhost:8080'
+  - key: TOKEN_ADMIN
+    value: ''
+  - key: TOKEN_USER
+    value: ''
+color: 120

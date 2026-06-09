@@ -35,3 +35,10 @@ export class ForbiddenError extends AppError {
     this.name = "ForbiddenError";
   }
 }
+
+export class BadRequestError extends AppError {
+  constructor(message = "Requisição inválida.") {
+    super(message, 400);
+    this.name = "BadRequestError";
+  }
+}
