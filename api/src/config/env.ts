@@ -4,20 +4,15 @@ import "dotenv/config";
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(["development", "production"]).default("development"),
-  DATABASE_URL: z.string().url("DATABASE_URL inválida."),
+  DATABASE_URL: z.string().url("DATABASE_URL inválida"),
+  DATABASE_HOST: z.string().min(1, "DATABASE_HOST é obrigatório."),
+  DATABASE_USER: z.string().min(1, "DATABASE_USER é obrigatório."),
+  DATABASE_PASSWORD: z.string().min(1, "DATABASE_PASSWORD é obrigatório."),
+  DATABASE_NAME: z.string().min(1, "DATABASE_NAME é obrigatório."),
   JWT_SECRET: z.string().min(32, "JWT_SECRET mínimo de 32 caracteres."),
   JWT_EXPIRES_IN: z.string().default("1d"),
   SALT: z.coerce.number().default(10),
-  CORS_ORIGIN: z.string().url("CORS_ORIGIN inválido.").default("*"),
-  GOOGLE_CLIENT_ID: z.string().min(16, "GOOGLE_CLIENT_ID inválida."),
-  GOOGLE_CLIENT_SECRET: z.string().min(16, "GOOGLE_CLIENT_SECRET"),
-  GOOGLE_CALLBACK_URL: z
-    .string()
-    .url("GOOGLE_CALLBACK_URL inválida.")
-    .default("http://localhost:3000/auth/google/callback"),
-  SESSION_SECRET: z.string().min(16, "SESSION_SECRET mínimo de 16 caracteres."),
-  BASE_URL: z.string().url("BASE_URL inválida").default("http://localhost:3000"),
-  PHP_URL: z.string().url("PHP_URL inválida").default("http://localhost:8080"),
+  FRONTEND_URL: z.string().default("*"),
 });
 
 const parsed = envSchema.safeParse(process.env);

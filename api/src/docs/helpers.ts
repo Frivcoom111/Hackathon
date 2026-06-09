@@ -33,4 +33,3 @@ export const errorResponse = z
   .openapi({ title: "ErrorResponse" });
 
 export const bearerAuth = [{ bearerAuth: [] }];
-
