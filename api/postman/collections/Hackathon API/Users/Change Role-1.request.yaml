@@ -1,0 +1,17 @@
+$kind: http-request
+name: Change Role
+method: PATCH
+url: "{{baseUrl}}/users/:id/role"
+order: 7000
+pathVariables:
+  - key: id
+    value: ""
+    description: User UUID
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "role": "ADMIN"
+    }

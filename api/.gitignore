@@ -3,28 +3,9 @@ node_modules/
 
 # Build output
 dist/
-build/
 
 # Environment variables
 .env
-.env.*
 !.env.example
 
-# pnpm
-.pnpm-store/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-pnpm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
+/src/generated/prisma
