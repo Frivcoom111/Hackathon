@@ -11,7 +11,11 @@ export const appBuild = async (): Promise<Express> => {
   const app = express();
   app.use(express.json());
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: env.NODE_ENV === "development" ? false : undefined,
+    }),
+  );
   app.use(
     cors({
       origin: env.FRONTEND_URL,
