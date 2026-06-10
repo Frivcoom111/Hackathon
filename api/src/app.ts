@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { setupDocs } from "./docs/docs";
 import usersRoutes from "./modules/users/users.routes";
 import { errorHandler } from "./shared/middlewares/errorHandler.middlewares";
+import { globalRateLimiter } from "./shared/middlewares/rateLimit.middleware";
 
 export const appBuild = async (): Promise<Express> => {
   const app = express();
@@ -17,6 +18,8 @@ export const appBuild = async (): Promise<Express> => {
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     }),
   );
+
+  app.use(globalRateLimiter);
 
   app.use("/users", usersRoutes);
 
