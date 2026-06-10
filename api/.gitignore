@@ -4,6 +4,12 @@ node_modules/
 # Build output
 dist/
 
+# Uploaded files (mantém a estrutura de pastas, ignora os arquivos enviados)
+uploads/*
+!uploads/resumes/
+uploads/resumes/*
+!uploads/resumes/.gitkeep
+
 # Environment variables
 .env
 !.env.example
