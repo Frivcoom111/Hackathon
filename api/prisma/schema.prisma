@@ -109,7 +109,6 @@ model Student {
   ra         String   @unique
   cpf        String   @unique @db.VarChar(11)
   phone      String?  @db.VarChar(11)
-  period     Int
   isEligible Boolean  @default(true)
   resumePath String?
   createdAt  DateTime @default(now())
