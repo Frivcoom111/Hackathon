@@ -4,7 +4,7 @@ import { z } from "../../lib/zod";
 
 export const idParamsSchema = z
   .object({
-    id: z.uuid(),
+    id: z.string().uuid(),
   })
   .openapi({ title: "IdParams" });
 
