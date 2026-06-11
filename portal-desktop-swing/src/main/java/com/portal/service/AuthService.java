@@ -9,23 +9,17 @@ public class AuthService {
 
     private final UserDAO userDAO = new UserDAO();
 
-    public User login(String email, String password) throws AuthException {
-        if (email == null || email.isBlank())
-            throw new AuthException("Informe o e-mail.");
-        if (password == null || password.isBlank())
-            throw new AuthException("Informe a senha.");
+    public User login(String email, String senha) throws AuthException {
+        if (email == null || email.isBlank()) throw new AuthException("Informe o e-mail.");
+        if (senha == null || senha.isBlank())  throw new AuthException("Informe a senha.");
 
-        User user = userDAO.findByEmail(email);
-
-        if (user == null)
-            throw new AuthException("E-mail ou senha incorretos.");
-        if (!PasswordUtil.verify(password, user.getPassword()))
-            throw new AuthException("E-mail ou senha incorretos.");
-        if (user.getRole() != Role.ADMIN)
+        User user = userDAO.findByEmail(email.trim().toLowerCase());
+        if (user == null || !PasswordUtil.verify(senha, user.getPassword())) {
+            throw new AuthException("E-mail ou senha inválidos.");
+        }
+        if (user.getRole() != Role.ADMIN) {
             throw new AuthException("Acesso restrito à equipe UniALFA.");
-        if (!user.isActive())
-            throw new AuthException("Conta desativada. Contate o administrador.");
-
+        }
         return user;
     }
 }
