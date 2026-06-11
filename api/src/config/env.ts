@@ -13,6 +13,8 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("1d"),
   SALT: z.coerce.number().default(10),
   FRONTEND_URL: z.string().default("*"),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000), // 15 min
+  RATE_LIMIT_MAX: z.coerce.number().default(100),
 });
 
 const parsed = envSchema.safeParse(process.env);

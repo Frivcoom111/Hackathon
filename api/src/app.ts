@@ -5,18 +5,25 @@ import { env } from "./config/env";
 import { setupDocs } from "./docs/docs";
 import usersRoutes from "./modules/users/users.routes";
 import { errorHandler } from "./shared/middlewares/errorHandler.middlewares";
+import { globalRateLimiter } from "./shared/middlewares/rateLimit.middleware";
 
 export const appBuild = async (): Promise<Express> => {
   const app = express();
   app.use(express.json());
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: env.NODE_ENV === "development" ? false : undefined,
+    }),
+  );
   app.use(
     cors({
       origin: env.FRONTEND_URL,
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     }),
   );
+
+  app.use(globalRateLimiter);
 
   app.use("/users", usersRoutes);
 

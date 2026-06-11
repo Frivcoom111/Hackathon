@@ -3,7 +3,6 @@ import type { Router } from "express";
 import { env } from "../config/env";
 
 // Importa os módulos de documentação para registrar suas rotas no `registry`.
-import "../modules/auth/auth.docs";
 import "../modules/users/users.docs";
 import { generateSpec } from "./openapi";
 
