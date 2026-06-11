@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
+import { Role } from "../../generated/prisma/enums";
 import { ForbiddenError, UnauthorizedError } from "../errors/AppError";
 import type { JwtPayload } from "../utils/generateToken";
 
@@ -32,19 +33,29 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
   }
 };
 
-// Exige usuário ADMIN com MFA (TOTP) já verificada no token.
-export const requireAdmin = async (req: Request, _res: Response, next: NextFunction) => {
-  try {
-    if (!req.user) {
-      throw new UnauthorizedError("Token não fornecido.");
-    }
+// Exige role específica e, opcionalmente, MFA verificada.
+const requireRole = (role: Role, options: { mfa: boolean }) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        throw new UnauthorizedError("Token não fornecido.");
+      }
 
-    if (req.user.role !== "ADMIN" || !req.user.mfaVerified) {
-      throw new ForbiddenError("Acesso restrito a administradores com verificação MFA.");
-    }
+      if (req.user.role !== role) {
+        throw new ForbiddenError();
+      }
 
-    next();
-  } catch (error) {
-    next(error);
-  }
+      if (options.mfa && !req.user.mfaVerified) {
+        throw new ForbiddenError("Verificação MFA obrigatória.");
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
 };
+
+export const requireAdmin = requireRole(Role.ADMIN, { mfa: true });
+export const requireCompany = requireRole(Role.COMPANY, { mfa: true });
+export const requireStudent = requireRole(Role.STUDENT, { mfa: false });
