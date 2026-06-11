@@ -1,10 +1,11 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../../config/env";
+import type { Role } from "../../generated/prisma/enums";
 
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: Role;
   mfaVerified: boolean;
 }
 
