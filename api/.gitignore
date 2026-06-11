@@ -16,5 +16,6 @@ uploads/resumes/*
 
 # Guia de convenções local (não versionado)
 CLAUDE.md
+.agents/*
 
 /src/generated/prisma

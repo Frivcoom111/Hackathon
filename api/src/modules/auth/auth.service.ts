@@ -1,7 +1,12 @@
 import { ConflictError, NotFoundError } from "../../shared/errors/AppError";
 import { generateHash } from "../../shared/utils/bcryptUtils";
 import type { AuthRepository } from "./auth.repository";
-import type { RegisterStudentInput, StudentResponse } from "./auth.schema";
+import type {
+  CompanyResponse,
+  RegisterCompanyInput,
+  RegisterStudentInput,
+  StudentResponse,
+} from "./auth.schema";
 
 export class AuthService {
   constructor(private readonly authRepository: AuthRepository) {}
@@ -20,6 +25,22 @@ export class AuthService {
 
       if (code === "P2025") {
         throw new NotFoundError("Curso não encontrado.");
+      }
+
+      throw error;
+    }
+  }
+
+  async registerCompany(input: RegisterCompanyInput): Promise<CompanyResponse> {
+    const password = await generateHash(input.password);
+
+    try {
+      return await this.authRepository.createCompany({ ...input, password });
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+
+      if (code === "P2002") {
+        throw new ConflictError("E-mail, CNPJ ou CPF já cadastrado.");
       }
 
       throw error;

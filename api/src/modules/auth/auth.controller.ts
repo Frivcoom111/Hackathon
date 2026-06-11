@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { response } from "../../shared/utils/response";
-import { registerStudentSchema } from "./auth.schema";
+import { registerCompanySchema, registerStudentSchema } from "./auth.schema";
 import type { AuthService } from "./auth.service";
 
 export class AuthController {
@@ -15,5 +15,13 @@ export class AuthController {
     const student = await this.authService.registerStudent({ ...data, resumePath });
 
     res.status(201).json(response.success(student, "Cadastro realizado com sucesso."));
+  };
+
+  registerCompany = async (req: Request, res: Response): Promise<void> => {
+    const data = registerCompanySchema.parse(req.body);
+
+    const company = await this.authService.registerCompany(data);
+
+    res.status(201).json(response.success(company, "Cadastro enviado. Aguarde a aprovação."));
   };
 }

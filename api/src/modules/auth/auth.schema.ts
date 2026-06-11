@@ -1,5 +1,11 @@
 import { z } from "../../lib/zod";
-import { cpfSchema, passwordSchema } from "../../shared/schemas/common.schema";
+import {
+  addressSchema,
+  cnpjSchema,
+  cpfSchema,
+  passwordSchema,
+  phoneSchema,
+} from "../../shared/schemas/common.schema";
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 
@@ -27,7 +33,27 @@ export const registerStudentSchema = z
   })
   .openapi({ title: "RegisterStudent" });
 
-// ─── Response Schema ──────────────────────────────────────────────────────────
+export const registerCompanySchema = z
+  .object({
+    // Credenciais (User)
+    email: z.email("E-mail inválido."),
+    password: passwordSchema,
+    // Empresa (Company)
+    name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres.").max(150),
+    cnpj: cnpjSchema,
+    description: z.string().min(1, "A descrição é obrigatória.").max(2000),
+    phone: phoneSchema,
+    address: addressSchema, // empresa exige endereço
+    // Membro ADMIN (CompanyMember)
+    member: z.object({
+      name: z.string().min(2, "O nome do responsável é obrigatório.").max(100),
+      cpf: cpfSchema,
+      phone: phoneSchema.optional(), // opcional (cadastra depois)
+    }),
+  })
+  .openapi({ title: "RegisterCompany" });
+
+// ─── Response Schemas ─────────────────────────────────────────────────────────
 
 export const studentResponseSchema = z
   .object({
@@ -39,7 +65,25 @@ export const studentResponseSchema = z
   })
   .openapi({ title: "StudentResponse" });
 
+export const companyResponseSchema = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    cnpj: z.string(),
+    status: z.enum(["PENDING", "ANALYSING", "APPROVED", "BLOCKED"]),
+    members: z.array(
+      z.object({
+        userId: z.uuid(),
+        name: z.string(),
+        role: z.enum(["ADMIN", "RECRUITER"]),
+      }),
+    ),
+  })
+  .openapi({ title: "CompanyResponse" });
+
 // ─── Inferência de Types ────────────────────────────────────────────────────────
 
 export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
+export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
 export type StudentResponse = z.infer<typeof studentResponseSchema>;
+export type CompanyResponse = z.infer<typeof companyResponseSchema>;

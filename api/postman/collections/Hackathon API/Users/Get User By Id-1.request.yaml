@@ -4,4 +4,4 @@ method: GET
 url: "{{BASE_URL}}/users/:id"
 order: 2000
 pathVariables:
-  id: ""
+  id: 5828a328-d481-43da-8b9a-6c116f8e982a

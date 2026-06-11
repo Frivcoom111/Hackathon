@@ -1,9 +1,7 @@
 $kind: http-request
 name: Delete User
 method: DELETE
-url: "{{baseUrl}}/users/:id"
+url: "{{BASE_URL}}/users/:id"
 order: 5000
 pathVariables:
-  - key: id
-    value: ""
-    description: User UUID
+  id: 5828a328-d481-43da-8b9a-6c116f8e982a

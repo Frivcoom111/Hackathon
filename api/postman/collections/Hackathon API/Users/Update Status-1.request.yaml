@@ -1,12 +1,10 @@
 $kind: http-request
 name: Update Status
 method: PATCH
-url: "{{baseUrl}}/users/:id/status"
+url: "{{BASE_URL}}/users/:id/status"
 order: 8000
 pathVariables:
-  - key: id
-    value: ""
-    description: User UUID
+  id: 5828a328-d481-43da-8b9a-6c116f8e982a
 headers:
   Content-Type: application/json
 body:

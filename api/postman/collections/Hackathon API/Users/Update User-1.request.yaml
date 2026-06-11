@@ -4,9 +4,7 @@ method: PATCH
 url: "{{BASE_URL}}/users/:id"
 order: 4000
 pathVariables:
-  - key: id
-    value: ""
-    description: User UUID
+  id: 5828a328-d481-43da-8b9a-6c116f8e982a
 headers:
   Content-Type: application/json
 body:
