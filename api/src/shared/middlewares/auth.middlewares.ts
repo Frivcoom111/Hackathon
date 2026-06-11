@@ -41,8 +41,12 @@ const requireRole = (role: Role, options: { mfa: boolean }) => {
         throw new UnauthorizedError("Token não fornecido.");
       }
 
-      if (req.user.role !== role || (options.mfa && !req.user.mfaVerified)) {
-        throw new ForbiddenError("Acesso negado.");
+      if (req.user.role !== role) {
+        throw new ForbiddenError();
+      }
+
+      if (options.mfa && !req.user.mfaVerified) {
+        throw new ForbiddenError("Verificação MFA obrigatória.");
       }
 
       next();
