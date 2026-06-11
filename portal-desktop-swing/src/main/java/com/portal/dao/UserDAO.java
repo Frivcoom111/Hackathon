@@ -10,29 +10,23 @@ import java.sql.ResultSet;
 public class UserDAO extends BaseDAO {
 
     public User findByEmail(String email) {
-        String sql = "SELECT id, email, password, role, isActive FROM User WHERE email = ?";
-
+        String sql = "SELECT id, email, password, role FROM User WHERE email = ? LIMIT 1";
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-
-            try (ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getString("id"));
-                    user.setEmail(rs.getString("email"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(Role.valueOf(rs.getString("role")));
-                    user.setActive(rs.getBoolean("isActive"));
-                    return user;
+                    return new User(
+                        rs.getString("id"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        Role.valueOf(rs.getString("role").toUpperCase())
+                    );
                 }
             }
-
         } catch (Exception e) {
             System.err.println("Erro ao buscar usuário: " + e.getMessage());
         }
-
         return null;
     }
 }
