@@ -1,10 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
-import type {
-  CompanyResponse,
-  RegisterCompanyInput,
-  RegisterStudentInput,
-  StudentResponse,
-} from "./auth.schema";
+import type { CompanyResponse, RegisterCompanyInput, RegisterStudentInput, StudentResponse } from "./auth.schema";
 
 export class AuthRepository {
   constructor(private readonly prisma: PrismaClient) {}

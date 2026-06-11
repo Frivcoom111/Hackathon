@@ -19,9 +19,7 @@ export const errorHandler = (error: Error, req: Request, res: Response, _next: N
 
   if (error instanceof MulterError) {
     const message =
-      error.code === "LIMIT_FILE_SIZE"
-        ? "Arquivo excede o tamanho máximo de 5MB."
-        : "Erro no upload do arquivo.";
+      error.code === "LIMIT_FILE_SIZE" ? "Arquivo excede o tamanho máximo de 5MB." : "Erro no upload do arquivo.";
     res.status(400).json(response.error(message));
     return;
   }

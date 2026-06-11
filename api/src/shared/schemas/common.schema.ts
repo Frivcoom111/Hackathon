@@ -30,19 +30,13 @@ export const passwordSchema = z
 
 // ─── CPF Schema ──────────────────────────────────────────────────────────────
 
-export const cpfSchema = z
-  .string()
-  .regex(/^\d{11}$/, "CPF deve conter 11 dígitos numéricos.");
+export const cpfSchema = z.string().regex(/^\d{11}$/, "CPF deve conter 11 dígitos numéricos.");
 
 // ─── CNPJ / Telefone / Endereço ────────────────────────────────────────────────
 
-export const cnpjSchema = z
-  .string()
-  .regex(/^\d{14}$/, "CNPJ deve conter 14 dígitos numéricos.");
+export const cnpjSchema = z.string().regex(/^\d{14}$/, "CNPJ deve conter 14 dígitos numéricos.");
 
-export const phoneSchema = z
-  .string()
-  .regex(/^\d{10,11}$/, "Telefone deve conter 10 ou 11 dígitos numéricos.");
+export const phoneSchema = z.string().regex(/^\d{10,11}$/, "Telefone deve conter 10 ou 11 dígitos numéricos.");
 
 export const addressSchema = z
   .object({

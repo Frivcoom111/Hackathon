@@ -1,12 +1,7 @@
 import { ConflictError, NotFoundError } from "../../shared/errors/AppError";
 import { generateHash } from "../../shared/utils/bcryptUtils";
 import type { AuthRepository } from "./auth.repository";
-import type {
-  CompanyResponse,
-  RegisterCompanyInput,
-  RegisterStudentInput,
-  StudentResponse,
-} from "./auth.schema";
+import type { CompanyResponse, RegisterCompanyInput, RegisterStudentInput, StudentResponse } from "./auth.schema";
 
 export class AuthService {
   constructor(private readonly authRepository: AuthRepository) {}

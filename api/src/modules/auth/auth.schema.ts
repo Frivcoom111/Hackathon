@@ -1,11 +1,5 @@
 import { z } from "../../lib/zod";
-import {
-  addressSchema,
-  cnpjSchema,
-  cpfSchema,
-  passwordSchema,
-  phoneSchema,
-} from "../../shared/schemas/common.schema";
+import { addressSchema, cnpjSchema, cpfSchema, passwordSchema, phoneSchema } from "../../shared/schemas/common.schema";
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 
@@ -19,10 +13,7 @@ export const registerStudentSchema = z
       .string()
       .min(2, "O nome deve ter no mínimo 2 caracteres.")
       .max(100, "O nome deve ter no máximo 100 caracteres."),
-    ra: z
-      .string()
-      .min(1, "O RA é obrigatório.")
-      .max(20, "O RA deve ter no máximo 20 caracteres."),
+    ra: z.string().min(1, "O RA é obrigatório.").max(20, "O RA deve ter no máximo 20 caracteres."),
     cpf: cpfSchema,
     phone: z.string().min(8).max(20).optional(),
     resumePath: z.string().optional(),
