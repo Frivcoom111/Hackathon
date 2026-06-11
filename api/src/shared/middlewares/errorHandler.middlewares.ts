@@ -1,10 +1,17 @@
+import fs from "node:fs";
 import type { NextFunction, Request, Response } from "express";
 import { MulterError } from "multer";
 import { ZodError } from "zod";
 import { AppError } from "../errors/AppError";
 import { response } from "../utils/response";
 
-export const errorHandler = (error: Error, _req: Request, res: Response, _next: NextFunction) => {
+export const errorHandler = (error: Error, req: Request, res: Response, _next: NextFunction) => {
+  // Remove arquivos já salvos pelo multer quando a request falha (evita órfãos em disco).
+  const uploaded = req.file ? [req.file] : Object.values(req.files ?? {}).flat();
+  for (const file of uploaded) {
+    if (file?.path) fs.unlink(file.path, () => {});
+  }
+
   if (error instanceof AppError) {
     res.status(error.statusCode).json(response.error(error.message));
     return;

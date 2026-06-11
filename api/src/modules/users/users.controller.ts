@@ -13,7 +13,7 @@ import type { UserService } from "./users.service";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  findAll = async (req: Request, res: Response) => {
+  findAll = async (req: Request, res: Response): Promise<void> => {
     const query = paginationQuerySchema.parse(req.query);
 
     const { data, meta } = await this.userService.findAll(query);
@@ -21,7 +21,7 @@ export class UserController {
     res.status(200).json(response.paginated(data, meta));
   };
 
-  findById = async (req: Request, res: Response) => {
+  findById = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
 
     const user = await this.userService.findById(id);
@@ -29,7 +29,7 @@ export class UserController {
     res.status(200).json(response.success(user));
   };
 
-  create = async (req: Request, res: Response) => {
+  create = async (req: Request, res: Response): Promise<void> => {
     const data = createUserSchema.parse(req.body);
 
     const user = await this.userService.create(data);
@@ -37,7 +37,7 @@ export class UserController {
     res.status(201).json(response.success(user, "Usuário criado com sucesso."));
   };
 
-  update = async (req: Request, res: Response) => {
+  update = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
     const data = updateUserSchema.parse(req.body);
 
@@ -46,7 +46,7 @@ export class UserController {
     res.status(200).json(response.success(user, "Usuário atualizado com sucesso."));
   };
 
-  delete = async (req: Request, res: Response) => {
+  delete = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
 
     await this.userService.delete(id);
@@ -54,7 +54,7 @@ export class UserController {
     res.status(204).send();
   };
 
-  changePassword = async (req: Request, res: Response) => {
+  changePassword = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
     const data = changePasswordSchema.parse(req.body);
 
@@ -63,7 +63,7 @@ export class UserController {
     res.status(200).json(response.success(null, "Senha alterada com sucesso."));
   };
 
-  changeRole = async (req: Request, res: Response) => {
+  changeRole = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
     const data = updateRoleSchema.parse(req.body);
 
@@ -72,7 +72,7 @@ export class UserController {
     res.status(200).json(response.success(user, "Cargo atualizado com sucesso."));
   };
 
-  updateStatus = async (req: Request, res: Response) => {
+  updateStatus = async (req: Request, res: Response): Promise<void> => {
     const { id } = idParamsSchema.parse(req.params);
     const data = updateStatusSchema.parse(req.body);
 
