@@ -44,6 +44,19 @@ export const registerCompanySchema = z
   })
   .openapi({ title: "RegisterCompany" });
 
+export const loginSchema = z
+  .object({
+    email: z.email("E-mail inválido."),
+    password: z.string().min(1, "A senha é obrigatória."),
+  })
+  .openapi({ title: "Login" });
+
+export const totpCodeSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, "O código deve conter 6 dígitos."),
+  })
+  .openapi({ title: "TotpCode" });
+
 // ─── Response Schemas ─────────────────────────────────────────────────────────
 
 export const studentResponseSchema = z
@@ -76,5 +89,7 @@ export const companyResponseSchema = z
 
 export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
 export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type TotpCodeInput = z.infer<typeof totpCodeSchema>;
 export type StudentResponse = z.infer<typeof studentResponseSchema>;
 export type CompanyResponse = z.infer<typeof companyResponseSchema>;
