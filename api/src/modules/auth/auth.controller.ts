@@ -7,7 +7,7 @@ import type { AuthService } from "./auth.service";
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  register = async (req: Request, res: Response): Promise<void> => {
+  registerStudent = async (req: Request, res: Response): Promise<void> => {
     const data = registerStudentSchema.parse(req.body);
 
     // O currículo é salvo pelo multer; guardamos o caminho relativo (não o nome do cliente).

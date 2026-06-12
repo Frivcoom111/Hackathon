@@ -14,7 +14,7 @@ const service = new AuthService(repository);
 const controller = new AuthController(service);
 
 // `resume` é o currículo (multipart/form-data); o multer valida tipo/tamanho e salva o arquivo.
-router.post("/register/student", authRateLimiter, uploadResume.single("resume"), controller.register);
+router.post("/register/student", authRateLimiter, uploadResume.single("resume"), controller.registerStudent);
 
 router.post("/register/company", authRateLimiter, controller.registerCompany);
 

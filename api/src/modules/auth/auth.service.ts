@@ -30,11 +30,11 @@ type LoginResult =
 export class AuthService {
   constructor(private readonly authRepository: AuthRepository) {}
 
-  async registerStudent(input: RegisterStudentInput): Promise<StudentResponse> {
-    const password = await generateHash(input.password);
+  async registerStudent(data: RegisterStudentInput): Promise<StudentResponse> {
+    const password = await generateHash(data.password);
 
     try {
-      return await this.authRepository.createStudent({ ...input, password });
+      return await this.authRepository.createStudent({ ...data, password });
     } catch (error) {
       const code = (error as { code?: string }).code;
 
@@ -50,11 +50,11 @@ export class AuthService {
     }
   }
 
-  async registerCompany(input: RegisterCompanyInput): Promise<CompanyResponse> {
-    const password = await generateHash(input.password);
+  async registerCompany(data: RegisterCompanyInput): Promise<CompanyResponse> {
+    const password = await generateHash(data.password);
 
     try {
-      return await this.authRepository.createCompany({ ...input, password });
+      return await this.authRepository.createCompany({ ...data, password });
     } catch (error) {
       const code = (error as { code?: string }).code;
 
@@ -69,14 +69,14 @@ export class AuthService {
   // ─── Login ──────────────────────────────────────────────────────────────────
 
   // Mensagem sempre genérica ("Credenciais inválidas.") para não revelar se o e-mail existe.
-  async login(input: LoginInput): Promise<LoginResult> {
-    const user = await this.authRepository.findUserByEmail(input.email);
+  async login(data: LoginInput): Promise<LoginResult> {
+    const user = await this.authRepository.findUserByEmail(data.email);
     if (!user) {
       throw new UnauthorizedError("Credenciais inválidas.");
     }
 
-    const passwordOk = await compareHash(input.password, user.password);
-    if (!passwordOk) {
+    const isMatch = await compareHash(data.password, user.password);
+    if (!isMatch) {
       throw new UnauthorizedError("Credenciais inválidas.");
     }
 
