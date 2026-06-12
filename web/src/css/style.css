@@ -1,0 +1,440 @@
+/* ============================================
+   VARIÁVEIS — Paleta Hackathon
+   ============================================ */
+:root {
+  --azul-fundo:        #021F41;
+  --azul-principal:    #0D6EFD;
+  --azul-hover:        #0A4FAF;
+  --azul-claro:        #4D9EFF;
+  --azul-escuro:       #032B5C;
+  --amarelo-principal: #FFC107;
+  --amarelo-hover:     #E6A700;
+  --branco:            #FFFFFF;
+  --fundo-pagina:      #DADCDD;
+  --borda:             #C4C4C4;
+  --texto-titulo:      #111827;
+  --texto-padrao:      #374151;
+  --texto-secundario:  #6B7280;
+  --fonte-titulo:      'Source Sans 3', sans-serif;
+  --fonte-corpo:       'Inter', sans-serif;
+}
+
+/* ============================================
+   RESET E BASE
+   ============================================ */
+body {
+  font-family: var(--fonte-corpo);
+  background-color: var(--fundo-pagina);
+  color: var(--texto-padrao);
+}
+
+/* ============================================
+   TIPOGRAFIA
+   ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fonte-titulo);
+  color: var(--texto-titulo);
+  font-weight: 700;
+}
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+.subtitulo     { font-size: 1.1rem;  font-weight: 500; color: var(--texto-padrao); }
+.titulo-card   { font-size: 1rem;    font-weight: 600; color: var(--texto-titulo); }
+.descricao     { font-size: 0.95rem; color: var(--texto-secundario); }
+.texto-pequeno { font-size: 0.8rem;  color: var(--texto-secundario); }
+
+/* ============================================
+   LINKS
+   ============================================ */
+a {
+  color: var(--azul-principal);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--azul-hover);
+}
+
+/* ============================================
+   BOTÕES
+   ============================================ */
+.btn-primary {
+  background-color: var(--azul-principal);
+  border-color: var(--azul-principal);
+  color: var(--branco);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+.btn-warning {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: var(--amarelo-hover);
+  border-color: var(--amarelo-hover);
+  color: var(--texto-titulo);
+}
+
+.btn-entrar {
+  background-color: rgba(13, 110, 253, 0.25);
+  border: 1px solid var(--azul-principal);
+  color: var(--branco);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn-entrar:hover,
+.btn-entrar:focus {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.navbar {
+  background-color: var(--azul-escuro) !important;
+  height: 64px;
+}
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.navbar-brand img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+.navbar-brand,
+.navbar .nav-link {
+  color: var(--branco) !important;
+  font-family: var(--fonte-titulo);
+  font-weight: 500;
+}
+.navbar .nav-link {
+  transition: color 0.2s;
+}
+.navbar .nav-link:hover {
+  color: var(--amarelo-principal) !important;
+}
+
+/* Mobile */
+@media (max-width: 991px) {
+  .navbar {
+    height: auto;
+    padding: 12px 16px;
+  }
+  .navbar-collapse {
+    background-color: var(--azul-escuro);
+    border-radius: 0 0 12px 12px;
+    text-align: center;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .navbar-nav {
+    width: 100%;
+  }
+  .navbar-nav .nav-item {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+  background-color: var(--azul-escuro);
+  color: var(--branco);
+  font-size: 0.875rem;
+  padding: 20px 0;
+  margin-top: 64px;
+}
+footer a {
+  color: var(--azul-claro);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+footer a:hover {
+  color: var(--amarelo-principal);
+}
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-brand {
+  color: var(--branco);
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+}
+.footer-brand img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+.footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.footer-links a {
+  color: var(--azul-claro);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover {
+  color: var(--amarelo-principal);
+}
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .footer-links {
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   CARDS GENÉRICOS
+   ============================================ */
+.card {
+  background-color: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+.card-title {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  color: var(--texto-titulo);
+}
+.card-text {
+  color: var(--texto-padrao);
+}
+
+/* ============================================
+   FORMULÁRIOS
+   ============================================ */
+.form-control,
+.form-select {
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  color: var(--texto-padrao);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
+}
+.form-label {
+  font-weight: 500;
+  color: var(--texto-titulo);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge-azul {
+  background-color: var(--azul-principal);
+  color: var(--branco);
+}
+.badge-amarelo {
+  background-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+/* ============================================
+   SEÇÕES
+   ============================================ */
+.section-dark {
+  background-color: var(--azul-fundo);
+  color: var(--branco);
+}
+.section-dark h1,
+.section-dark h2,
+.section-dark h3 {
+  color: var(--branco);
+}
+
+/* ============================================
+   UTILITÁRIOS
+   ============================================ */
+.text-secundario { color: var(--texto-secundario) !important; }
+.bg-azul-escuro  { background-color: var(--azul-escuro) !important; }
+.bg-azul-fundo   { background-color: var(--azul-fundo) !important; }
+.border-custom   { border: 1px solid var(--borda) !important; }
+
+/* ============================================
+   BANNER
+   ============================================ */
+.banner-section {
+  padding: 32px 0 24px;
+}
+.banner-box {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+}
+.banner-box img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+.banner-placeholder {
+  width: 100%;
+  height: 280px;
+  background: var(--azul-fundo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 1.1rem;
+  font-family: var(--fonte-titulo);
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   VAGAS
+   ============================================ */
+.vagas-section {
+  padding: 40px 0 64px;
+}
+.vagas-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.vagas-titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+  margin-bottom: 4px;
+  font-family: var(--fonte-titulo);
+}
+.vagas-sub {
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}
+.vaga-card {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  height: 100%;
+}
+.vaga-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.vaga-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.empresa-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  overflow: hidden;
+}
+.empresa-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.empresa-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--fundo-pagina);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-secundario);
+  font-size: 1.2rem;
+}
+.vaga-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(13,110,253,0.1);
+  color: var(--azul-principal);
+}
+.vaga-badge-amarelo {
+  background: rgba(255,193,7,0.15);
+  color: #BA7517;
+}
+.vaga-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--texto-titulo);
+  margin: 0;
+  font-family: var(--fonte-titulo);
+}
+.vaga-empresa {
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}
+.vaga-infos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vaga-infos span {
+  font-size: 0.82rem;
+  color: var(--texto-secundario);
+}
+.vaga-infos i {
+  color: var(--azul-principal);
+  margin-right: 4px;
+}
+.vaga-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+.vaga-bolsa {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+}
