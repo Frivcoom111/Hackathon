@@ -83,7 +83,7 @@ registry.registerPath({
   path: "/users/{id}",
   tags: [TAG],
   security: bearerAuth,
-  summary: "Atualiza nome e/ou e-mail de um usuário.",
+  summary: "Atualiza o e-mail de um usuário.",
   request: { params: idParamsSchema, body: jsonBody(updateUserSchema) },
   responses: {
     200: {

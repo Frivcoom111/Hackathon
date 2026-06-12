@@ -1,0 +1,14 @@
+$kind: http-request
+name: List Applications
+description: "Lista as candidaturas do estudante autenticado (paginado)."
+method: GET
+url: "{{BASE_URL}}/student/applications?page=1&limit=10"
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_STUDENT}}"
+queryParams:
+  page: "1"
+  limit: "10"

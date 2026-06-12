@@ -1,0 +1,32 @@
+$kind: http-request
+name: Create Job
+description: "Cria uma vaga para a empresa. Qualquer membro COMPANY. Salva o id retornado em JOB_ID."
+method: POST
+url: "{{BASE_URL}}/company/jobs"
+order: 7000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_COMPANY}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Estágio em Desenvolvimento Backend",
+      "description": "Atuar com Node.js e bancos relacionais.",
+      "area": "Tecnologia",
+      "requirements": "Conhecimento básico de JavaScript e SQL.",
+      "salary": 1800.00,
+      "location": "São Paulo - SP",
+      "modality": "HYBRID"
+    }
+scripts:
+  postResponse: |-
+    const res = pm.response.json();
+    if (res && res.success && res.data && res.data.id) {
+      pm.environment.set("JOB_ID", res.data.id);
+      console.log("JOB_ID atualizado");
+    }

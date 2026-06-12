@@ -1,0 +1,35 @@
+$kind: http-request
+name: Register Company
+description: "Cadastro de empresa (JSON). Cria Address + Company(PENDING) + User(COMPANY, isActive:false) + CompanyMember(ADMIN) em transação. Não retorna token: a empresa aguarda aprovação pelo app Java antes de poder logar."
+method: POST
+url: "{{BASE_URL}}/auth/register/company"
+order: 1500
+auth:
+  type: noauth
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "contato@empresa.com",
+      "password": "Password1@",
+      "name": "Empresa Exemplo LTDA",
+      "cnpj": "12345678000190",
+      "description": "Empresa de tecnologia parceira do programa de estágios.",
+      "phone": "1133334444",
+      "address": {
+        "street": "Av. Paulista",
+        "number": "1000",
+        "complement": "Sala 12",
+        "district": "Bela Vista",
+        "city": "São Paulo",
+        "state": "SP",
+        "zipCode": "01310100"
+      },
+      "member": {
+        "name": "Carlos Recrutador",
+        "cpf": "98765432100",
+        "phone": "11988887777"
+      }
+    }

@@ -1,0 +1,13 @@
+$kind: http-request
+name: Reset Member TOTP
+description: "Reseta o TOTP de um membro (totpSecret=null, totpEnabled=false). No próximo login o membro refaz o setup. Somente ADMIN; não é possível resetar o próprio TOTP."
+method: POST
+url: "{{BASE_URL}}/company/members/:memberId/totp/reset"
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_COMPANY}}"
+pathVariables:
+  memberId: "{{MEMBER_ID}}"

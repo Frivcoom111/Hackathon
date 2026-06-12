@@ -1,6 +1,6 @@
 $kind: http-request
 name: TOTP Confirm
-description: "FASE 3 — Apenas ADMIN. Valida o primeiro código de 6 dígitos do app autenticador e ATIVA o TOTP (totpEnabled = true). Use o TOKEN_ADMIN."
+description: "Apenas COMPANY. Valida o primeiro código de 6 dígitos do app autenticador e ATIVA o TOTP (totpEnabled = true). Use o TOKEN_COMPANY (tempToken). Em caso de sucesso retorna o JWT final, salvo em TOKEN_COMPANY."
 method: POST
 url: "{{BASE_URL}}/auth/totp/setup/confirm"
 order: 6000
@@ -8,7 +8,7 @@ auth:
   type: bearer
   credentials:
     - key: token
-      value: "{{TOKEN_ADMIN}}"
+      value: "{{TOKEN_COMPANY}}"
 headers:
   Content-Type: application/json
 body:
@@ -16,4 +16,11 @@ body:
   content: |-
     {
       "code": "123456"
+    }
+scripts:
+  postResponse: |-
+    const res = pm.response.json();
+    if (res && res.success && res.data && res.data.token) {
+      pm.environment.set("TOKEN_COMPANY", res.data.token);
+      console.log("TOKEN_COMPANY atualizado (mfaVerified=true)");
     }

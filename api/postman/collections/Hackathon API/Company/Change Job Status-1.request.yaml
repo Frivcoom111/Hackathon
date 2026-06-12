@@ -1,0 +1,21 @@
+$kind: http-request
+name: Change Job Status
+description: "Altera o status da vaga (ACTIVE | PAUSED | CLOSED). CLOSED é terminal: não pode voltar a ACTIVE/PAUSED."
+method: PATCH
+url: "{{BASE_URL}}/company/jobs/:jobId/status"
+order: 10000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_COMPANY}}"
+pathVariables:
+  jobId: "{{JOB_ID}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "PAUSED"
+    }

@@ -8,4 +8,16 @@ values:
     value: ''
   - key: TOKEN_USER
     value: ''
+  - key: TOKEN_COMPANY
+    value: ''
+  - key: TOKEN_STUDENT
+    value: ''
+  - key: COURSE_ID
+    value: ''
+  - key: JOB_ID
+    value: ''
+  - key: MEMBER_ID
+    value: ''
+  - key: APPLICATION_ID
+    value: ''
 color: 120

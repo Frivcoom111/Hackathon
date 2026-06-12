@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get Job
+description: "Detalhe público de uma vaga (apenas ACTIVE de empresa APPROVED). Sem autenticação."
+method: GET
+url: "{{BASE_URL}}/jobs/:jobId"
+order: 2000
+auth:
+  type: noauth
+pathVariables:
+  jobId: "{{JOB_ID}}"

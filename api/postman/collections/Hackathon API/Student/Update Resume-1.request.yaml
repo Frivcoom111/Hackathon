@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Resume
+description: "Atualiza o currículo do estudante (multipart/form-data, campo `resume` obrigatório: PDF/JPG/PNG)."
+method: PATCH
+url: "{{BASE_URL}}/student/resume"
+order: 4000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: "{{TOKEN_STUDENT}}"
+body:
+  type: formdata
+  formdata:
+    - key: resume
+      type: file
+      src: ""

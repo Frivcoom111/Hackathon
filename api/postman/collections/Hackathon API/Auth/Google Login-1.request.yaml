@@ -1,8 +1,0 @@
-$kind: http-request
-name: Google Login
-description: "FASE 2 — Inicia o fluxo OAuth do Google. NÃO funciona bem dentro do Postman (envolve redirect + tela de consentimento). Abra esta URL no navegador. Ao final, o backend redireciona para {{PHP_URL}}/auth/callback?token=JWT."
-method: GET
-url: "{{BASE_URL}}/auth/google"
-order: 4000
-auth:
-  type: noauth
