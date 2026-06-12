@@ -1,0 +1,26 @@
+﻿# Dependencias
+/vendor/
+/node_modules/
+
+# Ambiente local
+.env
+.env.local
+.env.*.local
+
+# Logs e temporarios
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+.DS_Store
+Thumbs.db
+
+# Artefatos de validacao local
+work-*.png
+work-*.jpg
+work-*.jpeg
+
+# IDE
+.vscode/
+.idea/

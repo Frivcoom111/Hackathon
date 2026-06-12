@@ -1,0 +1,13 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      APP_URL: "http://127.0.0.1:8080"
+      API_BASE_URL: "http://host.docker.internal:3000"
+      USE_MOCK_DATA: "true"
+    volumes:
+      - .:/var/www/html
