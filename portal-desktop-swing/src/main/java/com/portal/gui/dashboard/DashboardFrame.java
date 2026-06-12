@@ -1,5 +1,6 @@
 package com.portal.gui.dashboard;
 
+import com.portal.gui.course.CoursePanel;
 import com.portal.util.Session;
 
 import javax.swing.*;
@@ -8,29 +9,44 @@ import java.awt.*;
 
 public class DashboardFrame extends JFrame {
 
-    public DashboardFrame() {
-        String role = Session.getCurrentUser().getRole().name();
-        String email = Session.getCurrentUser().getEmail();
+    private final JPanel contentArea = new JPanel(new CardLayout());
 
-        setTitle("Portal UniALFA — " + role);
-        setSize(900, 600);
+    public DashboardFrame() {
+        setTitle("Portal UniALFA — Back Office");
+        setSize(1100, 680);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setMinimumSize(new Dimension(800, 500));
+        build();
+    }
 
+    private void build() {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
 
-        // Barra superior
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(new Color(0x1565C0));
-        topBar.setBorder(new EmptyBorder(12, 20, 12, 20));
+        root.add(buildTopBar(),  BorderLayout.NORTH);
+        root.add(buildSidebar(), BorderLayout.WEST);
+        root.add(contentArea,   BorderLayout.CENTER);
+
+        // Registrar painéis
+        contentArea.add(new CoursePanel(), "cursos");
+
+        mostrar("cursos");
+        add(root);
+    }
+
+    private JPanel buildTopBar() {
+        JPanel bar = new JPanel(new BorderLayout());
+        bar.setBackground(new Color(0x1565C0));
+        bar.setBorder(new EmptyBorder(10, 20, 10, 20));
 
         JLabel titulo = new JLabel("Portal UniALFA");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titulo.setForeground(Color.WHITE);
 
-        JLabel userInfo = new JLabel(email + "  |  " + role);
-        userInfo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        String email = Session.getCurrentUser().getEmail();
+        JLabel userInfo = new JLabel(email + "  |  ADMIN");
+        userInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         userInfo.setForeground(new Color(0xBBDEFB));
 
         JButton sairBtn = new JButton("Sair");
@@ -46,17 +62,43 @@ public class DashboardFrame extends JFrame {
             new com.portal.gui.login.LoginFrame().setVisible(true);
         });
 
-        topBar.add(titulo, BorderLayout.WEST);
-        topBar.add(userInfo, BorderLayout.CENTER);
-        topBar.add(sairBtn, BorderLayout.EAST);
+        bar.add(titulo,   BorderLayout.WEST);
+        bar.add(userInfo, BorderLayout.CENTER);
+        bar.add(sairBtn,  BorderLayout.EAST);
+        return bar;
+    }
 
-        // Conteúdo central (placeholder)
-        JLabel placeholder = new JLabel("Bem-vindo, " + email + "!", SwingConstants.CENTER);
-        placeholder.setFont(new Font("Segoe UI", Font.PLAIN, 22));
-        placeholder.setForeground(new Color(0x424242));
+    private JPanel buildSidebar() {
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(new Color(0x1A237E));
+        sidebar.setPreferredSize(new Dimension(200, 0));
+        sidebar.setBorder(new EmptyBorder(16, 0, 16, 0));
 
-        root.add(topBar, BorderLayout.NORTH);
-        root.add(placeholder, BorderLayout.CENTER);
-        add(root);
+        sidebar.add(navItem("Cursos", "cursos"));
+        // futuros: Alunos, Empresas, Vagas, Relatórios
+
+        return sidebar;
+    }
+
+    private JButton navItem(String label, String card) {
+        JButton btn = new JButton(label);
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setForeground(new Color(0xC5CAE9));
+        btn.setBackground(new Color(0x1A237E));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setOpaque(true);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new EmptyBorder(0, 20, 0, 0));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.addActionListener(e -> mostrar(card));
+        return btn;
+    }
+
+    private void mostrar(String card) {
+        ((CardLayout) contentArea.getLayout()).show(contentArea, card);
     }
 }
