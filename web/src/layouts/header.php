@@ -6,7 +6,7 @@
   <title><?= isset($titulo_pagina) ? $titulo_pagina . ' | Hackathon' : 'Hackathon' ?></title>
 
   <!-- Bootstrap CSS (Local) -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="<?= BASE ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -15,23 +15,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- CSS do projeto -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/style.css">
 </head>
 <body>
 
-<?php
-// Simulação de sessão — trocar pela sua lógica real depois
-// session_start();
-// $logado = isset($_SESSION['usuario']);
-$logado = false; // trocar por $logado = isset($_SESSION['usuario']);
-?>
+<?php $logado = false; ?>
 
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container navbar-container">
 
     <!-- Logo -->
-    <a class="navbar-brand fw-bold" href="/index.php">
-      <img src="assets/images/site/logo.png" alt="Hackathon">
+    <a class="navbar-brand fw-bold" href="<?= BASE ?>index.php">
+      <img src="<?= BASE ?>assets/images/site/logo.png" alt="Hackathon">
     </a>
 
     <!-- Botão hamburguer (mobile) -->
@@ -46,32 +41,22 @@ $logado = false; // trocar por $logado = isset($_SESSION['usuario']);
 
       <!-- Links centralizados -->
       <ul class="navbar-nav mx-auto align-items-center gap-lg-1 text-center">
-        <li class="nav-item">
-          <a class="nav-link" href="/index.php">Início</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/pages/empresas.php">Empresas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/pages/vagas.php">Vagas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/pages/alunos.php">Alunos</a>
-        </li>
+        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=home">Início</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=alunos">Alunos</a></li>
       </ul>
 
-      <!-- Botões de auth (só aparece se não estiver logado) -->
       <?php if (!$logado): ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
-        <a href="/pages/login.php" class="btn btn-entrar btn-sm px-3">Entrar</a>
-        <a href="/pages/cadastro.php" class="btn btn-warning btn-sm px-3 fw-semibold">Cadastrar</a>
+        <a href="<?= BASE ?>index.php?page=login" class="btn btn-entrar btn-sm px-3">Entrar</a>
+        <a href="<?= BASE ?>index.php?page=cadastro" class="btn btn-warning btn-sm px-3 fw-semibold">Cadastrar</a>
       </div>
       <?php endif; ?>
 
-      <!-- Se estiver logado, mostra perfil -->
       <?php if ($logado): ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
-        <a href="/pages/perfil.php" class="btn btn-entrar btn-sm px-3">
+        <a href="<?= BASE ?>index.php?page=perfil" class="btn btn-entrar btn-sm px-3">
           <i class="bi bi-person-circle me-1"></i> Meu perfil
         </a>
       </div>
