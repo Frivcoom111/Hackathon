@@ -15,3 +15,5 @@ uploads/resumes/*
 !.env.example
 
 /src/generated/prisma
+
+.agents
