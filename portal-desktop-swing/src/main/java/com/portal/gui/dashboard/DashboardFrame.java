@@ -1,5 +1,6 @@
 package com.portal.gui.dashboard;
 
+import com.portal.gui.companies.CompanyListPanel;
 import com.portal.gui.course.CoursePanel;
 import com.portal.util.Session;
 
@@ -29,9 +30,10 @@ public class DashboardFrame extends JFrame {
         root.add(contentArea,   BorderLayout.CENTER);
 
         // Registrar painéis
-        contentArea.add(new CoursePanel(), "cursos");
+        contentArea.add(new CoursePanel(),       "cursos");
+        contentArea.add(new CompanyListPanel(),  "empresas");
 
-        mostrar("cursos");
+        mostrar("empresas");
         add(root);
     }
 
@@ -75,8 +77,9 @@ public class DashboardFrame extends JFrame {
         sidebar.setPreferredSize(new Dimension(200, 0));
         sidebar.setBorder(new EmptyBorder(16, 0, 16, 0));
 
-        sidebar.add(navItem("Cursos", "cursos"));
-        // futuros: Alunos, Empresas, Vagas, Relatórios
+        sidebar.add(navItem("Empresas", "empresas"));
+        sidebar.add(navItem("Cursos",   "cursos"));
+        // futuros: Alunos, Vagas, Candidaturas, Relatórios
 
         return sidebar;
     }
