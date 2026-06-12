@@ -1,0 +1,19 @@
+{
+  "name": "unialfa/portal-estagios-phpoo",
+  "description": "Portal de Estagios UniALFA em PHP orientado a objetos consumindo API Node.js.",
+  "type": "project",
+  "require": {
+    "php": ">=8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    },
+    "files": [
+      "app/Support/helpers.php"
+    ]
+  },
+  "scripts": {
+    "serve": "php -S 127.0.0.1:8080 -t public"
+  }
+}
