@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">Winfo</title>
+  <desc id="desc">Imagem ficticia de empresa de infraestrutura de TI</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#00143a"/>
+      <stop offset="1" stop-color="#0f4fa8"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" rx="34" fill="url(#bg)"/>
+  <path d="M0 308c124-82 214-76 338 0s228 90 382-9v121H0Z" fill="#ffc400" opacity=".18"/>
+  <rect x="86" y="102" width="180" height="190" rx="24" fill="#ffffff" opacity=".94"/>
+  <rect x="120" y="136" width="112" height="22" rx="8" fill="#0f4fa8" opacity=".36"/>
+  <rect x="120" y="178" width="112" height="22" rx="8" fill="#0f4fa8" opacity=".36"/>
+  <rect x="120" y="220" width="112" height="22" rx="8" fill="#ffc400" opacity=".86"/>
+  <circle cx="462" cy="170" r="92" fill="#ffffff" opacity=".12"/>
+  <circle cx="462" cy="170" r="54" fill="#ffffff" opacity=".96"/>
+  <path d="M425 170h74M462 133v74" stroke="#0f4fa8" stroke-width="16" stroke-linecap="round"/>
+  <path d="M266 198h104M516 198h82" stroke="#dbe7ff" stroke-width="10" stroke-linecap="round"/>
+  <text x="76" y="360" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800">Winfo</text>
+  <text x="78" y="389" fill="#dbe7ff" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Infraestrutura, redes e suporte</text>
+</svg>

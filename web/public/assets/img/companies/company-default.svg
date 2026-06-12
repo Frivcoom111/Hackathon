@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">Empresa parceira</title>
+  <desc id="desc">Imagem ficticia de empresa parceira</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#083174"/>
+      <stop offset="1" stop-color="#001f55"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" rx="34" fill="url(#bg)"/>
+  <rect x="90" y="92" width="270" height="220" rx="26" fill="#fff" opacity=".94"/>
+  <rect x="130" y="132" width="190" height="30" rx="8" fill="#0f4fa8" opacity=".28"/>
+  <rect x="130" y="188" width="138" height="22" rx="11" fill="#ffc400" opacity=".86"/>
+  <rect x="130" y="232" width="166" height="22" rx="11" fill="#0f4fa8" opacity=".34"/>
+  <circle cx="512" cy="196" r="88" fill="#ffc400" opacity=".2"/>
+  <text x="76" y="366" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="800">Empresa parceira</text>
+</svg>

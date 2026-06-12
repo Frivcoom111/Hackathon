@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">Agencia Alfa</title>
+  <desc id="desc">Imagem ficticia de agencia de marketing</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#102a63"/>
+      <stop offset=".54" stop-color="#1762c1"/>
+      <stop offset="1" stop-color="#ffc400"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" rx="34" fill="url(#bg)"/>
+  <rect x="68" y="82" width="250" height="258" rx="26" fill="#fff" opacity=".94"/>
+  <rect x="94" y="112" width="198" height="112" rx="18" fill="#fff5c7"/>
+  <path d="M116 202c48-64 96-66 152-18" fill="none" stroke="#ffc400" stroke-width="16" stroke-linecap="round"/>
+  <path d="M112 152h78M112 256h156M112 288h112" stroke="#0f4fa8" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="518" cy="154" r="74" fill="#001f55" opacity=".9"/>
+  <path d="M480 157h76M518 119v76" stroke="#ffc400" stroke-width="15" stroke-linecap="round"/>
+  <rect x="386" y="252" width="218" height="70" rx="18" fill="#fff" opacity=".2"/>
+  <text x="76" y="374" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="800">Agencia Alfa</text>
+  <text x="78" y="402" fill="#fff5c7" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Marketing digital e conteudo</text>
+</svg>
