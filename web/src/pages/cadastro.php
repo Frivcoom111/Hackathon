@@ -21,7 +21,8 @@
       </div>
 
       <!-- FORMULÁRIO ALUNO -->
-      <form id="form-aluno" class="cadastro-form" action="/api/cadastro-aluno" method="POST">
+      <!-- O submit é interceptado pelo JS abaixo — não usa action/method do HTML -->
+      <form id="form-aluno" class="cadastro-form">
         <div class="row g-3">
 
           <div class="col-12">
@@ -69,15 +70,21 @@
             <input type="password" name="senha_confirmar" class="form-control" placeholder="Repita a senha" required>
           </div>
 
+          <!-- Mensagem de erro do cadastro de aluno -->
+          <div id="erro-aluno" class="col-12" style="display:none;">
+            <div class="alert alert-danger py-2 mb-0" id="erro-aluno-msg"></div>
+          </div>
+
           <div class="col-12">
-            <button type="submit" class="btn btn-primary w-100">Cadastrar como Aluno</button>
+            <button type="submit" class="btn btn-primary w-100" id="btn-aluno">Cadastrar como Aluno</button>
           </div>
 
         </div>
       </form>
 
       <!-- FORMULÁRIO EMPRESA -->
-      <form id="form-empresa" class="cadastro-form" style="display:none;" action="/api/cadastro-empresa" method="POST">
+      <!-- O submit é interceptado pelo JS abaixo — não usa action/method do HTML -->
+      <form id="form-empresa" class="cadastro-form" style="display:none;">
         <div class="row g-3">
 
           <div class="col-12">
@@ -115,8 +122,13 @@
             <input type="password" name="senha_confirmar" class="form-control" placeholder="Repita a senha" required>
           </div>
 
+          <!-- Mensagem de erro do cadastro de empresa -->
+          <div id="erro-empresa" class="col-12" style="display:none;">
+            <div class="alert alert-danger py-2 mb-0" id="erro-empresa-msg"></div>
+          </div>
+
           <div class="col-12">
-            <button type="submit" class="btn btn-primary w-100">Cadastrar como Empresa</button>
+            <button type="submit" class="btn btn-primary w-100" id="btn-empresa">Cadastrar como Empresa</button>
           </div>
 
         </div>
