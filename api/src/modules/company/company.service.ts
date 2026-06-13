@@ -1,14 +1,23 @@
 import type { JobStatus } from "../../generated/prisma/enums";
-import { BadRequestError, ForbiddenError, NotFoundError } from "../../shared/errors/AppError";
-import type { PaginationQuery } from "../../shared/schemas/common.schema";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../shared/errors/AppError";
+import type { ChangePasswordInput, PaginationQuery } from "../../shared/schemas/common.schema";
+import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import type { PaginationMeta } from "../../shared/utils/response";
 import type { CompanyRepository } from "./company.repository";
 import type {
   ChangeApplicationStatusInput,
-  ChangeMemberRoleInput,
   CreateJobInput,
+  CreateMemberInput,
   UpdateCompanyProfileInput,
   UpdateJobInput,
+  UpdateMemberInput,
+  UpdateMyProfileInput,
 } from "./company.schema";
 
 // Transições válidas de status de vaga. CLOSED é terminal.
@@ -42,16 +51,59 @@ export class CompanyService {
     return this.companyRepository.listMembers(member.companyId);
   }
 
-  async changeMemberRole(actingUserId: string, memberId: string, data: ChangeMemberRoleInput) {
+  async createMember(actingUserId: string, data: CreateMemberInput) {
+    const acting = await this.getMemberOrThrow(actingUserId);
+    const password = await generateHash(data.password);
+    try {
+      return await this.companyRepository.createMember(acting.companyId, { ...data, password });
+    } catch (error) {
+      if ((error as { code?: string }).code === "P2002") {
+        throw new ConflictError("E-mail ou CPF já cadastrado.");
+      }
+      throw error;
+    }
+  }
+
+  async updateMember(actingUserId: string, memberId: string, data: UpdateMemberInput) {
     const target = await this.getMemberOfSameCompany(actingUserId, memberId);
     this.assertNotSelf(actingUserId, target.userId);
-    return this.companyRepository.updateMemberRole(memberId, data);
+    return this.companyRepository.updateMember(memberId, data);
+  }
+
+  async deleteMember(actingUserId: string, memberId: string): Promise<void> {
+    const target = await this.getMemberOfSameCompany(actingUserId, memberId);
+    this.assertNotSelf(actingUserId, target.userId);
+    await this.companyRepository.deactivateMember(target.userId);
   }
 
   async resetMemberTotp(actingUserId: string, memberId: string): Promise<void> {
     const target = await this.getMemberOfSameCompany(actingUserId, memberId);
     this.assertNotSelf(actingUserId, target.userId);
     await this.companyRepository.resetMemberTotp(target.userId);
+  }
+
+  // ─── Dados próprios (qualquer membro) ───────────────────────────────────────
+
+  async updateMyProfile(userId: string, data: UpdateMyProfileInput) {
+    const member = await this.getMemberOrThrow(userId);
+    try {
+      return await this.companyRepository.updateMyProfile(member.id, userId, data);
+    } catch (error) {
+      if ((error as { code?: string }).code === "P2002") {
+        throw new ConflictError("E-mail já está em uso.");
+      }
+      throw error;
+    }
+  }
+
+  async changeMyPassword(userId: string, data: ChangePasswordInput): Promise<void> {
+    const user = await this.companyRepository.getUserPassword(userId);
+    if (!user) throw new NotFoundError("Usuário não encontrado.");
+
+    const isMatch = await compareHash(data.currentPassword, user.password);
+    if (!isMatch) throw new UnauthorizedError("Senha atual incorreta.");
+
+    await this.companyRepository.updatePassword(userId, await generateHash(data.newPassword));
   }
 
   // ─── Vagas ────────────────────────────────────────────────────────────────

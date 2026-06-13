@@ -48,12 +48,25 @@ export class StudentRepository {
     });
   }
 
-  async updateProfile(studentId: string, data: UpdateStudentProfileInput) {
-    return this.prisma.student.update({
-      where: { id: studentId },
-      data,
-      select: { id: true, name: true, phone: true },
+  // Atualiza name/phone (Student) e e-mail (User) numa transação.
+  async updateProfile(studentId: string, userId: string, data: UpdateStudentProfileInput) {
+    const { email, ...profile } = data;
+    return this.prisma.$transaction(async (tx) => {
+      if (email) await tx.user.update({ where: { id: userId }, data: { email } });
+      return tx.student.update({
+        where: { id: studentId },
+        data: profile,
+        select: { id: true, name: true, phone: true, user: { select: { email: true } } },
+      });
     });
+  }
+
+  async getUserPassword(userId: string) {
+    return this.prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { password: passwordHash } });
   }
 
   async updateResume(studentId: string, resumePath: string) {

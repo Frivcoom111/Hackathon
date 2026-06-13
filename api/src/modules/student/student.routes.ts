@@ -17,6 +17,7 @@ router.use(authMiddleware, requireStudent);
 
 router.get("/profile", controller.getProfile.bind(controller));
 router.patch("/profile", controller.updateProfile.bind(controller));
+router.patch("/password", controller.changePassword.bind(controller));
 router.put("/address", controller.updateAddress.bind(controller));
 router.patch("/resume", uploadResume.single("resume"), controller.updateResume.bind(controller));
 router.get("/applications", controller.listApplications.bind(controller));

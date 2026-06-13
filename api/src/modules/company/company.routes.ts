@@ -14,13 +14,19 @@ const controller = new CompanyController(service);
 // Toda rota exige COMPANY autenticada com MFA verificada.
 router.use(authMiddleware, requireCompany);
 
-// ─── Perfil ───────────────────────────────────────────────────────────────────
+// ─── Perfil da empresa ──────────────────────────────────────────────────────────
 router.get("/profile", controller.getProfile.bind(controller));
 router.patch("/profile", requireCompanyAdmin, controller.updateProfile.bind(controller));
 
+// ─── Dados próprios do membro autenticado ────────────────────────────────────────
+router.patch("/me", controller.updateMe.bind(controller));
+router.patch("/me/password", controller.changeMyPassword.bind(controller));
+
 // ─── Membros (somente ADMIN da empresa) ─────────────────────────────────────────
 router.get("/members", requireCompanyAdmin, controller.listMembers.bind(controller));
-router.patch("/members/:memberId/role", requireCompanyAdmin, controller.changeMemberRole.bind(controller));
+router.post("/members", requireCompanyAdmin, controller.createMember.bind(controller));
+router.patch("/members/:memberId", requireCompanyAdmin, controller.updateMember.bind(controller));
+router.delete("/members/:memberId", requireCompanyAdmin, controller.deleteMember.bind(controller));
 router.post("/members/:memberId/totp/reset", requireCompanyAdmin, controller.resetMemberTotp.bind(controller));
 
 // ─── Vagas ──────────────────────────────────────────────────────────────────────

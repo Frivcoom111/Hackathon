@@ -1,7 +1,7 @@
 import { bearerAuth, errorResponse, paginatedResponse, successResponse } from "../../docs/helpers";
 import { registry } from "../../docs/registry";
 import { z } from "../../lib/zod";
-import { idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
+import { changePasswordSchema, idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import { updateAddressSchema, updateStudentProfileSchema } from "./student.schema";
 
 const TAG = "Student";
@@ -62,7 +62,7 @@ registry.registerPath({
   path: "/student/profile",
   tags: [TAG],
   security: bearerAuth,
-  summary: "Atualiza name e/ou phone do estudante.",
+  summary: "Atualiza name, phone e/ou email do estudante.",
   request: { body: jsonBody(updateStudentProfileSchema) },
   responses: {
     200: {
@@ -71,6 +71,25 @@ registry.registerPath({
     },
     400: error("Dados inválidos."),
     401: unauthorized,
+    409: error("E-mail já está em uso."),
+  },
+});
+
+// ─── Senha ──────────────────────────────────────────────────────────────────────
+registry.registerPath({
+  method: "patch",
+  path: "/student/password",
+  tags: [TAG],
+  security: bearerAuth,
+  summary: "Altera a própria senha (exige a senha atual).",
+  request: { body: jsonBody(changePasswordSchema) },
+  responses: {
+    200: {
+      description: "Senha alterada.",
+      content: { "application/json": { schema: successResponse(z.null()) } },
+    },
+    400: error("Dados inválidos."),
+    401: error("Senha atual incorreta."),
   },
 });
 

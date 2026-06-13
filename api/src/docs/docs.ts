@@ -7,7 +7,6 @@ import "../modules/auth/auth.docs";
 import "../modules/company/company.docs";
 import "../modules/jobs/jobs.docs";
 import "../modules/student/student.docs";
-import "../modules/users/users.docs";
 import { generateSpec } from "./openapi";
 
 export function setupDocs(app: Router) {

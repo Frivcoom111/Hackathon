@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { BadRequestError, UnauthorizedError } from "../../shared/errors/AppError";
-import { idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
+import { changePasswordSchema, idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import { response } from "../../shared/utils/response";
 import { updateAddressSchema, updateStudentProfileSchema } from "./student.schema";
 import type { StudentService } from "./student.service";
@@ -19,6 +19,13 @@ export class StudentController {
     const data = updateStudentProfileSchema.parse(req.body);
     const profile = await this.studentService.updateProfile(user.id, data);
     res.status(200).json(response.success(profile, "Perfil atualizado com sucesso."));
+  }
+
+  async changePassword(req: Request, res: Response): Promise<void> {
+    const user = this.requireUser(req);
+    const data = changePasswordSchema.parse(req.body);
+    await this.studentService.changePassword(user.id, data);
+    res.status(200).json(response.success(null, "Senha alterada com sucesso."));
   }
 
   async updateAddress(req: Request, res: Response): Promise<void> {

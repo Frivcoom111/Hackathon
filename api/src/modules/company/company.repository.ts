@@ -2,10 +2,12 @@ import type { PrismaClient } from "../../generated/prisma/client";
 import type { JobStatus } from "../../generated/prisma/enums";
 import type {
   ChangeApplicationStatusInput,
-  ChangeMemberRoleInput,
   CreateJobInput,
+  CreateMemberInput,
   UpdateCompanyProfileInput,
   UpdateJobInput,
+  UpdateMemberInput,
+  UpdateMyProfileInput,
 } from "./company.schema";
 
 // ─── Selects ──────────────────────────────────────────────────────────────────
@@ -18,6 +20,15 @@ const addressSelect = {
   city: true,
   state: true,
   zipCode: true,
+} as const;
+
+const memberSelect = {
+  id: true,
+  name: true,
+  cpf: true,
+  phone: true,
+  role: true,
+  user: { select: { email: true, isActive: true, totpEnabled: true } },
 } as const;
 
 const jobSelect = {
@@ -78,14 +89,7 @@ export class CompanyRepository {
   async listMembers(companyId: string) {
     return this.prisma.companyMember.findMany({
       where: { companyId },
-      select: {
-        id: true,
-        name: true,
-        cpf: true,
-        phone: true,
-        role: true,
-        user: { select: { email: true, isActive: true, totpEnabled: true } },
-      },
+      select: memberSelect,
       orderBy: { createdAt: "asc" },
     });
   }
@@ -97,11 +101,50 @@ export class CompanyRepository {
     });
   }
 
-  async updateMemberRole(memberId: string, data: ChangeMemberRoleInput) {
+  // Cria User (login COMPANY ativo) + CompanyMember atomicamente. `password` já vem em hash.
+  async createMember(companyId: string, data: CreateMemberInput & { password: string }) {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { email: data.email, password: data.password, role: "COMPANY" },
+        select: { id: true },
+      });
+
+      return tx.companyMember.create({
+        data: {
+          companyId,
+          userId: user.id,
+          role: data.role,
+          name: data.name,
+          cpf: data.cpf,
+          phone: data.phone,
+        },
+        select: memberSelect,
+      });
+    });
+  }
+
+  async updateMember(memberId: string, data: UpdateMemberInput) {
     return this.prisma.companyMember.update({
       where: { id: memberId },
       data,
-      select: { id: true, name: true, role: true },
+      select: memberSelect,
+    });
+  }
+
+  // Soft delete: desativa o login; o perfil do membro é preservado.
+  async deactivateMember(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false },
+    });
+  }
+
+  // Atualiza o próprio perfil: nome/telefone (CompanyMember) e e-mail (User) numa transação.
+  async updateMyProfile(memberId: string, userId: string, data: UpdateMyProfileInput) {
+    const { email, ...profile } = data;
+    return this.prisma.$transaction(async (tx) => {
+      if (email) await tx.user.update({ where: { id: userId }, data: { email } });
+      return tx.companyMember.update({ where: { id: memberId }, data: profile, select: memberSelect });
     });
   }
 
@@ -111,6 +154,16 @@ export class CompanyRepository {
       where: { id: userId },
       data: { totpSecret: null, totpEnabled: false },
     });
+  }
+
+  // ─── Credenciais (senha do membro autenticado) ─────────────────────────────
+
+  async getUserPassword(userId: string) {
+    return this.prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { password: passwordHash } });
   }
 
   // ─── Vagas ──────────────────────────────────────────────────────────────────

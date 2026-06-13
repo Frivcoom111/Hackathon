@@ -91,6 +91,5 @@ const requireRole = (role: Role, options: { mfa: boolean }) => {
   };
 };
 
-export const requireAdmin = requireRole(Role.ADMIN, { mfa: true });
 export const requireCompany = requireRole(Role.COMPANY, { mfa: true });
 export const requireStudent = requireRole(Role.STUDENT, { mfa: false });

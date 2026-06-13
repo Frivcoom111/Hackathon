@@ -1,17 +1,19 @@
 import { bearerAuth, errorResponse, paginatedResponse, successResponse } from "../../docs/helpers";
 import { registry } from "../../docs/registry";
 import { z } from "../../lib/zod";
-import { paginationQuerySchema } from "../../shared/schemas/common.schema";
+import { changePasswordSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import {
   changeApplicationStatusSchema,
   changeJobStatusSchema,
-  changeMemberRoleSchema,
   createJobSchema,
+  createMemberSchema,
   jobApplicationParamsSchema,
   jobIdParamsSchema,
   memberIdParamsSchema,
   updateCompanyProfileSchema,
   updateJobSchema,
+  updateMemberSchema,
+  updateMyProfileSchema,
 } from "./company.schema";
 
 const TAG = "Company";
@@ -43,7 +45,13 @@ const memberSchema = z
     id: z.uuid(),
     name: z.string(),
     cpf: z.string(),
+    phone: z.string().nullable(),
     role: z.enum(["ADMIN", "RECRUITER"]),
+    user: z.object({
+      email: z.string(),
+      isActive: z.boolean(),
+      totpEnabled: z.boolean(),
+    }),
   })
   .openapi({ title: "CompanyMemberItem" });
 
@@ -104,7 +112,43 @@ registry.registerPath({
   },
 });
 
-// ─── Membros ─────────────────────────────────────────────────────────────────────
+// ─── Dados próprios do membro ──────────────────────────────────────────────────────
+registry.registerPath({
+  method: "patch",
+  path: "/company/me",
+  tags: [TAG],
+  security: bearerAuth,
+  summary: "Atualiza os próprios dados (name, phone e/ou email).",
+  request: { body: jsonBody(updateMyProfileSchema) },
+  responses: {
+    200: {
+      description: "Dados atualizados.",
+      content: { "application/json": { schema: successResponse(memberSchema) } },
+    },
+    400: error("Dados inválidos."),
+    401: unauthorized,
+    409: error("E-mail já está em uso."),
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/company/me/password",
+  tags: [TAG],
+  security: bearerAuth,
+  summary: "Altera a própria senha (exige a senha atual).",
+  request: { body: jsonBody(changePasswordSchema) },
+  responses: {
+    200: {
+      description: "Senha alterada.",
+      content: { "application/json": { schema: successResponse(z.null()) } },
+    },
+    400: error("Dados inválidos."),
+    401: error("Senha atual incorreta."),
+  },
+});
+
+// ─── Membros (somente ADMIN) ───────────────────────────────────────────────────────
 registry.registerPath({
   method: "get",
   path: "/company/members",
@@ -122,17 +166,52 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: "patch",
-  path: "/company/members/{memberId}/role",
+  method: "post",
+  path: "/company/members",
   tags: [TAG],
   security: bearerAuth,
-  summary: "Altera o cargo de um membro (somente ADMIN, não pode alterar a si mesmo).",
-  request: { params: memberIdParamsSchema, body: jsonBody(changeMemberRoleSchema) },
+  summary: "Cria um membro da empresa (somente ADMIN).",
+  request: { body: jsonBody(createMemberSchema) },
   responses: {
-    200: {
-      description: "Cargo atualizado.",
+    201: {
+      description: "Membro criado.",
       content: { "application/json": { schema: successResponse(memberSchema) } },
     },
+    400: error("Dados inválidos."),
+    401: unauthorized,
+    403: forbidden,
+    409: error("E-mail ou CPF já cadastrado."),
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/company/members/{memberId}",
+  tags: [TAG],
+  security: bearerAuth,
+  summary: "Atualiza name, phone e/ou role de um membro (somente ADMIN, não pode alterar a si mesmo).",
+  request: { params: memberIdParamsSchema, body: jsonBody(updateMemberSchema) },
+  responses: {
+    200: {
+      description: "Membro atualizado.",
+      content: { "application/json": { schema: successResponse(memberSchema) } },
+    },
+    400: error("Você não pode alterar seus próprios dados de acesso."),
+    401: unauthorized,
+    403: forbidden,
+    404: error("Membro não encontrado."),
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/company/members/{memberId}",
+  tags: [TAG],
+  security: bearerAuth,
+  summary: "Desativa um membro — soft delete (somente ADMIN, não pode desativar a si mesmo).",
+  request: { params: memberIdParamsSchema },
+  responses: {
+    204: { description: "Membro desativado." },
     400: error("Você não pode alterar seus próprios dados de acesso."),
     401: unauthorized,
     403: forbidden,
