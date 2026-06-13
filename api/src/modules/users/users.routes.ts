@@ -14,15 +14,15 @@ const controller = new UserController(service);
 router.use(authMiddleware, requireAdmin);
 
 // Listagem paginada: aceita ?page= e ?limit= na query string
-router.get("/", controller.findAll);
+router.get("/", controller.findAll.bind(controller));
 
-router.get("/:id", controller.findById);
-router.post("/", controller.create);
-router.patch("/:id", controller.update);
-router.delete("/:id", controller.delete);
+router.get("/:id", controller.findById.bind(controller));
+router.post("/", controller.create.bind(controller));
+router.patch("/:id", controller.update.bind(controller));
+router.delete("/:id", controller.delete.bind(controller));
 
-router.patch("/:id/password", controller.changePassword);
-router.patch("/:id/role", controller.changeRole);
-router.patch("/:id/status", controller.updateStatus);
+router.patch("/:id/password", controller.changePassword.bind(controller));
+router.patch("/:id/role", controller.changeRole.bind(controller));
+router.patch("/:id/status", controller.updateStatus.bind(controller));
 
 export default router;

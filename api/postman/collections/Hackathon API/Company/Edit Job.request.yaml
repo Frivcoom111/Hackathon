@@ -1,0 +1,20 @@
+$kind: http-request
+description: Atualiza campos de uma vaga. Ownership validado.
+url: "{{BASE_URL}}/company/jobs/:jobId"
+method: PATCH
+headers:
+  Content-Type: application/json
+pathVariables:
+  jobId: ""
+body:
+  type: json
+  content: |-
+    {
+      "salary": 2000.00,
+      "modality": "REMOTE"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_COMPANY}}"
+order: 9000

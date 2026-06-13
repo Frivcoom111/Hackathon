@@ -1,0 +1,11 @@
+$kind: http-request
+description: Detalha uma vaga da empresa. Ownership validado (a vaga deve pertencer à empresa do membro).
+url: "{{BASE_URL}}/company/jobs/:jobId"
+method: GET
+pathVariables:
+  jobId: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_COMPANY}}"
+order: 8000

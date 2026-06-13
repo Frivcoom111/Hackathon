@@ -15,11 +15,11 @@ const controller = new StudentController(service);
 // Todas as rotas exigem estudante autenticado.
 router.use(authMiddleware, requireStudent);
 
-router.get("/profile", controller.getProfile);
-router.patch("/profile", controller.updateProfile);
-router.put("/address", controller.updateAddress);
-router.patch("/resume", uploadResume.single("resume"), controller.updateResume);
-router.get("/applications", controller.listApplications);
-router.delete("/applications/:id", controller.cancelApplication);
+router.get("/profile", controller.getProfile.bind(controller));
+router.patch("/profile", controller.updateProfile.bind(controller));
+router.put("/address", controller.updateAddress.bind(controller));
+router.patch("/resume", uploadResume.single("resume"), controller.updateResume.bind(controller));
+router.get("/applications", controller.listApplications.bind(controller));
+router.delete("/applications/:id", controller.cancelApplication.bind(controller));
 
 export default router;

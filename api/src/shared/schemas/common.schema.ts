@@ -28,11 +28,9 @@ export const passwordSchema = z
     "A senha deve conter letras maiúsculas, minúsculas, números e um caractere especial (@$!%*?&#).",
   );
 
-// ─── CPF Schema ──────────────────────────────────────────────────────────────
+// ─── CPF / CNPJ / Telefone / Endereço ────────────────────────────────────────────────
 
 export const cpfSchema = z.string().regex(/^\d{11}$/, "CPF deve conter 11 dígitos numéricos.");
-
-// ─── CNPJ / Telefone / Endereço ────────────────────────────────────────────────
 
 export const cnpjSchema = z.string().regex(/^\d{14}$/, "CNPJ deve conter 14 dígitos numéricos.");
 

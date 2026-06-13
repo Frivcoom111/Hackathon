@@ -2,6 +2,12 @@
 workspace:
   id: 203324fd-891a-4463-8f05-429b41a0e924
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\Hackathon API: 383fed71-514f-44cb-bfe8-ae2b79edbe61
+
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
 #localResources:

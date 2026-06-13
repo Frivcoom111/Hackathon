@@ -11,12 +11,14 @@ import {
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import { generateToken } from "../../shared/utils/generateToken";
 import type { AuthRepository } from "./auth.repository";
-import type {
-  CompanyResponse,
-  LoginInput,
-  RegisterCompanyInput,
-  RegisterStudentInput,
-  StudentResponse,
+import {
+  type CompanyResponse,
+  companyResponseSchema,
+  type LoginInput,
+  type RegisterCompanyInput,
+  type RegisterStudentInput,
+  type StudentResponse,
+  studentResponseSchema,
 } from "./auth.schema";
 
 const TOTP_ISSUER = "Portal UniALFA";
@@ -34,7 +36,9 @@ export class AuthService {
     const password = await generateHash(data.password);
 
     try {
-      return await this.authRepository.createStudent({ ...data, password });
+      const student = await this.authRepository.createStudent({ ...data, password });
+
+      return studentResponseSchema.parse(student);
     } catch (error) {
       const code = (error as { code?: string }).code;
 
@@ -54,7 +58,9 @@ export class AuthService {
     const password = await generateHash(data.password);
 
     try {
-      return await this.authRepository.createCompany({ ...data, password });
+      const company = await this.authRepository.createCompany({ ...data, password });
+
+      return companyResponseSchema.parse(company);
     } catch (error) {
       const code = (error as { code?: string }).code;
 
