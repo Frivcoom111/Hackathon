@@ -1,3 +1,113 @@
+<?php
+// Todo o fluxo de cadastro é feito aqui no PHP via cURL — sem JS chamando a API
+
+$erro     = '';
+$abaAtiva = 'aluno'; // mantém a aba ativa após erro de validação
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $tipo     = $_POST['tipo'] ?? 'aluno';
+    $abaAtiva = $tipo;
+
+    $senha     = $_POST['senha']          ?? '';
+    $confirmar = $_POST['senha_confirmar'] ?? '';
+
+    if ($senha !== $confirmar) {
+        $erro = 'As senhas não coincidem.';
+
+    // ── Cadastro de aluno ─────────────────────────────────────────────────────
+    } elseif ($tipo === 'aluno') {
+        // Monta os campos do formulário para enviar como multipart/form-data
+        $campos = [
+            'email'     => trim($_POST['email']    ?? ''),
+            'password'  => $senha,
+            'name'      => trim($_POST['nome']     ?? ''),
+            'ra'        => trim($_POST['ra']        ?? ''),
+            'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''), // remove pontuação
+            'phone'     => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
+            'courseId'  => trim($_POST['courseId'] ?? ''),
+            'startedAt' => $_POST['startedAt']     ?? '',
+        ];
+
+        // Anexa o currículo se foi enviado
+        if (!empty($_FILES['curriculo']['tmp_name'])) {
+            $campos['resume'] = new CURLFile(
+                $_FILES['curriculo']['tmp_name'],
+                $_FILES['curriculo']['type'] ?: 'application/octet-stream',
+                $_FILES['curriculo']['name']
+            );
+        }
+
+        $ch = curl_init('http://localhost:3000/auth/register/student');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $campos); // cURL detecta CURLFile e usa multipart
+        $resp = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($resp, true);
+
+        if ($data['success'] ?? false) {
+            $_SESSION['msg_sucesso'] = 'Cadastro realizado! Faça login para continuar.';
+            header('Location: ' . BASE . 'index.php?page=login');
+            exit;
+        } else {
+            $erro = $data['message'] ?? 'Erro ao cadastrar. Tente novamente.';
+        }
+
+    // ── Cadastro de empresa ───────────────────────────────────────────────────
+    } elseif ($tipo === 'empresa') {
+        // Monta o payload JSON com os dados da empresa, endereço e responsável
+        $payload = [
+            'email'       => trim($_POST['email']     ?? ''),
+            'password'    => $senha,
+            'name'        => trim($_POST['nome']      ?? ''),
+            'cnpj'        => preg_replace('/\D/', '', $_POST['cnpj']  ?? ''),
+            'description' => trim($_POST['descricao'] ?? ''),
+            'phone'       => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
+            'address' => [
+                'street'     => trim($_POST['rua']         ?? ''),
+                'number'     => trim($_POST['numero']      ?? ''),
+                'complement' => trim($_POST['complemento'] ?? ''),
+                'district'   => trim($_POST['bairro']      ?? ''),
+                'city'       => trim($_POST['cidade']      ?? ''),
+                'state'      => trim($_POST['estado']      ?? ''),
+                'zipCode'    => preg_replace('/\D/', '', $_POST['cep'] ?? ''),
+            ],
+            'member' => [
+                'name'  => trim($_POST['resp_nome']  ?? ''),
+                'cpf'   => preg_replace('/\D/', '', $_POST['resp_cpf']   ?? ''),
+                'phone' => preg_replace('/\D/', '', $_POST['resp_phone'] ?? ''),
+            ],
+        ];
+
+        $ch = curl_init('http://localhost:3000/auth/register/company');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        $resp = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($resp, true);
+
+        if ($data['success'] ?? false) {
+            $_SESSION['msg_sucesso'] = 'Empresa cadastrada! Aguarde a aprovação pelo administrador.';
+            header('Location: ' . BASE . 'index.php?page=login');
+            exit;
+        } else {
+            $erro = $data['message'] ?? 'Erro ao cadastrar empresa. Tente novamente.';
+        }
+    }
+}
+
+// Busca os cursos disponíveis para o select do formulário de aluno
+$ch = curl_init('http://localhost:3000/courses');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$resp   = curl_exec($ch);
+curl_close($ch);
+$cursos = json_decode($resp, true)['courses'] ?? [];
+?>
+
 <main class="cadastro-page">
   <div class="cadastro-container">
 
@@ -15,14 +125,23 @@
       <h2 class="cadastro-titulo">Crie sua conta</h2>
       <p class="cadastro-sub">Escolha o tipo de conta para continuar</p>
 
+      <!-- Abas aluno / empresa — JS só para trocar a exibição, sem chamada à API -->
       <div class="cadastro-tabs">
-        <button class="cadastro-tab active" onclick="trocarAba('aluno', this)">Aluno</button>
-        <button class="cadastro-tab" onclick="trocarAba('empresa', this)">Empresa</button>
+        <button class="cadastro-tab <?= $abaAtiva === 'aluno' ? 'active' : '' ?>"
+                onclick="trocarAba('aluno', this)">Aluno</button>
+        <button class="cadastro-tab <?= $abaAtiva === 'empresa' ? 'active' : '' ?>"
+                onclick="trocarAba('empresa', this)">Empresa</button>
       </div>
 
-      <!-- FORMULÁRIO ALUNO -->
-      <!-- O submit é interceptado pelo JS abaixo — não usa action/method do HTML -->
-      <form id="form-aluno" class="cadastro-form">
+      <?php if ($erro): ?>
+        <div class="alert alert-danger mt-3 py-2"><?= htmlspecialchars($erro) ?></div>
+      <?php endif; ?>
+
+      <!-- ── FORMULÁRIO ALUNO ── -->
+      <form id="form-aluno" class="cadastro-form <?= $abaAtiva === 'empresa' ? 'd-none' : '' ?>"
+            method="POST" action="<?= BASE ?>index.php?page=cadastro"
+            enctype="multipart/form-data">
+        <input type="hidden" name="tipo" value="aluno">
         <div class="row g-3">
 
           <div class="col-12">
@@ -52,17 +171,29 @@
 
           <div class="col-md-6">
             <label class="form-label">Curso</label>
-            <input type="text" name="curso" class="form-control" placeholder="Seu curso" required>
+            <select name="courseId" class="form-select" required>
+              <option value="">Selecione o curso</option>
+              <?php foreach ($cursos as $curso): ?>
+                <option value="<?= htmlspecialchars($curso['id']) ?>">
+                  <?= htmlspecialchars($curso['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Data de início do curso</label>
+            <input type="date" name="startedAt" class="form-control" required>
           </div>
 
           <div class="col-12">
             <label class="form-label">Currículo <span class="text-muted small">(opcional)</span></label>
-            <input type="file" name="curriculo" class="form-control" accept=".pdf">
+            <input type="file" name="curriculo" class="form-control" accept=".pdf,.jpg,.png">
           </div>
 
           <div class="col-12">
             <label class="form-label">Senha</label>
-            <input type="password" name="senha" class="form-control" placeholder="Mínimo 6 caracteres" required>
+            <input type="password" name="senha" class="form-control" placeholder="Mínimo 8 caracteres" required>
           </div>
 
           <div class="col-12">
@@ -70,21 +201,17 @@
             <input type="password" name="senha_confirmar" class="form-control" placeholder="Repita a senha" required>
           </div>
 
-          <!-- Mensagem de erro do cadastro de aluno -->
-          <div id="erro-aluno" class="col-12" style="display:none;">
-            <div class="alert alert-danger py-2 mb-0" id="erro-aluno-msg"></div>
-          </div>
-
           <div class="col-12">
-            <button type="submit" class="btn btn-primary w-100" id="btn-aluno">Cadastrar como Aluno</button>
+            <button type="submit" class="btn btn-primary w-100">Cadastrar como Aluno</button>
           </div>
 
         </div>
       </form>
 
-      <!-- FORMULÁRIO EMPRESA -->
-      <!-- O submit é interceptado pelo JS abaixo — não usa action/method do HTML -->
-      <form id="form-empresa" class="cadastro-form" style="display:none;">
+      <!-- ── FORMULÁRIO EMPRESA ── -->
+      <form id="form-empresa" class="cadastro-form <?= $abaAtiva === 'empresa' ? '' : 'd-none' ?>"
+            method="POST" action="<?= BASE ?>index.php?page=cadastro">
+        <input type="hidden" name="tipo" value="empresa">
         <div class="row g-3">
 
           <div class="col-12">
@@ -109,12 +236,66 @@
 
           <div class="col-12">
             <label class="form-label">Descrição <span class="text-muted small">(opcional)</span></label>
-            <textarea name="descricao" class="form-control" rows="3" placeholder="Fale sobre sua empresa"></textarea>
+            <textarea name="descricao" class="form-control" rows="2" placeholder="Fale sobre sua empresa"></textarea>
+          </div>
+
+          <div class="col-12"><hr class="my-1"><p class="fw-semibold mb-0 small text-secondary">Endereço</p></div>
+
+          <div class="col-md-8">
+            <label class="form-label">Rua</label>
+            <input type="text" name="rua" class="form-control" placeholder="Av. Paulista" required>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Número</label>
+            <input type="text" name="numero" class="form-control" placeholder="1000" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Complemento <span class="text-muted small">(opcional)</span></label>
+            <input type="text" name="complemento" class="form-control" placeholder="Sala 12">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Bairro</label>
+            <input type="text" name="bairro" class="form-control" placeholder="Centro" required>
+          </div>
+
+          <div class="col-md-5">
+            <label class="form-label">Cidade</label>
+            <input type="text" name="cidade" class="form-control" placeholder="Umuarama" required>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <input type="text" name="estado" class="form-control" placeholder="PR" maxlength="2" required>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">CEP</label>
+            <input type="text" name="cep" class="form-control" placeholder="00000-000" maxlength="9" required>
+          </div>
+
+          <div class="col-12"><hr class="my-1"><p class="fw-semibold mb-0 small text-secondary">Responsável</p></div>
+
+          <div class="col-12">
+            <label class="form-label">Nome do responsável</label>
+            <input type="text" name="resp_nome" class="form-control" placeholder="Nome completo" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">CPF do responsável</label>
+            <input type="text" name="resp_cpf" class="form-control" placeholder="000.000.000-00" maxlength="14" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Telefone do responsável</label>
+            <input type="text" name="resp_phone" class="form-control" placeholder="(44) 99999-9999">
           </div>
 
           <div class="col-12">
             <label class="form-label">Senha</label>
-            <input type="password" name="senha" class="form-control" placeholder="Mínimo 6 caracteres" required>
+            <input type="password" name="senha" class="form-control" placeholder="Mínimo 8 caracteres" required>
           </div>
 
           <div class="col-12">
@@ -122,13 +303,8 @@
             <input type="password" name="senha_confirmar" class="form-control" placeholder="Repita a senha" required>
           </div>
 
-          <!-- Mensagem de erro do cadastro de empresa -->
-          <div id="erro-empresa" class="col-12" style="display:none;">
-            <div class="alert alert-danger py-2 mb-0" id="erro-empresa-msg"></div>
-          </div>
-
           <div class="col-12">
-            <button type="submit" class="btn btn-primary w-100" id="btn-empresa">Cadastrar como Empresa</button>
+            <button type="submit" class="btn btn-primary w-100">Cadastrar como Empresa</button>
           </div>
 
         </div>
@@ -143,10 +319,11 @@
 </main>
 
 <script>
+// Alterna entre os formulários de aluno e empresa — só troca exibição, sem API
 function trocarAba(tipo, btn) {
   document.querySelectorAll('.cadastro-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('form-aluno').style.display   = tipo === 'aluno'   ? 'block' : 'none';
-  document.getElementById('form-empresa').style.display = tipo === 'empresa' ? 'block' : 'none';
+  document.getElementById('form-aluno').classList.toggle('d-none',   tipo !== 'aluno');
+  document.getElementById('form-empresa').classList.toggle('d-none', tipo !== 'empresa');
 }
 </script>
