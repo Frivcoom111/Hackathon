@@ -11,7 +11,7 @@ $rotas = [
     'login'     => 'pages/login.php',
     'vagas'     => 'pages/vagas.php',
     'empresas'  => 'pages/empresas.php',
-    'alunos'    => 'pages/alunos.php',
+    // 'alunos' removido — gerenciado pelo back office Java, não pelo portal web
     'perfil'    => 'pages/perfil.php',
 ];
 
@@ -22,7 +22,7 @@ $titulos = [
     'login'     => 'Login',
     'vagas'     => 'Vagas',
     'empresas'  => 'Empresas',
-    'alunos'    => 'Alunos',
+    // 'alunos' removido — mesma razão acima
     'perfil'    => 'Meu Perfil',
     '404'       => 'Página não encontrada',
 ];
