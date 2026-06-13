@@ -3,24 +3,24 @@
 
     <div class="footer-inner">
 
-      <!-- Logo -->
-      <a href="/index.php" class="footer-brand">
-        <img src="assets/images/site/logo.png" alt="Hackathon" height="28"
+      <!-- Logo — usa BASE para montar o caminho certo independente de onde o PHP está rodando -->
+      <a href="<?= BASE ?>index.php" class="footer-brand">
+        <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal UniALFA" height="28"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
-        <span style="display:none;">Hackathon</span>
+        <span style="display:none;">Portal UniALFA</span>
       </a>
 
-      <!-- Links -->
+      <!-- Links de navegação usando o roteador central (index.php?page=...) -->
       <ul class="footer-links">
-        <li><a href="/index.php">Início</a></li>
-        <li><a href="/pages/vagas.php">Vagas</a></li>
-        <li><a href="/pages/empresas.php">Empresas</a></li>
-        <li><a href="/pages/alunos.php">Alunos</a></li>
+        <li><a href="<?= BASE ?>index.php?page=home">Início</a></li>
+        <li><a href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
+        <li><a href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
+        <li><a href="<?= BASE ?>index.php?page=alunos">Alunos</a></li>
       </ul>
 
-      <!-- Copyright -->
+      <!-- Ano gerado automaticamente pelo PHP -->
       <p class="footer-copy">
-        &copy; <?= date('Y') ?> Hackathon. Todos os direitos reservados.
+        &copy; <?= date('Y') ?> Portal de Estágios UniALFA. Todos os direitos reservados.
       </p>
 
     </div>
@@ -28,9 +28,8 @@
   </div>
 </footer>
 
-<!-- Bootstrap JS (Local) -->
-<script src="vendor/booatstrap/js/bootstrap.bundle.min.js"></script>
-<!-- JS do projeto -->
-<script src="js/main.js"></script>
+<!-- Bootstrap JS (local) — carrega o JS do Bootstrap para modais, menu hamburguer etc. -->
+<script src="<?= BASE ?>assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
