@@ -112,12 +112,15 @@ function voltarLogin() {
   document.getElementById('tela-login').style.display = 'block';
 }
 
+// Guarda o token temporário do login (necessário para enviar no TOTP)
+let tokenTemporario = null;
+
 // Submit login
 document.getElementById('form-login').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  const btn  = document.getElementById('btn-login');
-  const erro = document.getElementById('login-erro');
+  const btn     = document.getElementById('btn-login');
+  const erro    = document.getElementById('login-erro');
   const erroMsg = document.getElementById('login-erro-msg');
 
   btn.disabled = true;
@@ -129,7 +132,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: document.getElementById('login-email').value,
+        email:    document.getElementById('login-email').value,
         password: document.getElementById('login-senha').value,
       })
     });
@@ -137,18 +140,26 @@ document.getElementById('form-login').addEventListener('submit', async function(
     const data = await res.json();
 
     if (!res.ok) {
+      // A API retorna erros no formato { message: "..." }
       throw new Error(data.message || 'Credenciais inválidas.');
     }
 
-    // Se for empresa, pede token
-    if (data.role === 'COMPANY') {
+    // A API retorna os dados dentro de data.data (ex: data.data.token, data.data.user.role)
+    const usuario = data.data.user;
+    const token   = data.data.token;
+
+    // COMPANY e ADMIN precisam confirmar o código TOTP antes de entrar
+    if (usuario.role === 'COMPANY' || usuario.role === 'ADMIN') {
+      // Salva o token temporário para usar na verificação do TOTP
+      tokenTemporario = token;
       document.getElementById('tela-login').style.display = 'none';
       document.getElementById('tela-token').style.display = 'block';
       return;
     }
 
-    // Se for aluno ou admin, redireciona
-    localStorage.setItem('token', data.token);
+    // STUDENT entra direto sem TOTP
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', usuario.role);
     window.location.href = '<?= BASE ?>index.php?page=home';
 
   } catch (err) {
@@ -160,7 +171,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
   }
 });
 
-// Submit token
+// Submit TOTP — confirma o código de 6 dígitos para ADMIN e COMPANY
 document.getElementById('form-token').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -169,11 +180,15 @@ document.getElementById('form-token').addEventListener('submit', async function(
   erro.style.display = 'none';
 
   try {
-    const res = await fetch('http://localhost:3000/auth/verify-token', {
+    // Envia o token temporário no header e o código TOTP no body
+    const res = await fetch('http://localhost:3000/auth/totp/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${tokenTemporario}`,
+      },
       body: JSON.stringify({
-        token: document.getElementById('token-codigo').value,
+        code: document.getElementById('token-codigo').value,
       })
     });
 
@@ -183,7 +198,8 @@ document.getElementById('form-token').addEventListener('submit', async function(
       throw new Error(data.message || 'Código inválido.');
     }
 
-    localStorage.setItem('token', data.token);
+    // Substitui o token temporário pelo token final (com TOTP verificado)
+    localStorage.setItem('token', data.data.token);
     window.location.href = '<?= BASE ?>index.php?page=home';
 
   } catch (err) {

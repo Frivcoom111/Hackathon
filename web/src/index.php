@@ -1,4 +1,7 @@
 <?php
+// Inicia a sessão para guardar o token e dados do usuário logado no servidor
+session_start();
+
 // BASE é o prefixo usado nos links e assets (ex: imagens, CSS, JS)
 // Deixamos vazio porque o index.php fica na raiz do projeto
 define('BASE', '');
