@@ -20,7 +20,8 @@
         <h2 class="vagas-titulo">Vagas em destaque</h2>
         <p class="vagas-sub">Oportunidades selecionadas para você</p>
       </div>
-      <a href="/pages/vagas.php" class="btn btn-outline-primary btn-sm">Ver todas</a>
+      <!-- Redireciona para a página de vagas via roteador central -->
+      <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-outline-primary btn-sm">Ver todas</a>
     </div>
 
     <div class="row g-4">

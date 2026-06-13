@@ -1,18 +1,20 @@
 <main class="cadastro-page">
   <div class="cadastro-container">
 
-    <!-- Lado esquerdo — imagem -->
     <div class="cadastro-imagem">
       <img src="<?= BASE ?>assets/images/site/cadastro.png" alt="Cadastro">
     </div>
 
-    <!-- Lado direito — formulário -->
     <div class="cadastro-form-box">
+
+      <div class="login-tabs">
+        <a href="<?= BASE ?>index.php?page=login" class="login-tab">Entrar</a>
+        <a href="<?= BASE ?>index.php?page=cadastro" class="login-tab active">Cadastrar</a>
+      </div>
 
       <h2 class="cadastro-titulo">Crie sua conta</h2>
       <p class="cadastro-sub">Escolha o tipo de conta para continuar</p>
 
-      <!-- Abas -->
       <div class="cadastro-tabs">
         <button class="cadastro-tab active" onclick="trocarAba('aluno', this)">Aluno</button>
         <button class="cadastro-tab" onclick="trocarAba('empresa', this)">Empresa</button>
@@ -48,13 +50,8 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Período</label>
-            <select name="period" class="form-select" required>
-              <option value="">Selecione</option>
-              <?php for ($i = 1; $i <= 10; $i++): ?>
-                <option value="<?= $i ?>"><?= $i ?>º período</option>
-              <?php endfor; ?>
-            </select>
+            <label class="form-label">Curso</label>
+            <input type="text" name="curso" class="form-control" placeholder="Seu curso" required>
           </div>
 
           <div class="col-12">
