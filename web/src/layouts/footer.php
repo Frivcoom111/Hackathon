@@ -10,12 +10,11 @@
         <span style="display:none;">Portal UniALFA</span>
       </a>
 
-      <!-- Links de navegação usando o roteador central (index.php?page=...) -->
+      <!-- Links de navegação — espelha o menu do header -->
       <ul class="footer-links">
         <li><a href="<?= BASE ?>index.php?page=home">Início</a></li>
         <li><a href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
         <li><a href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
-        <li><a href="<?= BASE ?>index.php?page=alunos">Alunos</a></li>
       </ul>
 
       <!-- Ano gerado automaticamente pelo PHP -->

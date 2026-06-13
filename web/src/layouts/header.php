@@ -39,12 +39,11 @@
     <!-- Conteúdo colapsável -->
     <div class="collapse navbar-collapse" id="navbarMenu">
 
-      <!-- Links centralizados -->
+      <!-- Links centralizados — "Alunos" foi removido pois é exclusivo do admin (back office Java) -->
       <ul class="navbar-nav mx-auto align-items-center gap-lg-1 text-center">
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=home">Início</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=alunos">Alunos</a></li>
       </ul>
 
       <?php if (!$logado): ?>
