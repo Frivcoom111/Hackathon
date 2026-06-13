@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
 import { Role } from "../../generated/prisma/enums";
+import { prisma } from "../../lib/prisma";
 import { ForbiddenError, UnauthorizedError } from "../errors/AppError";
 import type { JwtPayload } from "../utils/generateToken";
 
@@ -16,6 +17,17 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
     const token = authorization.split(" ")[1] as string;
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+
+    // Empresa não aprovada (ou bloqueada) fica com isActive=false e não acessa rotas protegidas,
+    // mesmo com token válido. A ativação/bloqueio é feita pelo app Java ao mudar o status da empresa.
+    const dbUser = await prisma.user.findUnique({
+      where: { id: decoded.sub },
+      select: { isActive: true },
+    });
+
+    if (!dbUser?.isActive) {
+      throw new ForbiddenError("Conta inativa. Aguarde a aprovação da empresa.");
+    }
 
     req.user = {
       id: decoded.sub,

@@ -14,7 +14,6 @@ export type UserWithPassword = UserResponse & { password: string };
 
 const userSelect = {
   id: true,
-  name: true,
   email: true,
   role: true,
   isActive: true,
@@ -23,7 +22,6 @@ const userSelect = {
 
 const userWithPasswordSelect = {
   id: true,
-  name: true,
   email: true,
   password: true,
   role: true,

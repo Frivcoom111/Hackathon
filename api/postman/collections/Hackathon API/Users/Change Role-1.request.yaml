@@ -1,12 +1,10 @@
 $kind: http-request
 name: Change Role
 method: PATCH
-url: "{{baseUrl}}/users/:id/role"
+url: "{{BASE_URL}}/users/:id/role"
 order: 7000
 pathVariables:
-  - key: id
-    value: ""
-    description: User UUID
+  id: 5828a328-d481-43da-8b9a-6c116f8e982a
 headers:
   Content-Type: application/json
 body:
