@@ -51,52 +51,52 @@
 
 ---
 
-## Gestão de Alunos
+## Gestão de Alunos ✅
 
-- [ ] Cadastrar aluno
-- [ ] Editar aluno
-- [ ] Consultar alunos (listagem com busca por nome/RA)
-- [ ] Controlar aptidão para estágio (`isEligible`)
-- [ ] Importar alunos via arquivo `.txt`
-- [ ] `StudentDAO.java` — CRUD completo
-- [ ] `StudentService.java` — regras de negócio
-- [ ] `StudentListPanel.java` — tabela com busca
-- [ ] `StudentFormDialog.java` — formulário cadastro/edição
-- [ ] `StudentImportDialog.java` — importar `.txt`
-- [ ] `FileImportUtil.java` — parser do arquivo
-
----
-
-## Gestão de Vagas (consulta)
-
-- [ ] Consultar vagas cadastradas (vindas do sistema PHP/Node)
-- [ ] Filtrar por status, empresa, curso
-- [ ] Visualizar detalhes da vaga
-- [ ] `JobDAO.java` — listar + filtros
-- [ ] `JobListPanel.java` — tabela com filtros
-- [ ] `JobDetailDialog.java` — visualizar detalhes
+- [x] Cadastrar aluno
+- [x] Editar aluno
+- [x] Consultar alunos (listagem com busca por nome/RA)
+- [x] Controlar aptidão para estágio (`isEligible`)
+- [x] Importar alunos via arquivo `.txt`
+- [x] `StudentDAO.java` — CRUD completo (transação User+Student)
+- [x] `StudentService.java` — regras de negócio
+- [x] `StudentListPanel.java` — tabela com busca e badge de aptidão
+- [x] `StudentFormDialog.java` — formulário cadastro/edição
+- [x] `StudentImportDialog.java` — importar `.txt` com preview
+- [x] `FileImportUtil.java` — parser do arquivo
 
 ---
 
-## Gestão de Candidaturas (consulta)
+## Gestão de Vagas (consulta) ✅
 
-- [ ] Consultar candidaturas realizadas pelos alunos
-- [ ] Visualizar status de cada candidatura
-- [ ] `ApplicationDAO.java` — listar com JOINs em Job e Student
-- [ ] `ApplicationListPanel.java` — tabela com filtros por status
-- [ ] `ApplicationDetailDialog.java` — visualizar dados da candidatura
+- [x] Consultar vagas cadastradas (vindas do sistema PHP/Node)
+- [x] Filtrar por status (ACTIVE, PAUSED, CLOSED)
+- [x] Visualizar detalhes da vaga
+- [x] `JobDAO.java` — findAll implementado
+- [x] `JobListPanel.java` — tabela com filtro e badge colorido por status
+- [x] `JobDetailDialog.java` — visualizar detalhes
 
 ---
 
-## Relatórios (.txt) — Obrigatórios
+## Gestão de Candidaturas (consulta) ✅
 
-- [ ] Relatório de empresas cadastradas
-- [ ] Relatório de alunos cadastrados
-- [ ] Relatório de vagas disponíveis
-- [ ] Relatório de candidaturas e status
-- [ ] `ReportService.java` — consultas agrupadas
-- [ ] `ReportExporter.java` — escrever arquivos `.txt` formatados
-- [ ] `ReportPanel.java` — tela para escolher e gerar relatório
+- [x] Consultar candidaturas realizadas pelos alunos
+- [x] Visualizar status de cada candidatura
+- [x] `ApplicationDAO.java` — findAll com JOIN em Student e Job
+- [x] `ApplicationListPanel.java` — tabela com filtros por status e badge colorido
+- [x] `ApplicationDetailDialog.java` — visualizar dados da candidatura
+
+---
+
+## Relatórios (.txt) — Obrigatórios ✅
+
+- [x] Relatório de empresas cadastradas
+- [x] Relatório de alunos cadastrados
+- [x] Relatório de vagas disponíveis
+- [x] Relatório de candidaturas e status
+- [x] `ReportService.java` — consultas agrupadas com timestamp
+- [x] `ReportExporter.java` — arquivos `.txt` formatados
+- [x] `ReportPanel.java` — cards coloridos + seleção de pasta + abre Explorer
 
 ---
 
