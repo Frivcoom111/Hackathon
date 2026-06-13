@@ -5,6 +5,8 @@ import com.portal.model.Company;
 import com.portal.model.Job;
 import com.portal.model.Student;
 
+import com.portal.util.ValidationUtil;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,7 +33,7 @@ public class ReportExporter {
             for (Company c : companies) {
                 writer.write("Nome:   " + c.getName());
                 writer.newLine();
-                writer.write("CNPJ:   " + c.getCnpj());
+                writer.write("CNPJ:   " + ValidationUtil.formatCnpj(c.getCnpj()));
                 writer.newLine();
                 writer.write("Status: " + c.getStatus());
                 writer.newLine();
@@ -123,13 +125,11 @@ public class ReportExporter {
             writer.newLine();
 
             for (Application a : applications) {
-                writer.write("ID Candidatura: " + a.getId());
+                writer.write("Aluno:  " + (a.getStudentName() != null ? a.getStudentName() : a.getStudentId()));
                 writer.newLine();
-                writer.write("Aluno ID:       " + a.getStudentId());
+                writer.write("Vaga:   " + (a.getJobTitle() != null ? a.getJobTitle() : a.getJobId()));
                 writer.newLine();
-                writer.write("Vaga ID:        " + a.getJobId());
-                writer.newLine();
-                writer.write("Status:         " + a.getStatus());
+                writer.write("Status: " + a.getStatus());
                 writer.newLine();
                 writer.write("-".repeat(40));
                 writer.newLine();
