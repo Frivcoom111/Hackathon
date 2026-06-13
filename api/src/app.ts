@@ -16,9 +16,10 @@ export const appBuild = async (): Promise<Express> => {
       contentSecurityPolicy: env.NODE_ENV === "development" ? false : undefined,
     }),
   );
+  // Em desenvolvimento aceita qualquer origem para facilitar testes locais
   app.use(
     cors({
-      origin: env.FRONTEND_URL,
+      origin: env.NODE_ENV === "development" ? "*" : env.FRONTEND_URL,
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     }),
   );
