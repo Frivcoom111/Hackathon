@@ -38,6 +38,21 @@ public class UserDAO extends BaseDAO {
         return false;
     }
 
+    public void setActiveByCompany(String companyId, boolean active) {
+        String sql = """
+                UPDATE User SET isActive = ?, updatedAt = NOW(3)
+                WHERE id IN (SELECT userId FROM CompanyMember WHERE companyId = ?)
+                """;
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, active);
+            ps.setString(2, companyId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Erro ao atualizar usuários da empresa: " + e.getMessage());
+        }
+    }
+
     public User findByEmail(String email) {
         String sql = "SELECT id, email, password, role FROM User WHERE email = ? LIMIT 1";
         try (Connection conn = getConnection();
