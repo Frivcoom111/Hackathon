@@ -4,6 +4,9 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { setupDocs } from "./docs/docs";
 import authRoutes from "./modules/auth/auth.routes";
+import companyRoutes from "./modules/company/company.routes";
+import jobsRoutes from "./modules/jobs/jobs.routes";
+import studentRoutes from "./modules/student/student.routes";
 import usersRoutes from "./modules/users/users.routes";
 import { errorHandler } from "./shared/middlewares/errorHandler.middlewares";
 import { globalRateLimiter } from "./shared/middlewares/rateLimit.middleware";
@@ -28,6 +31,9 @@ export const appBuild = async (): Promise<Express> => {
 
   app.use("/auth", authRoutes);
   app.use("/users", usersRoutes);
+  app.use("/company", companyRoutes);
+  app.use("/student", studentRoutes);
+  app.use("/jobs", jobsRoutes);
 
   setupDocs(app);
 
