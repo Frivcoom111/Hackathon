@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FileImportUtil {
 
-    // Formato esperado: nome;ra;cpf;email;curso
+    // Formato: nome;ra;cpf;email;periodo;curso  (curso é ignorado pelo back office)
     public static List<Student> parseStudents(String filePath) throws IOException {
         List<Student> students = new ArrayList<>();
 
@@ -21,7 +21,6 @@ public class FileImportUtil {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
                 line = line.trim();
-
                 if (line.isEmpty() || line.startsWith("#")) continue;
 
                 String[] fields = line.split(";");
@@ -32,9 +31,8 @@ public class FileImportUtil {
 
                 String name  = fields[0].trim();
                 String ra    = fields[1].trim();
-                String cpf   = fields[2].trim();
+                String cpf   = fields[2].replaceAll("[^\\d]", "");
                 String email = fields[3].trim();
-                String curso = fields[4].trim();
 
                 if (!ValidationUtil.isValidRa(ra)) {
                     System.err.println("Linha " + lineNumber + " ignorada (RA inválido): " + ra);
@@ -53,6 +51,7 @@ public class FileImportUtil {
                 student.setName(name);
                 student.setRa(ra);
                 student.setCpf(cpf);
+                student.setEmail(email);
                 student.setEligible(true);
 
                 students.add(student);
