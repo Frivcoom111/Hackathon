@@ -14,7 +14,6 @@ uploads/resumes/*
 .env
 !.env.example
 
-# Guia de convenções local (não versionado)
 CLAUDE.md
 .agents/*
 
