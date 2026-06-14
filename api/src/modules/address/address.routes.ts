@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
-import { authMiddleware, requireCompany, requireCompanyAdmin } from "../../shared/middlewares/auth.middlewares";
+import {
+  authMiddleware,
+  requireCompany,
+  requireCompanyAdmin,
+  requireStudent,
+} from "../../shared/middlewares/auth.middlewares";
 import { AddressController } from "./address.controller";
 import { AddressRepository } from "./address.repository";
 import { AddressService } from "./address.service";
@@ -13,11 +18,11 @@ const controller = new AddressController(service);
 
 router.use(authMiddleware);
 
-// Endereço próprio (Student ou CompanyMember). Um por dono.
-router.post("/me", controller.createSelf.bind(controller));
-router.get("/me", controller.getSelf.bind(controller));
-router.put("/me", controller.updateSelf.bind(controller));
-router.delete("/me", controller.deleteSelf.bind(controller));
+// Endereço do estudante autenticado. Um por estudante.
+router.post("/me", requireStudent, controller.createSelf.bind(controller));
+router.get("/me", requireStudent, controller.getSelf.bind(controller));
+router.put("/me", requireStudent, controller.updateSelf.bind(controller));
+router.delete("/me", requireStudent, controller.deleteSelf.bind(controller));
 
 // Endereço da empresa: qualquer membro lê; só ADMIN escreve.
 router.post("/company", requireCompany, requireCompanyAdmin, controller.createCompany.bind(controller));

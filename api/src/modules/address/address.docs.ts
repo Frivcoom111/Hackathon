@@ -96,5 +96,5 @@ const registerCrud = (target: "me" | "company", summarySuffix: string) => {
   });
 };
 
-registerCrud("me", "do usuário autenticado");
+registerCrud("me", "do estudante autenticado");
 registerCrud("company", "da empresa");

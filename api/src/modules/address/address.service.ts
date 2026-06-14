@@ -3,39 +3,33 @@ import { ConflictError, ForbiddenError, NotFoundError } from "../../shared/error
 import type { AddressRepository } from "./address.repository";
 import type { AddressInput } from "./address.schema";
 
-type SelfOwner =
-  | { kind: "student"; id: string; addressId: string | null }
-  | { kind: "member"; id: string; addressId: string | null };
-
 export class AddressService {
   constructor(private readonly addressRepository: AddressRepository) {}
 
-  // ─── Endereço próprio (Student ou CompanyMember) ────────────────────────────
+  // ─── Endereço próprio (Student) ─────────────────────────────────────────────
 
   async getSelf(userId: string, role: Role) {
-    const owner = await this.resolveSelf(userId, role);
-    if (!owner.addressId) throw new NotFoundError("Endereço não encontrado.");
-    return this.addressRepository.getById(owner.addressId);
+    const student = await this.resolveStudent(userId, role);
+    if (!student.addressId) throw new NotFoundError("Endereço não encontrado.");
+    return this.addressRepository.getById(student.addressId);
   }
 
   async createSelf(userId: string, role: Role, data: AddressInput) {
-    const owner = await this.resolveSelf(userId, role);
-    if (owner.addressId) throw new ConflictError("Já existe um endereço cadastrado.");
-    return owner.kind === "student"
-      ? this.addressRepository.createForStudent(owner.id, data)
-      : this.addressRepository.createForMember(owner.id, data);
+    const student = await this.resolveStudent(userId, role);
+    if (student.addressId) throw new ConflictError("Já existe um endereço cadastrado.");
+    return this.addressRepository.createForStudent(student.id, data);
   }
 
   async updateSelf(userId: string, role: Role, data: AddressInput) {
-    const owner = await this.resolveSelf(userId, role);
-    if (!owner.addressId) throw new NotFoundError("Endereço não encontrado.");
-    return this.addressRepository.update(owner.addressId, data);
+    const student = await this.resolveStudent(userId, role);
+    if (!student.addressId) throw new NotFoundError("Endereço não encontrado.");
+    return this.addressRepository.update(student.addressId, data);
   }
 
   async deleteSelf(userId: string, role: Role): Promise<void> {
-    const owner = await this.resolveSelf(userId, role);
-    if (!owner.addressId) throw new NotFoundError("Endereço não encontrado.");
-    await this.addressRepository.delete(owner.addressId);
+    const student = await this.resolveStudent(userId, role);
+    if (!student.addressId) throw new NotFoundError("Endereço não encontrado.");
+    await this.addressRepository.delete(student.addressId);
   }
 
   // ─── Endereço da empresa (membros leem; ADMIN escreve, garantido na rota) ───
@@ -66,18 +60,11 @@ export class AddressService {
 
   // ─── Resolução do dono ──────────────────────────────────────────────────────
 
-  private async resolveSelf(userId: string, role: Role): Promise<SelfOwner> {
-    if (role === Role.STUDENT) {
-      const student = await this.addressRepository.getStudentByUserId(userId);
-      if (!student) throw new NotFoundError("Estudante não encontrado.");
-      return { kind: "student", id: student.id, addressId: student.addressId };
-    }
-    if (role === Role.COMPANY) {
-      const member = await this.addressRepository.getMemberByUserId(userId);
-      if (!member) throw new NotFoundError("Membro não encontrado.");
-      return { kind: "member", id: member.id, addressId: member.addressId };
-    }
-    throw new ForbiddenError("Este perfil não possui endereço.");
+  private async resolveStudent(userId: string, role: Role) {
+    if (role !== Role.STUDENT) throw new ForbiddenError("Apenas estudantes possuem endereço pessoal.");
+    const student = await this.addressRepository.getStudentByUserId(userId);
+    if (!student) throw new NotFoundError("Estudante não encontrado.");
+    return student;
   }
 
   private async resolveCompany(userId: string) {

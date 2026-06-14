@@ -23,7 +23,7 @@ export class AddressRepository {
   async getMemberByUserId(userId: string) {
     return this.prisma.companyMember.findUnique({
       where: { userId },
-      select: { id: true, companyId: true, addressId: true },
+      select: { companyId: true },
     });
   }
 
@@ -40,13 +40,6 @@ export class AddressRepository {
   async createForStudent(studentId: string, data: AddressInput) {
     return this.prisma.address.create({
       data: { ...data, student: { connect: { id: studentId } } },
-      select: addressSelect,
-    });
-  }
-
-  async createForMember(memberId: string, data: AddressInput) {
-    return this.prisma.address.create({
-      data: { ...data, companyMember: { connect: { id: memberId } } },
       select: addressSelect,
     });
   }
