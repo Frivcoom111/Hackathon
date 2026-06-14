@@ -1,5 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
-import type { UpdateAddressInput, UpdateStudentProfileInput } from "./student.schema";
+import type { UpdateStudentProfileInput } from "./student.schema";
 
 const addressSelect = {
   street: true,
@@ -74,22 +74,6 @@ export class StudentRepository {
       where: { id: studentId },
       data: { resumePath },
       select: { id: true, resumePath: true },
-    });
-  }
-
-  async updateAddress(addressId: string, data: UpdateAddressInput) {
-    return this.prisma.address.update({
-      where: { id: addressId },
-      data,
-      select: addressSelect,
-    });
-  }
-
-  // Cria o endereço e o vincula ao estudante (FK addressId fica em Student).
-  async createAddressForStudent(studentId: string, data: UpdateAddressInput) {
-    return this.prisma.address.create({
-      data: { ...data, student: { connect: { id: studentId } } },
-      select: addressSelect,
     });
   }
 

@@ -2,7 +2,7 @@ import { bearerAuth, errorResponse, paginatedResponse, successResponse } from ".
 import { registry } from "../../docs/registry";
 import { z } from "../../lib/zod";
 import { changePasswordSchema, idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
-import { updateAddressSchema, updateStudentProfileSchema } from "./student.schema";
+import { updateStudentProfileSchema } from "./student.schema";
 
 const TAG = "Student";
 
@@ -18,18 +18,6 @@ const error = (description: string) => ({
 const unauthorized = error("Token inválido ou expirado.");
 
 // ─── Doc schemas (saída) ──────────────────────────────────────────────────────
-
-const addressOut = z
-  .object({
-    street: z.string(),
-    number: z.string(),
-    complement: z.string().nullable(),
-    district: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipCode: z.string(),
-  })
-  .openapi({ title: "StudentAddress" });
 
 const applicationOut = z
   .object({
@@ -90,24 +78,6 @@ registry.registerPath({
     },
     400: error("Dados inválidos."),
     401: error("Senha atual incorreta."),
-  },
-});
-
-// ─── Endereço ───────────────────────────────────────────────────────────────────
-registry.registerPath({
-  method: "put",
-  path: "/student/address",
-  tags: [TAG],
-  security: bearerAuth,
-  summary: "Cria ou atualiza o endereço do estudante (upsert).",
-  request: { body: jsonBody(updateAddressSchema) },
-  responses: {
-    200: {
-      description: "Endereço salvo.",
-      content: { "application/json": { schema: successResponse(addressOut) } },
-    },
-    400: error("Dados inválidos."),
-    401: unauthorized,
   },
 });
 

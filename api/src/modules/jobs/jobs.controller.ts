@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { UnauthorizedError } from "../../shared/errors/AppError";
+import { requireUser } from "../../shared/utils/requireUser";
 import { response } from "../../shared/utils/response";
-import { applyJobSchema, jobIdParamsSchema, listJobsQuerySchema } from "./jobs.schema";
+import { jobIdParamsSchema, listJobsQuerySchema } from "./jobs.schema";
 import type { JobsService } from "./jobs.service";
 
 export class JobsController {
@@ -20,14 +20,13 @@ export class JobsController {
   }
 
   async apply(req: Request, res: Response): Promise<void> {
-    if (!req.user) throw new UnauthorizedError("Token não fornecido.");
+    const user = requireUser(req);
     const { jobId } = jobIdParamsSchema.parse(req.params);
-    const { coverLetter } = applyJobSchema.parse(req.body);
 
-    // Currículo é opcional na candidatura; quando enviado, guarda o caminho relativo.
-    const resumePath = req.file ? `uploads/resumes/${req.file.filename}` : undefined;
+    // Currículo enviado na candidatura tem prioridade; senão usa o do perfil (no service).
+    const uploadedResumePath = req.file ? `uploads/resumes/${req.file.filename}` : undefined;
 
-    const application = await this.jobsService.apply(req.user.id, jobId, resumePath, coverLetter);
+    const application = await this.jobsService.apply(user.id, jobId, uploadedResumePath);
     res.status(201).json(response.success(application, "Candidatura enviada com sucesso."));
   }
 }

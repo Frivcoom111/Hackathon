@@ -17,15 +17,6 @@ export const listJobsQuerySchema = z
   })
   .openapi({ title: "ListJobsQuery" });
 
-// ─── Body (candidatura) ───────────────────────────────────────────────────────
-
-export const applyJobSchema = z
-  .object({
-    coverLetter: z.string().max(2000).optional(),
-  })
-  .openapi({ title: "ApplyJob" });
-
 // ─── Inferência de Types ──────────────────────────────────────────────────────
 
 export type ListJobsQuery = z.infer<typeof listJobsQuerySchema>;
-export type ApplyJobInput = z.infer<typeof applyJobSchema>;

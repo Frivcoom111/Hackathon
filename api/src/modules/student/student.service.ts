@@ -9,7 +9,7 @@ import type { ChangePasswordInput, PaginationQuery } from "../../shared/schemas/
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import type { PaginationMeta } from "../../shared/utils/response";
 import type { StudentRepository } from "./student.repository";
-import type { UpdateAddressInput, UpdateStudentProfileInput } from "./student.schema";
+import type { UpdateStudentProfileInput } from "./student.schema";
 
 export class StudentService {
   constructor(private readonly studentRepository: StudentRepository) {}
@@ -40,15 +40,6 @@ export class StudentService {
     if (!isMatch) throw new UnauthorizedError("Senha atual incorreta.");
 
     await this.studentRepository.updatePassword(userId, await generateHash(data.newPassword));
-  }
-
-  // Upsert: atualiza o endereço vinculado se já existir, senão cria e vincula.
-  async updateAddress(userId: string, data: UpdateAddressInput) {
-    const student = await this.getStudentOrThrow(userId);
-    if (student.addressId) {
-      return this.studentRepository.updateAddress(student.addressId, data);
-    }
-    return this.studentRepository.createAddressForStudent(student.id, data);
   }
 
   async updateResume(userId: string, resumePath: string) {
