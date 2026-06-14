@@ -1,7 +1,7 @@
 <?php
 // Carrega as classes necessárias
-require_once __DIR__ . '/../classes/Aluno.php';
-require_once __DIR__ . '/../classes/Candidatura.php';
+require_once __DIR__ . '/../../classes/Aluno.php';
+require_once __DIR__ . '/../../classes/Candidatura.php';
 
 // Se não estiver logado, redireciona para o login
 if (empty($_SESSION['token'])) {

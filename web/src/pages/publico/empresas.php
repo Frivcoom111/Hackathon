@@ -1,6 +1,6 @@
 <?php
 // Carrega a classe Empresa para representar cada empresa retornada pela API
-require_once __DIR__ . '/../classes/Empresa.php';
+require_once __DIR__ . '/../../classes/Empresa.php';
 
 // Chama a API via cURL para buscar as empresas aprovadas
 $ch = curl_init('http://localhost:3000/companies');
