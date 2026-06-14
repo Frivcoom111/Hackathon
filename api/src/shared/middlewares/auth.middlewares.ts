@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
-import { Role } from "../../generated/prisma/enums";
+import { CompanyMemberRole, Role } from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ForbiddenError, UnauthorizedError } from "../errors/AppError";
 import type { JwtPayload } from "../utils/generateToken";
@@ -34,6 +34,7 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
       email: decoded.email,
       role: decoded.role,
       mfaVerified: decoded.mfaVerified,
+      companyMemberRole: decoded.companyMemberRole,
     };
 
     next();
@@ -41,6 +42,28 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
     if (error instanceof jwt.JsonWebTokenError) {
       return next(new UnauthorizedError("Token inválido ou expirado."));
     }
+    next(error);
+  }
+};
+
+// Exige COMPANY + MFA verificada + ser ADMIN da empresa (companyMemberRole).
+// Usar após requireCompany nas rotas restritas a administradores da empresa.
+export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Token não fornecido.");
+    }
+
+    if (req.user.role !== Role.COMPANY || !req.user.mfaVerified) {
+      throw new ForbiddenError();
+    }
+
+    if (req.user.companyMemberRole !== CompanyMemberRole.ADMIN) {
+      throw new ForbiddenError("Apenas administradores da empresa podem executar esta ação.");
+    }
+
+    next();
+  } catch (error) {
     next(error);
   }
 };
@@ -68,6 +91,5 @@ const requireRole = (role: Role, options: { mfa: boolean }) => {
   };
 };
 
-export const requireAdmin = requireRole(Role.ADMIN, { mfa: true });
 export const requireCompany = requireRole(Role.COMPANY, { mfa: true });
 export const requireStudent = requireRole(Role.STUDENT, { mfa: false });

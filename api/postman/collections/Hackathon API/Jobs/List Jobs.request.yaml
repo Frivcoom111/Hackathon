@@ -1,0 +1,10 @@
+$kind: http-request
+description: "Listagem pública de vagas (ACTIVE de empresas APPROVED). Sem autenticação. Filtros opcionais: courseId, area, modality, search, além de page/limit."
+url: "{{BASE_URL}}/jobs?page=1&limit=10"
+method: GET
+queryParams:
+  page: "1"
+  limit: "10"
+auth:
+  type: noauth
+order: 1000

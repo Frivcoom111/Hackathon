@@ -6,6 +6,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]).default("development"),
   DATABASE_URL: z.string().url("DATABASE_URL inválida"),
   DATABASE_HOST: z.string().min(1, "DATABASE_HOST é obrigatório."),
+  DATABASE_PORT: z.coerce.number().default(3306),
   DATABASE_USER: z.string().min(1, "DATABASE_USER é obrigatório."),
   DATABASE_PASSWORD: z.string().min(1, "DATABASE_PASSWORD é obrigatório."),
   DATABASE_NAME: z.string().min(1, "DATABASE_NAME é obrigatório."),

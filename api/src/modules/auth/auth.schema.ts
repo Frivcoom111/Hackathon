@@ -26,23 +26,33 @@ export const registerStudentSchema = z
 
 export const registerCompanySchema = z
   .object({
-    // Credenciais (User)
     email: z.email("E-mail inválido."),
     password: passwordSchema,
-    // Empresa (Company)
     name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres.").max(150),
     cnpj: cnpjSchema,
     description: z.string().min(1, "A descrição é obrigatória.").max(2000),
     phone: phoneSchema,
-    address: addressSchema, // empresa exige endereço
-    // Membro ADMIN (CompanyMember)
+    address: addressSchema,
     member: z.object({
       name: z.string().min(2, "O nome do responsável é obrigatório.").max(100),
       cpf: cpfSchema,
-      phone: phoneSchema.optional(), // opcional (cadastra depois)
+      phone: phoneSchema.optional(),
     }),
   })
   .openapi({ title: "RegisterCompany" });
+
+export const loginSchema = z
+  .object({
+    email: z.email("E-mail inválido."),
+    password: z.string().min(1, "A senha é obrigatória."),
+  })
+  .openapi({ title: "Login" });
+
+export const totpCodeSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, "O código deve conter 6 dígitos."),
+  })
+  .openapi({ title: "TotpCode" });
 
 // ─── Response Schemas ─────────────────────────────────────────────────────────
 
@@ -76,5 +86,7 @@ export const companyResponseSchema = z
 
 export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
 export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type TotpCodeInput = z.infer<typeof totpCodeSchema>;
 export type StudentResponse = z.infer<typeof studentResponseSchema>;
 export type CompanyResponse = z.infer<typeof companyResponseSchema>;

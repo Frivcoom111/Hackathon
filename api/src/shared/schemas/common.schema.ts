@@ -28,11 +28,26 @@ export const passwordSchema = z
     "A senha deve conter letras maiúsculas, minúsculas, números e um caractere especial (@$!%*?&#).",
   );
 
-// ─── CPF Schema ──────────────────────────────────────────────────────────────
+// Troca de senha autenticada: exige a senha atual e confirma a nova.
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "A senha atual é obrigatória."),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "A confirmação de senha é obrigatória."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As senhas não coincidem.",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.newPassword !== data.currentPassword, {
+    message: "A nova senha não pode ser igual à senha atual.",
+    path: ["newPassword"],
+  })
+  .openapi({ title: "ChangePassword" });
+
+// ─── CPF / CNPJ / Telefone / Endereço ────────────────────────────────────────────────
 
 export const cpfSchema = z.string().regex(/^\d{11}$/, "CPF deve conter 11 dígitos numéricos.");
-
-// ─── CNPJ / Telefone / Endereço ────────────────────────────────────────────────
 
 export const cnpjSchema = z.string().regex(/^\d{14}$/, "CNPJ deve conter 14 dígitos numéricos.");
 
@@ -54,3 +69,4 @@ export const addressSchema = z
 
 export type IdParams = z.infer<typeof idParamsSchema>;
 export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

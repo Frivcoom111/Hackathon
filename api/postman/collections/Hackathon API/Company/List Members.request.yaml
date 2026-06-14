@@ -1,0 +1,9 @@
+$kind: http-request
+description: Lista os membros da empresa. Somente ADMIN da empresa.
+url: "{{BASE_URL}}/company/members"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_COMPANY}}"
+order: 3000

@@ -1,7 +1,2 @@
 $kind: collection
-name: Hackathon API
-auth:
-  type: bearer
-  credentials:
-    - key: token
-      value: '{{authToken}}'
+description: Hackathon API — 36 requests, 5 módulos

@@ -71,4 +71,130 @@ export class AuthRepository {
       });
     });
   }
+
+  // ─── Login / TOTP ─────────────────────────────────────────────────────────
+
+  // Credenciais + flags de TOTP. Inclui a hash da senha para comparação no service.
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        role: true,
+        isActive: true,
+        totpSecret: true,
+        totpEnabled: true,
+      },
+    });
+  }
+
+  // Usado no login COMPANY e na emissão do token final (role do membro + status da empresa).
+  async findCompanyMemberByUserId(userId: string) {
+    return this.prisma.companyMember.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        companyId: true,
+        role: true,
+        company: { select: { status: true } },
+      },
+    });
+  }
+
+  // Segredo/flag de TOTP para setup, confirm e verify.
+  async findUserTotp(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, totpSecret: true, totpEnabled: true },
+    });
+  }
+
+  async saveTotpSecret(userId: string, secret: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { totpSecret: secret } });
+  }
+
+  async enableTotp(userId: string): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { totpEnabled: true } });
+  }
+
+  // ─── Perfis (GET /auth/me) ────────────────────────────────────────────────
+
+  async findStudentProfile(userId: string) {
+    return this.prisma.student.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        name: true,
+        ra: true,
+        cpf: true,
+        phone: true,
+        resumePath: true,
+        isEligible: true,
+        user: { select: { id: true, email: true, role: true, isActive: true, createdAt: true } },
+        address: {
+          select: {
+            street: true,
+            number: true,
+            complement: true,
+            district: true,
+            city: true,
+            state: true,
+            zipCode: true,
+          },
+        },
+        courses: {
+          select: {
+            status: true,
+            startedAt: true,
+            finishedAt: true,
+            course: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async findCompanyProfile(userId: string) {
+    return this.prisma.companyMember.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        name: true,
+        cpf: true,
+        phone: true,
+        role: true,
+        user: { select: { id: true, email: true, role: true, isActive: true, createdAt: true } },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            cnpj: true,
+            description: true,
+            phone: true,
+            status: true,
+            address: {
+              select: {
+                street: true,
+                number: true,
+                complement: true,
+                district: true,
+                city: true,
+                state: true,
+                zipCode: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findUserById(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, isActive: true, createdAt: true },
+    });
+  }
 }
