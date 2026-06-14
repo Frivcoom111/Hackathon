@@ -2,9 +2,8 @@
 // Inicia a sessão para guardar o token e dados do usuário logado no servidor
 session_start();
 
-// BASE é o prefixo usado nos links e assets (ex: imagens, CSS, JS)
-// Deixamos vazio porque o index.php fica na raiz do projeto
 define('BASE', '');
+define('API_URL', 'http://localhost:3000');
 
 // Mapa de rotas: cada chave é o valor do ?page= na URL
 // e o valor é o arquivo PHP que será carregado dentro do <main>
@@ -34,6 +33,12 @@ $titulos = [
 
 // Pega o parâmetro ?page= da URL; se não vier nada, abre a home
 $pagina = $_GET['page'] ?? 'home';
+
+if ($pagina === 'logout') {
+    session_destroy();
+    header('Location: ' . BASE . 'index.php?page=home');
+    exit;
+}
 
 // Segurança: se o usuário digitar uma rota que não existe, vai para 404
 // Isso evita que alguém tente carregar arquivos arbitrários do servidor

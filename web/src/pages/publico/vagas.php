@@ -1,6 +1,31 @@
 <?php
-// Carrega a classe Vaga para representar cada vaga retornada pela API
 require_once __DIR__ . '/../../classes/Vaga.php';
+
+// Handle candidatura
+$msgCandidatura  = '';
+$erroCandidatura = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vaga_id'])) {
+    if (empty($_SESSION['token'])) {
+        header('Location: ' . BASE . 'index.php?page=login');
+        exit;
+    }
+    $vagaIdApply = trim($_POST['vaga_id']);
+    $ch = curl_init(API_URL . '/jobs/' . $vagaIdApply . '/apply');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $_SESSION['token'],
+        'Content-Type: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([]));
+    $resp = curl_exec($ch);
+    $data = json_decode($resp, true);
+    if ($data['success'] ?? false) {
+        $msgCandidatura = 'Candidatura enviada com sucesso!';
+    } else {
+        $erroCandidatura = $data['message'] ?? 'Erro ao se candidatar. Tente novamente.';
+    }
+}
 
 // Lê os filtros enviados pelo formulário (método GET)
 $busca    = trim($_GET['busca']  ?? '');
@@ -10,10 +35,9 @@ $bolsaMin = (int)($_GET['bolsa'] ?? 0);
 $modalidades = $_GET['modalidade'] ?? ['PRESENCIAL', 'REMOTE', 'HYBRID'];
 
 // Chama a API via cURL para buscar todas as vagas ativas
-$ch = curl_init('http://localhost:3000/jobs?status=ACTIVE');
+$ch = curl_init(API_URL . '/jobs?status=ACTIVE');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $resp = curl_exec($ch);
-curl_close($ch);
 
 // Converte o JSON e aplica os filtros no PHP
 $vagas = [];
@@ -71,6 +95,23 @@ if ($resp) {
     </form>
   </div>
 </section>
+
+<?php if ($msgCandidatura): ?>
+<div class="container mt-3">
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($msgCandidatura) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+</div>
+<?php endif; ?>
+<?php if ($erroCandidatura): ?>
+<div class="container mt-3">
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($erroCandidatura) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- CONTEÚDO: FILTROS + LISTA -->
 <section class="vagas-lista-section">
@@ -182,6 +223,7 @@ if ($resp) {
                     <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
                     <!-- Passa os dados da vaga para o modal via data attributes -->
                     <button class="btn btn-primary btn-sm" onclick="abrirModal(this)"
+                      data-id="<?= htmlspecialchars($vaga->getId()) ?>"
                       data-titulo="<?= htmlspecialchars($vaga->getTitulo()) ?>"
                       data-empresa="<?= htmlspecialchars($vaga->nomeEmpresa) ?>"
                       data-local="<?= htmlspecialchars($vaga->getLocalizacao()) ?>"
@@ -238,7 +280,10 @@ if ($resp) {
         </div>
 
         <div class="d-flex gap-2 mt-4">
-          <button class="btn btn-primary px-4">Candidatar-se</button>
+          <form method="POST" action="<?= BASE ?>index.php?page=vagas" id="form-candidatura">
+            <input type="hidden" name="vaga_id" id="modal-vaga-id" value="">
+            <button type="submit" class="btn btn-primary px-4">Candidatar-se</button>
+          </form>
           <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
         </div>
 
@@ -250,6 +295,7 @@ if ($resp) {
 <script>
 // Preenche o modal com os dados do card clicado (vindo de data attributes — sem API)
 function abrirModal(btn) {
+  document.getElementById('modal-vaga-id').value         = btn.dataset.id;
   document.getElementById('modal-titulo').textContent    = btn.dataset.titulo;
   document.getElementById('modal-empresa').textContent   = btn.dataset.empresa;
   document.getElementById('modal-modalidade').textContent = btn.dataset.modalidade;

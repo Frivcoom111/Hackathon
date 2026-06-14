@@ -19,7 +19,10 @@
 </head>
 <body>
 
-<?php $logado = false; ?>
+<?php
+$logado = !empty($_SESSION['token']);
+$role   = $_SESSION['role'] ?? '';
+?>
 
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container navbar-container">
@@ -55,9 +58,16 @@
 
       <?php if ($logado): ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
-        <a href="<?= BASE ?>index.php?page=perfil" class="btn btn-entrar btn-sm px-3">
-          <i class="bi bi-person-circle me-1"></i> Meu perfil
-        </a>
+        <?php if ($role === 'empresa'): ?>
+          <a href="<?= BASE ?>index.php?page=empresa-dashboard" class="btn btn-entrar btn-sm px-3">
+            <i class="bi bi-grid me-1"></i> Painel
+          </a>
+        <?php else: ?>
+          <a href="<?= BASE ?>index.php?page=perfil" class="btn btn-entrar btn-sm px-3">
+            <i class="bi bi-person-circle me-1"></i> Meu perfil
+          </a>
+        <?php endif; ?>
+        <a href="<?= BASE ?>index.php?page=logout" class="btn btn-outline-light btn-sm px-3">Sair</a>
       </div>
       <?php endif; ?>
 

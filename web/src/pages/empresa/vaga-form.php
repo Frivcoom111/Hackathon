@@ -14,11 +14,10 @@ $sucesso = '';
 // ── Se vier vaga_id, carrega os dados para edição ─────────────────────────────
 $vaga = null;
 if ($vagaId) {
-    $ch = curl_init('http://localhost:3000/company/jobs/' . $vagaId);
+    $ch = curl_init(API_URL . '/company/jobs/' . $vagaId);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
     $resp = curl_exec($ch);
-    curl_close($ch);
 
     $data = json_decode($resp, true);
     if (!empty($data['data'])) {
@@ -42,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($modoEdicao) {
         // Edição: PATCH /company/jobs/:id
-        $ch = curl_init('http://localhost:3000/company/jobs/' . $vagaId);
+        $ch = curl_init(API_URL . '/company/jobs/' . $vagaId);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
     } else {
         // Criação: POST /company/jobs
-        $ch = curl_init('http://localhost:3000/company/jobs');
+        $ch = curl_init(API_URL . '/company/jobs');
         curl_setopt($ch, CURLOPT_POST, true);
     }
 
@@ -57,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     $resp = curl_exec($ch);
-    curl_close($ch);
 
     $data = json_decode($resp, true);
 

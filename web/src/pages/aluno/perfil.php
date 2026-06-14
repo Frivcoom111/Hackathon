@@ -15,23 +15,21 @@ $token = $_SESSION['token'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'cancelar') {
     $id = $_POST['candidatura_id'] ?? '';
     if ($id) {
-        $ch = curl_init('http://localhost:3000/student/applications/' . $id);
+        $ch = curl_init(API_URL . '/student/applications/' . $id);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
         curl_exec($ch);
-        curl_close($ch);
     }
     header('Location: ' . BASE . 'index.php?page=perfil');
     exit;
 }
 
 // ── Busca o perfil do aluno logado via cURL ───────────────────────────────────
-$ch = curl_init('http://localhost:3000/student/profile');
+$ch = curl_init(API_URL . '/student/profile');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
 $resp = curl_exec($ch);
-curl_close($ch);
 
 $aluno = null;
 $data  = json_decode($resp, true);
@@ -40,11 +38,10 @@ if (!empty($data['data'])) {
 }
 
 // ── Busca as candidaturas do aluno logado via cURL ────────────────────────────
-$ch = curl_init('http://localhost:3000/student/applications?page=1&limit=20');
+$ch = curl_init(API_URL . '/student/applications?page=1&limit=20');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
 $resp = curl_exec($ch);
-curl_close($ch);
 
 $candidaturas = [];
 $dataCandy    = json_decode($resp, true);

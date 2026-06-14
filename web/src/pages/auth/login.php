@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Etapa 1: e-mail e senha ───────────────────────────────────────────────
     if ($acao === 'login') {
-        $ch = curl_init('http://localhost:3000/auth/login');
+        $ch = curl_init(API_URL . '/auth/login');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'password' => $_POST['senha'] ?? '',
         ]));
         $resp = curl_exec($ch);
-        curl_close($ch);
 
         $data = json_decode($resp, true);
 
@@ -42,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tipo = $data['data']['type'] ?? '';
 
             if ($tipo === 'AUTHENTICATED') {
-                // Aluno — salva token na session e vai para a home
                 $_SESSION['token'] = $data['data']['token'];
+                $_SESSION['role']  = 'aluno';
                 header('Location: ' . BASE . 'index.php?page=home');
                 exit;
 
@@ -52,13 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['tempToken'] = $data['data']['tempToken'];
                 $_SESSION['totp_tipo'] = 'setup';
 
-                $ch2 = curl_init('http://localhost:3000/auth/totp/setup');
+                $ch2 = curl_init(API_URL . '/auth/totp/setup');
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch2, CURLOPT_HTTPHEADER, [
                     'Authorization: Bearer ' . $data['data']['tempToken'],
                 ]);
                 $resp2 = curl_exec($ch2);
-                curl_close($ch2);
 
                 $data2  = json_decode($resp2, true);
                 $qrCode = $data2['data']['qrCode'] ?? '';
@@ -79,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $totpTipo  = $_SESSION['totp_tipo'] ?? 'verify';
 
         $rota = $totpTipo === 'setup'
-            ? 'http://localhost:3000/auth/totp/setup/confirm'
-            : 'http://localhost:3000/auth/totp/verify';
+            ? API_URL . '/auth/totp/setup/confirm'
+            : API_URL . '/auth/totp/verify';
 
         $ch = curl_init($rota);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -93,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'code' => trim($_POST['codigo'] ?? ''),
         ]));
         $resp = curl_exec($ch);
-        curl_close($ch);
 
         $data = json_decode($resp, true);
 
@@ -103,8 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $qrCode      = $_SESSION['qrCode'] ?? '';
         } else {
             $_SESSION['token'] = $data['data']['token'];
+            $_SESSION['role']  = 'empresa';
             unset($_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
-            header('Location: ' . BASE . 'index.php?page=home');
+            header('Location: ' . BASE . 'index.php?page=empresa-dashboard');
             exit;
         }
     }

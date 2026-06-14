@@ -3,10 +3,9 @@
 require_once __DIR__ . '/../../classes/Vaga.php';
 
 // Chama a API via cURL para buscar as 3 últimas vagas ativas
-$ch = curl_init('http://localhost:3000/jobs?limit=3&status=ACTIVE');
+$ch = curl_init(API_URL . '/jobs?limit=3&status=ACTIVE');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // retorna a resposta em vez de imprimir
 $resp = curl_exec($ch);
-curl_close($ch);
 
 // Converte o JSON da API em objetos Vaga
 $vagas = [];
