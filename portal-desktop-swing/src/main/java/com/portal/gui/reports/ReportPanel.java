@@ -115,7 +115,7 @@ public class ReportPanel extends JPanel {
 
         JLabel lblTitulo = new JLabel(titulo);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblTitulo.setForeground(cor);
+        lblTitulo.setForeground(new Color(0x1565C0));
 
         JLabel lblDesc = new JLabel("<html>" + descricao + "</html>");
         lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 12));
