@@ -1,5 +1,5 @@
 import "express";
-import type { Role } from "../../generated/prisma/enums";
+import type { CompanyMemberRole, Role } from "../../generated/prisma/enums";
 
 declare global {
   namespace Express {
@@ -9,6 +9,7 @@ declare global {
         email: string;
         role: Role;
         mfaVerified: boolean;
+        companyMemberRole?: CompanyMemberRole;
       };
     }
   }

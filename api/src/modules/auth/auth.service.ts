@@ -1,155 +1,204 @@
-import type { PrismaClient } from "../../generated/prisma/client";
-import { ConflictError, NotFoundError, UnauthorizedError } from "../../shared/errors/AppError";
+import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
+import qrcode from "qrcode";
+import type { Role } from "../../generated/prisma/enums";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../shared/errors/AppError";
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import { generateToken } from "../../shared/utils/generateToken";
-import type { LoginInput, RegisterCompanyInput, RegisterStudentInput } from "./auth.schema";
+import type { AuthRepository } from "./auth.repository";
+import {
+  type CompanyResponse,
+  companyResponseSchema,
+  type LoginInput,
+  type RegisterCompanyInput,
+  type RegisterStudentInput,
+  type StudentResponse,
+  studentResponseSchema,
+} from "./auth.schema";
+
+const TOTP_ISSUER = "Portal UniALFA";
+
+// Resultado do login: autenticado direto (STUDENT/ADMIN) ou etapa de TOTP (COMPANY).
+type LoginResult =
+  | { type: "AUTHENTICATED"; token: string }
+  | { type: "TOTP_SETUP"; tempToken: string; qrCode: string; requiresSetup: true }
+  | { type: "TOTP_REQUIRED"; tempToken: string; requiresVerification: true };
 
 export class AuthService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly authRepository: AuthRepository) {}
 
-  async login(data: LoginInput) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: data.email },
-      include: {
-        student: true,
-        companyMember: {
-          include: {
-            company: true,
-          },
-        },
-      },
-    });
+  async registerStudent(data: RegisterStudentInput): Promise<StudentResponse> {
+    const password = await generateHash(data.password);
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedError("E-mail ou senha invalidos.");
+    try {
+      const student = await this.authRepository.createStudent({ ...data, password });
+
+      return studentResponseSchema.parse(student);
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+
+      if (code === "P2002") {
+        throw new ConflictError("E-mail, RA ou CPF já cadastrado.");
+      }
+
+      if (code === "P2025") {
+        throw new NotFoundError("Curso não encontrado.");
+      }
+
+      throw error;
+    }
+  }
+
+  async registerCompany(data: RegisterCompanyInput): Promise<CompanyResponse> {
+    const password = await generateHash(data.password);
+
+    try {
+      const company = await this.authRepository.createCompany({ ...data, password });
+
+      return companyResponseSchema.parse(company);
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+
+      if (code === "P2002") {
+        throw new ConflictError("E-mail, CNPJ ou CPF já cadastrado.");
+      }
+
+      throw error;
+    }
+  }
+
+  // ─── Login ──────────────────────────────────────────────────────────────────
+
+  // Mensagem sempre genérica ("Credenciais inválidas.") para não revelar se o e-mail existe.
+  async login(data: LoginInput): Promise<LoginResult> {
+    const user = await this.authRepository.findUserByEmail(data.email);
+    if (!user) {
+      throw new UnauthorizedError("Credenciais inválidas.");
     }
 
-    const passwordOk = await compareHash(data.password, user.password);
-    if (!passwordOk) {
-      throw new UnauthorizedError("E-mail ou senha invalidos.");
+    const isMatch = await compareHash(data.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedError("Credenciais inválidas.");
     }
 
-    const token = generateToken({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      mfaVerified: true,
-    });
+    // STUDENT e ADMIN não usam TOTP: token completo direto.
+    if (user.role !== "COMPANY") {
+      if (!user.isActive) {
+        throw new ForbiddenError("Conta desativada.");
+      }
 
-    return {
-      token,
-      user: {
-        id: user.id,
+      const token = generateToken({
+        sub: user.id,
         email: user.email,
         role: user.role,
-        name: user.student?.name ?? user.companyMember?.name ?? user.companyMember?.company.name ?? "Usuario",
-        student: user.student,
-        company: user.companyMember?.company ?? null,
-      },
-    };
-  }
-
-  async registerStudent(data: RegisterStudentInput) {
-    await this.ensureCourseExists(data.courseId);
-    const password = await generateHash(data.password);
-
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            email: data.email,
-            password,
-            role: "STUDENT",
-          },
-        });
-
-        const student = await tx.student.create({
-          data: {
-            userId: user.id,
-            name: data.name,
-            ra: data.ra,
-            cpf: data.cpf,
-            phone: data.phone,
-            resumePath: data.resumePath,
-          },
-        });
-
-        const studentCourse = await tx.studentCourse.create({
-          data: {
-            studentId: student.id,
-            courseId: data.courseId,
-            status: data.status,
-            startedAt: data.startedAt,
-            finishedAt: data.status === "COMPLETED" ? data.finishedAt : null,
-          },
-          include: {
-            course: true,
-          },
-        });
-
-        return { user, student, studentCourse };
+        mfaVerified: true,
       });
-    } catch (error) {
-      this.handleUniqueError(error);
-      throw error;
+      return { type: "AUTHENTICATED", token };
     }
+
+    // COMPANY: valida aprovação da empresa antes de iniciar o fluxo TOTP.
+    const member = await this.authRepository.findCompanyMemberByUserId(user.id);
+    if (!member) {
+      throw new UnauthorizedError("Credenciais inválidas.");
+    }
+    if (member.company.status !== "APPROVED") {
+      throw new ForbiddenError("Empresa aguardando aprovação ou bloqueada.");
+    }
+    if (!user.isActive) {
+      throw new ForbiddenError("Conta desativada.");
+    }
+
+    const tempToken = generateToken({ sub: user.id, email: user.email, role: user.role, mfaVerified: false }, "5m");
+
+    // Primeiro acesso: gera secret e QR para o membro configurar o app autenticador.
+    if (!user.totpEnabled) {
+      const secret = generateSecret();
+      await this.authRepository.saveTotpSecret(user.id, secret);
+      const uri = generateURI({ issuer: TOTP_ISSUER, label: user.email, secret });
+      const qrCode = await qrcode.toDataURL(uri);
+      return { type: "TOTP_SETUP", tempToken, qrCode, requiresSetup: true };
+    }
+
+    return { type: "TOTP_REQUIRED", tempToken, requiresVerification: true };
   }
 
-  async registerCompany(data: RegisterCompanyInput) {
-    const password = await generateHash(data.password);
+  // ─── TOTP ───────────────────────────────────────────────────────────────────
 
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            email: data.email,
-            password,
-            role: "COMPANY",
-          },
-        });
-
-        const address = await tx.address.create({
-          data: data.address,
-        });
-
-        const company = await tx.company.create({
-          data: {
-            addressId: address.id,
-            name: data.name,
-            cnpj: data.cnpj,
-            description: data.description,
-            phone: data.phone,
-            status: "PENDING",
-          },
-        });
-
-        const member = await tx.companyMember.create({
-          data: {
-            companyId: company.id,
-            userId: user.id,
-            role: "ADMIN",
-            name: data.member.name,
-            cpf: data.member.cpf,
-            phone: data.member.phone,
-          },
-        });
-
-        return { user, company, member };
-      });
-    } catch (error) {
-      this.handleUniqueError(error);
-      throw error;
+  async totpSetup(userId: string, email: string): Promise<{ qrCode: string }> {
+    const user = await this.authRepository.findUserTotp(userId);
+    if (!user) {
+      throw new NotFoundError("Usuário não encontrado.");
     }
+    if (user.totpEnabled) {
+      throw new BadRequestError("TOTP já configurado.");
+    }
+
+    // Reaproveita o secret gerado no login; só cria um novo se ainda não existir.
+    let secret = user.totpSecret;
+    if (!secret) {
+      secret = generateSecret();
+      await this.authRepository.saveTotpSecret(userId, secret);
+    }
+
+    const uri = generateURI({ issuer: TOTP_ISSUER, label: email, secret });
+    const qrCode = await qrcode.toDataURL(uri);
+    return { qrCode };
   }
 
-  private async ensureCourseExists(courseId: string) {
-    const course = await this.prisma.course.findUnique({ where: { id: courseId } });
-    if (!course) throw new NotFoundError("Curso nao encontrado.");
+  async totpSetupConfirm(userId: string, code: string): Promise<{ token: string }> {
+    const email = await this.assertTotpCode(userId, code);
+    await this.authRepository.enableTotp(userId);
+    return { token: await this.issueCompanyToken(userId, email) };
   }
 
-  private handleUniqueError(error: unknown) {
-    if ((error as { code?: string }).code === "P2002") {
-      throw new ConflictError("Ja existe um cadastro com alguns destes dados.");
+  async totpVerify(userId: string, code: string): Promise<{ token: string }> {
+    const email = await this.assertTotpCode(userId, code);
+    return { token: await this.issueCompanyToken(userId, email) };
+  }
+
+  // Valida o código TOTP contra o secret salvo; retorna o e-mail para emitir o token.
+  private async assertTotpCode(userId: string, code: string): Promise<string> {
+    const user = await this.authRepository.findUserTotp(userId);
+    if (!user?.totpSecret) {
+      throw new BadRequestError("TOTP não iniciado.");
     }
+    const { valid } = await verifyTotp({ token: code, secret: user.totpSecret });
+    if (!valid) {
+      throw new UnauthorizedError("Código inválido.");
+    }
+    return user.email;
+  }
+
+  // Token final do fluxo COMPANY, com mfaVerified e a role do membro embutidos.
+  private async issueCompanyToken(userId: string, email: string): Promise<string> {
+    const member = await this.authRepository.findCompanyMemberByUserId(userId);
+    return generateToken({
+      sub: userId,
+      email,
+      role: "COMPANY",
+      mfaVerified: true,
+      companyMemberRole: member?.role,
+    });
+  }
+
+  // ─── Perfil autenticado ──────────────────────────────────────────────────────
+
+  async getMe(userId: string, role: Role) {
+    const profile =
+      role === "STUDENT"
+        ? await this.authRepository.findStudentProfile(userId)
+        : role === "COMPANY"
+          ? await this.authRepository.findCompanyProfile(userId)
+          : await this.authRepository.findUserById(userId);
+
+    if (!profile) {
+      throw new NotFoundError("Perfil não encontrado.");
+    }
+    return profile;
   }
 }

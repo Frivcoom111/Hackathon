@@ -1,0 +1,18 @@
+$kind: http-request
+description: Atualiza name e/ou phone do estudante.
+url: "{{BASE_URL}}/student/profile"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Maria A. Aluna",
+      "phone": "11997776666"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_STUDENT}}"
+order: 2000

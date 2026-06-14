@@ -1,0 +1,18 @@
+$kind: http-request
+description: Atualiza name, description e/ou phone da empresa. Somente ADMIN da empresa. CNPJ não é editável.
+url: "{{BASE_URL}}/company/profile"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Nova descrição da empresa.",
+      "phone": "1133335555"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_COMPANY}}"
+order: 2000

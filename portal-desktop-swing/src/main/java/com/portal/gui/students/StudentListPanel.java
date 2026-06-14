@@ -69,9 +69,7 @@ public class StudentListPanel extends JPanel {
         JButton buscarBtn = criarBotaoSecundario("Buscar");
         buscarBtn.addActionListener(e -> buscar());
 
-        JButton limparBtn = new JButton("Limpar");
-        limparBtn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        limparBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton limparBtn = criarBotaoSecundario("Limpar");
         limparBtn.addActionListener(e -> { campoBusca.setText(""); carregar(); });
 
         barraBusca.add(new JLabel("Buscar:"));

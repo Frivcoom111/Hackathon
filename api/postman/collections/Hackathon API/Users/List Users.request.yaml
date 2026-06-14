@@ -1,0 +1,12 @@
+$kind: http-request
+description: Listar usuários do banco de dados, somente o usuário logado e sendo admin poderá listar os usuários do banco de dados usando a regra do page e limit.
+url: "{{BASE_URL}}/users?page=1&limit=20"
+method: GET
+queryParams:
+  page: "1"
+  limit: "20"
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_ADMIN}}"
+order: 1000

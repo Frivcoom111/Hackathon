@@ -5,13 +5,23 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.Connection;
 
+/**
+ * Singleton Pattern — garante uma única instância do pool de conexões (HikariCP)
+ * em toda a aplicação. A inicialização ocorre no static block na primeira vez
+ * que a classe é carregada pela JVM; chamadas subsequentes reutilizam a mesma instância.
+ */
 public class DatabaseConfig {
+
+    // Singleton: instância única do pool mantida como campo estático
+    private static HikariDataSource dataSource;
+
+    // Impede instanciação — acesso somente via métodos estáticos
+    private DatabaseConfig() {}
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final String URL = dotenv.get("DB_URL");
     private static final String USER = dotenv.get("DB_USER");
     private static final String PASSWORD = dotenv.get("DB_PASSWORD");
-    private static HikariDataSource dataSource;
 
     // Executado uma única vez quando a classe é carregada pela JVM
     static {
