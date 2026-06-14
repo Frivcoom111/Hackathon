@@ -106,5 +106,5 @@
 - [ ] Controle de perfis de acesso (ADMIN, COORDENADOR, OPERADOR)
 - [ ] Exportação de relatórios em CSV
 - [ ] Exportação de relatórios em PDF (iText ou Apache PDFBox)
-- [ ] Aplicação de Design Patterns
-- [ ] Dashboard com contadores (empresas pendentes, candidaturas abertas)
+- [x] Aplicação de Design Patterns (Singleton, DAO, Factory Method, Facade, Template Method)
+- [x] Dashboard com contadores (empresas pendentes, vagas ativas, candidaturas abertas, alunos aptos)

@@ -3,86 +3,79 @@
 Cada seção abaixo é uma instrução para o Copilot criar uma issue no GitHub.
 Após a issue ser criada, a branch é aberta e o nome é passado para commit e push.
 
-c
 ---
 
-## Issue 2 — Consulta de Vagas, Candidaturas e Regras de Negócio de Empresa
+## Issue 3 — Dashboard com contadores e Design Patterns
 
 **Instrução para o Copilot:**
 
 Crie uma issue com as seguintes informações:
 
 **Título:**
-`feat(java): Consulta de Vagas e Candidaturas + Regras de negócio de empresa`
+`feat(java): Dashboard com contadores e aplicação de Design Patterns`
 
 **Descrição:**
 
 ```
 ## O que foi implementado
 
-### Consulta de Vagas
-Painel de consulta somente leitura para visualizar vagas cadastradas pelo sistema PHP/Node.
+### Dashboard com contadores (DashboardHomePanel)
+Painel inicial exibido ao fazer login, com visão geral do sistema em tempo real.
 
-- Tabela com colunas: Título, Área, Modalidade, Local, Status, Salário
-- Filtro client-side por status (ACTIVE, PAUSED, CLOSED)
-- Badge colorido por status: verde (ACTIVE), amarelo (PAUSED), vermelho (CLOSED)
-- Duplo-clique ou botão "Ver Detalhes" abre JobDetailDialog
-- Botão Atualizar recarrega do banco
+**Contadores:**
+- Empresas Pendentes — aguardando análise do admin
+- Vagas Ativas — publicadas e disponíveis
+- Candidaturas Abertas — com status PENDING ou ANALYSING
+- Alunos Aptos — com isEligible = true
 
-**Arquivos criados:**
-- `gui/jobs/JobListPanel.java`
-- `gui/jobs/JobDetailDialog.java`
-
----
-
-### Consulta de Candidaturas
-Painel de consulta somente leitura para visualizar candidaturas realizadas pelos alunos.
-
-- Tabela com colunas: Aluno, Vaga, Status
-- Filtro client-side por status (PENDING, ANALYSING, APPROVED, REJECTED, CANCELLED)
-- Badge colorido por cada status
-- Duplo-clique ou botão "Ver Detalhes" abre ApplicationDetailDialog com badge inline
+**Características:**
+- 4 cards padronizados em azul (UX consistente)
+- Botão "Atualizar" recarrega os dados do banco sem reabrir a tela
+- Saudação com e-mail do usuário logado
+- Item "Início" adicionado ao menu lateral como entrada padrão ao logar
 
 **Arquivos criados:**
-- `gui/applications/ApplicationListPanel.java`
-- `gui/applications/ApplicationDetailDialog.java`
-
----
-
-### Regras de negócio: Empresa x Usuários vinculados
-Implementadas as regras de ativação/desativação de usuários conforme status da empresa.
-
-**Regras:**
-- Uma empresa pode ter vários usuários (via CompanyMember)
-- Um usuário pertence a no máximo uma empresa
-- Usuário vinculado a empresa só pode estar ativo se a empresa estiver APPROVED
-- `aprovar()` → reativa todos os usuários da empresa (`isActive = 1`)
-- `bloquear()` → desativa todos os usuários da empresa (`isActive = 0`)
-- `analisar()` → desativa todos os usuários da empresa (`isActive = 0`)
+- `model/DashboardStats.java` — POJO com os 4 contadores
+- `dao/DashboardDAO.java` — query única com 4 subqueries paralelas
+- `gui/dashboard/DashboardHomePanel.java` — painel de contadores
 
 **Arquivos alterados:**
-- `dao/UserDAO.java` — adicionado `setActiveByCompany(companyId, active)`
-- `service/CompanyService.java` — `aprovar`, `bloquear` e `analisar` agora chamam `setActiveByCompany`
+- `gui/dashboard/DashboardFrame.java` — painel "home" registrado e definido como padrão
 
 ---
 
-### Correções de UI
-- Botão "Limpar" (Alunos) padronizado: fundo azul, letra branca
-- Botão "Atualizar" (Candidaturas e Vagas) padronizado: fundo azul, letra branca
-- Botões "Gerar .txt" (Relatórios) padronizados: todos azul/branco em vez de cor do card
+### Design Patterns aplicados
+Cinco padrões documentados e implementados no projeto:
+
+| Pattern | Onde | Descrição |
+|---|---|---|
+| Singleton | `config/DatabaseConfig.java` | Pool HikariCP único; construtor privado adicionado |
+| DAO | `dao/BaseDAO.java` + DAOs | Isolamento de acesso ao banco por entidade |
+| Factory Method | `util/ButtonFactory.java` | Criação padronizada de botões Swing (primary, secondary, danger) |
+| Facade | `service/*.java` | Services expõem operações de alto nível para a GUI |
+| Template Method | `dao/BaseDAO.java` | `getConnection()` reutilizado por todos os DAOs concretos |
+
+**Arquivos criados:**
+- `util/ButtonFactory.java` — Factory Method para botões padronizados
+
+**Arquivos alterados:**
+- `config/DatabaseConfig.java` — construtor privado + javadoc Singleton
+- `misc/md/ESTUTURA.md` — tabela de Design Patterns documentada
 
 ---
 
-### Dashboard
-- Menu lateral atualizado com itens "Vagas" e "Candidaturas"
-- Novos painéis registrados no CardLayout do DashboardFrame
+### Correção de UX
+Todos os elementos de interface padronizados em azul (0x1565C0):
+- Cards do dashboard: fundo azul claro, texto e borda azul
+- Header do DashboardHomePanel: azul padrão
+- Títulos dos cards de relatório: azul padrão
 
 ## Fora do escopo (próximas issues)
-- Dashboard com contadores (empresas pendentes, candidaturas abertas)
+- Exportação de relatórios em CSV
+- Exportação de relatórios em PDF
 - Controle de perfis de acesso (ADMIN, COORDENADOR, OPERADOR)
-- Exportação de relatórios em CSV/PDF
 ```
 
-**Branch:** `feat/vinicius/vagas-candidaturas`
+**Branch:** `feat/vinicius/dashboard-patterns`
 
 ---
