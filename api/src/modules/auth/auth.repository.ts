@@ -145,7 +145,6 @@ export class AuthRepository {
           },
         },
         courses: {
-          where: { status: "ACTIVE" },
           select: {
             status: true,
             startedAt: true,

@@ -1,4 +1,5 @@
 import { z } from "../../lib/zod";
+import { cpfSchema, passwordSchema, phoneSchema } from "../../shared/schemas/common.schema";
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,37 @@ export const updateCompanyProfileSchema = z
   .refine((data) => Object.keys(data).length > 0, { message: "Nenhum dado para atualizar." })
   .openapi({ title: "UpdateCompanyProfile" });
 
-export const changeMemberRoleSchema = z.object({ role: memberRoleSchema }).openapi({ title: "ChangeMemberRole" });
+// Admin cria um membro: gera o login (User) + o perfil (CompanyMember) da empresa.
+export const createMemberSchema = z
+  .object({
+    email: z.email("E-mail inválido."),
+    password: passwordSchema,
+    name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres.").max(100),
+    cpf: cpfSchema,
+    phone: phoneSchema.optional(),
+    role: memberRoleSchema.default("RECRUITER"),
+  })
+  .openapi({ title: "CreateMember" });
+
+// Admin atualiza outro membro (nome, telefone e/ou cargo).
+export const updateMemberSchema = z
+  .object({
+    name: z.string().min(2).max(100).optional(),
+    phone: phoneSchema.optional(),
+    role: memberRoleSchema.optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, { message: "Nenhum dado para atualizar." })
+  .openapi({ title: "UpdateMember" });
+
+// Membro autenticado atualiza os próprios dados (nome/telefone no perfil, e-mail no login).
+export const updateMyProfileSchema = z
+  .object({
+    name: z.string().min(2).max(100).optional(),
+    phone: phoneSchema.optional(),
+    email: z.email("E-mail inválido.").optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, { message: "Nenhum dado para atualizar." })
+  .openapi({ title: "UpdateMyProfile" });
 
 export const createJobSchema = z
   .object({
@@ -49,17 +80,8 @@ export const createJobSchema = z
   })
   .openapi({ title: "CreateJob" });
 
-export const updateJobSchema = z
-  .object({
-    title: z.string().min(2).max(150).optional(),
-    description: z.string().min(1).optional(),
-    area: z.string().min(1).max(100).optional(),
-    requirements: z.string().optional(),
-    salary: z.number().positive().optional(),
-    location: z.string().min(1).max(150).optional(),
-    modality: modalitySchema.optional(),
-    courseId: z.uuid().optional(),
-  })
+export const updateJobSchema = createJobSchema
+  .partial()
   .refine((data) => Object.keys(data).length > 0, { message: "Nenhum dado para atualizar." })
   .openapi({ title: "UpdateJob" });
 
@@ -72,7 +94,9 @@ export const changeApplicationStatusSchema = z
 // ─── Inferência de Types ──────────────────────────────────────────────────────
 
 export type UpdateCompanyProfileInput = z.infer<typeof updateCompanyProfileSchema>;
-export type ChangeMemberRoleInput = z.infer<typeof changeMemberRoleSchema>;
+export type CreateMemberInput = z.infer<typeof createMemberSchema>;
+export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
+export type UpdateMyProfileInput = z.infer<typeof updateMyProfileSchema>;
 export type CreateJobInput = z.infer<typeof createJobSchema>;
 export type UpdateJobInput = z.infer<typeof updateJobSchema>;
 export type ChangeJobStatusInput = z.infer<typeof changeJobStatusSchema>;

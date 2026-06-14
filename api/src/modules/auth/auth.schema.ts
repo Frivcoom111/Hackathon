@@ -26,20 +26,17 @@ export const registerStudentSchema = z
 
 export const registerCompanySchema = z
   .object({
-    // Credenciais (User)
     email: z.email("E-mail inválido."),
     password: passwordSchema,
-    // Empresa (Company)
     name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres.").max(150),
     cnpj: cnpjSchema,
     description: z.string().min(1, "A descrição é obrigatória.").max(2000),
     phone: phoneSchema,
-    address: addressSchema, // empresa exige endereço
-    // Membro ADMIN (CompanyMember)
+    address: addressSchema,
     member: z.object({
       name: z.string().min(2, "O nome do responsável é obrigatório.").max(100),
       cpf: cpfSchema,
-      phone: phoneSchema.optional(), // opcional (cadastra depois)
+      phone: phoneSchema.optional(),
     }),
   })
   .openapi({ title: "RegisterCompany" });

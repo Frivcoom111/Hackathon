@@ -46,6 +46,28 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
   }
 };
 
+// Exige COMPANY + MFA verificada + ser ADMIN da empresa (companyMemberRole).
+// Usar após requireCompany nas rotas restritas a administradores da empresa.
+export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Token não fornecido.");
+    }
+
+    if (req.user.role !== Role.COMPANY || !req.user.mfaVerified) {
+      throw new ForbiddenError();
+    }
+
+    if (req.user.companyMemberRole !== CompanyMemberRole.ADMIN) {
+      throw new ForbiddenError("Apenas administradores da empresa podem executar esta ação.");
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Exige role específica e, opcionalmente, MFA verificada.
 const requireRole = (role: Role, options: { mfa: boolean }) => {
   return (req: Request, _res: Response, next: NextFunction) => {
@@ -69,28 +91,5 @@ const requireRole = (role: Role, options: { mfa: boolean }) => {
   };
 };
 
-export const requireAdmin = requireRole(Role.ADMIN, { mfa: true });
 export const requireCompany = requireRole(Role.COMPANY, { mfa: true });
 export const requireStudent = requireRole(Role.STUDENT, { mfa: false });
-
-// Exige COMPANY + MFA verificada + ser ADMIN da empresa (companyMemberRole).
-// Usar após requireCompany nas rotas restritas a administradores da empresa.
-export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunction) => {
-  try {
-    if (!req.user) {
-      throw new UnauthorizedError("Token não fornecido.");
-    }
-
-    if (req.user.role !== Role.COMPANY || !req.user.mfaVerified) {
-      throw new ForbiddenError();
-    }
-
-    if (req.user.companyMemberRole !== CompanyMemberRole.ADMIN) {
-      throw new ForbiddenError("Apenas administradores da empresa podem executar esta ação.");
-    }
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-};

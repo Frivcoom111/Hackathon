@@ -1,0 +1,9 @@
+$kind: http-request
+description: Retorna o perfil do estudante autenticado (User + Address? + StudentCourse ativo).
+url: "{{BASE_URL}}/student/profile"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_STUDENT}}"
+order: 1000

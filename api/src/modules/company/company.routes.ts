@@ -14,24 +14,30 @@ const controller = new CompanyController(service);
 // Toda rota exige COMPANY autenticada com MFA verificada.
 router.use(authMiddleware, requireCompany);
 
-// ─── Perfil ───────────────────────────────────────────────────────────────────
-router.get("/profile", controller.getProfile);
-router.patch("/profile", requireCompanyAdmin, controller.updateProfile);
+// ─── Perfil da empresa ──────────────────────────────────────────────────────────
+router.get("/profile", controller.getProfile.bind(controller));
+router.patch("/profile", requireCompanyAdmin, controller.updateProfile.bind(controller));
+
+// ─── Dados próprios do membro autenticado ────────────────────────────────────────
+router.patch("/me", controller.updateMe.bind(controller));
+router.patch("/me/password", controller.changeMyPassword.bind(controller));
 
 // ─── Membros (somente ADMIN da empresa) ─────────────────────────────────────────
-router.get("/members", requireCompanyAdmin, controller.listMembers);
-router.patch("/members/:memberId/role", requireCompanyAdmin, controller.changeMemberRole);
-router.post("/members/:memberId/totp/reset", requireCompanyAdmin, controller.resetMemberTotp);
+router.get("/members", requireCompanyAdmin, controller.listMembers.bind(controller));
+router.post("/members", requireCompanyAdmin, controller.createMember.bind(controller));
+router.patch("/members/:memberId", requireCompanyAdmin, controller.updateMember.bind(controller));
+router.delete("/members/:memberId", requireCompanyAdmin, controller.deleteMember.bind(controller));
+router.post("/members/:memberId/totp/reset", requireCompanyAdmin, controller.resetMemberTotp.bind(controller));
 
 // ─── Vagas ──────────────────────────────────────────────────────────────────────
-router.get("/jobs", controller.listJobs);
-router.post("/jobs", controller.createJob);
-router.get("/jobs/:jobId", controller.getJob);
-router.patch("/jobs/:jobId", controller.updateJob);
-router.patch("/jobs/:jobId/status", controller.changeJobStatus);
+router.get("/jobs", controller.listJobs.bind(controller));
+router.post("/jobs", controller.createJob.bind(controller));
+router.get("/jobs/:jobId", controller.getJob.bind(controller));
+router.patch("/jobs/:jobId", controller.updateJob.bind(controller));
+router.patch("/jobs/:jobId/status", controller.changeJobStatus.bind(controller));
 
 // ─── Candidaturas ────────────────────────────────────────────────────────────────
-router.get("/jobs/:jobId/applications", controller.listApplications);
-router.patch("/jobs/:jobId/applications/:id/status", controller.changeApplicationStatus);
+router.get("/jobs/:jobId/applications", controller.listApplications.bind(controller));
+router.patch("/jobs/:jobId/applications/:id/status", controller.changeApplicationStatus.bind(controller));
 
 export default router;

@@ -1,0 +1,37 @@
+# Banco compartilhado entre a API (Node) e o app Java desktop.
+# Ambos conectam em 127.0.0.1:3306 — o Java usa jdbc:mysql://localhost:3306/hackathon.
+# phpMyAdmin em http://localhost:8081 (servidor: mysql, usuário: root, senha: root).
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hackathon-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hackathon
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: hackathon-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

@@ -1,5 +1,12 @@
-import { BadRequestError, ForbiddenError, NotFoundError } from "../../shared/errors/AppError";
-import type { PaginationQuery } from "../../shared/schemas/common.schema";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../shared/errors/AppError";
+import type { ChangePasswordInput, PaginationQuery } from "../../shared/schemas/common.schema";
+import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import type { PaginationMeta } from "../../shared/utils/response";
 import type { StudentRepository } from "./student.repository";
 import type { UpdateAddressInput, UpdateStudentProfileInput } from "./student.schema";
@@ -15,7 +22,24 @@ export class StudentService {
 
   async updateProfile(userId: string, data: UpdateStudentProfileInput) {
     const student = await this.getStudentOrThrow(userId);
-    return this.studentRepository.updateProfile(student.id, data);
+    try {
+      return await this.studentRepository.updateProfile(student.id, userId, data);
+    } catch (error) {
+      if ((error as { code?: string }).code === "P2002") {
+        throw new ConflictError("E-mail já está em uso.");
+      }
+      throw error;
+    }
+  }
+
+  async changePassword(userId: string, data: ChangePasswordInput): Promise<void> {
+    const user = await this.studentRepository.getUserPassword(userId);
+    if (!user) throw new NotFoundError("Usuário não encontrado.");
+
+    const isMatch = await compareHash(data.currentPassword, user.password);
+    if (!isMatch) throw new UnauthorizedError("Senha atual incorreta.");
+
+    await this.studentRepository.updatePassword(userId, await generateHash(data.newPassword));
   }
 
   // Upsert: atualiza o endereço vinculado se já existir, senão cria e vincula.
