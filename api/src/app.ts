@@ -3,6 +3,10 @@ import express, { type Express } from "express";
 import helmet from "helmet";
 import { env } from "./config/env";
 import { setupDocs } from "./docs/docs";
+import authRoutes from "./modules/auth/auth.routes";
+import companiesRoutes from "./modules/companies/companies.routes";
+import coursesRoutes from "./modules/courses/courses.routes";
+import jobsRoutes from "./modules/jobs/jobs.routes";
 import usersRoutes from "./modules/users/users.routes";
 import { errorHandler } from "./shared/middlewares/errorHandler.middlewares";
 import { globalRateLimiter } from "./shared/middlewares/rateLimit.middleware";
@@ -26,6 +30,10 @@ export const appBuild = async (): Promise<Express> => {
 
   app.use(globalRateLimiter);
 
+  app.use("/auth", authRoutes);
+  app.use("/courses", coursesRoutes);
+  app.use("/jobs", jobsRoutes);
+  app.use("/companies", companiesRoutes);
   app.use("/users", usersRoutes);
 
   setupDocs(app);

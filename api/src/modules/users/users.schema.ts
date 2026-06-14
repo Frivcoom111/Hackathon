@@ -5,23 +5,14 @@ import { passwordSchema } from "../../shared/schemas/common.schema";
 
 export const createUserSchema = z
   .object({
-    name: z
-      .string()
-      .min(2, "O nome deve ter no mínimo 2 caracteres.")
-      .max(100, "O nome deve ter no máximo 100 caracteres."),
     email: z.email("E-mail inválido."),
     password: passwordSchema,
-    role: z.enum(["ADMIN", "USER"]).default("USER"),
+    role: z.enum(["ADMIN", "COMPANY", "STUDENT"]).default("STUDENT"),
   })
   .openapi({ title: "CreateUser" });
 
 export const updateUserSchema = z
   .object({
-    name: z
-      .string()
-      .min(2, "O nome deve ter no mínimo 2 caracteres.")
-      .max(100, "O nome deve ter no máximo 100 caracteres.")
-      .optional(),
     email: z.email("E-mail inválido.").optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
@@ -47,7 +38,7 @@ export const changePasswordSchema = z
 
 export const updateRoleSchema = z
   .object({
-    role: z.enum(["ADMIN", "USER"]),
+    role: z.enum(["ADMIN", "COMPANY", "STUDENT"]),
   })
   .openapi({ title: "UpdateRole" });
 
@@ -62,9 +53,8 @@ export const updateStatusSchema = z
 export const userResponseSchema = z
   .object({
     id: z.uuid(),
-    name: z.string(),
     email: z.email(),
-    role: z.enum(["ADMIN", "USER"]),
+    role: z.enum(["ADMIN", "COMPANY", "STUDENT"]),
     isActive: z.boolean(),
     createdAt: z.date(),
   })
