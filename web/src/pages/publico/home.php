@@ -1,6 +1,6 @@
 <?php
 // Carrega a classe Vaga para representar cada vaga retornada pela API
-require_once __DIR__ . '/../classes/Vaga.php';
+require_once __DIR__ . '/../../classes/Vaga.php';
 
 // Chama a API via cURL para buscar as 3 últimas vagas ativas
 $ch = curl_init('http://localhost:3000/jobs?limit=3&status=ACTIVE');

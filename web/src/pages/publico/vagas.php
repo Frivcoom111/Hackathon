@@ -1,6 +1,6 @@
 <?php
 // Carrega a classe Vaga para representar cada vaga retornada pela API
-require_once __DIR__ . '/../classes/Vaga.php';
+require_once __DIR__ . '/../../classes/Vaga.php';
 
 // Lê os filtros enviados pelo formulário (método GET)
 $busca    = trim($_GET['busca']  ?? '');

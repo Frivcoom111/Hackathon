@@ -9,25 +9,27 @@ define('BASE', '');
 // Mapa de rotas: cada chave é o valor do ?page= na URL
 // e o valor é o arquivo PHP que será carregado dentro do <main>
 $rotas = [
-    'home'      => 'pages/home.php',
-    'cadastro'  => 'pages/cadastro.php',
-    'login'     => 'pages/login.php',
-    'vagas'     => 'pages/vagas.php',
-    'empresas'  => 'pages/empresas.php',
-    // 'alunos' removido — gerenciado pelo back office Java, não pelo portal web
-    'perfil'    => 'pages/perfil.php',
+    'home'              => 'pages/publico/home.php',
+    'vagas'             => 'pages/publico/vagas.php',
+    'empresas'          => 'pages/publico/empresas.php',
+    'login'             => 'pages/auth/login.php',
+    'cadastro'          => 'pages/auth/cadastro.php',
+    'perfil'            => 'pages/aluno/perfil.php',
+    'empresa-dashboard' => 'pages/empresa/dashboard.php',
+    'empresa-vaga-form' => 'pages/empresa/vaga-form.php',
 ];
 
 // Título que aparece na aba do navegador para cada página
 $titulos = [
-    'home'      => 'Início',
-    'cadastro'  => 'Cadastro',
-    'login'     => 'Login',
-    'vagas'     => 'Vagas',
-    'empresas'  => 'Empresas',
-    // 'alunos' removido — mesma razão acima
-    'perfil'    => 'Meu Perfil',
-    '404'       => 'Página não encontrada',
+    'home'              => 'Início',
+    'vagas'             => 'Vagas',
+    'empresas'          => 'Empresas',
+    'login'             => 'Login',
+    'cadastro'          => 'Cadastro',
+    'perfil'            => 'Meu Perfil',
+    'empresa-dashboard' => 'Painel da Empresa',
+    'empresa-vaga-form' => 'Vaga',
+    '404'               => 'Página não encontrada',
 ];
 
 // Pega o parâmetro ?page= da URL; se não vier nada, abre a home
