@@ -1,0 +1,35 @@
+/* altura fixa de 64px — mesma do footer para padronizar */
+.navbar {
+  background-color: var(--azul-escuro) !important;
+  height: 64px;
+}
+
+/* logo — height maior que 64px fica acima/abaixo da barra por overflow */
+.navbar-brand img {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+}
+
+.navbar-brand,
+.navbar .nav-link {
+  color: var(--branco) !important;
+  font-family: var(--fonte-titulo);
+  font-weight: 500;
+}
+.navbar .nav-link { transition: color 0.2s; }
+.navbar .nav-link:hover { color: var(--amarelo-principal) !important; }
+
+/* mobile — menu colapsa em coluna */
+@media (max-width: 991px) {
+  .navbar { height: auto; padding: 12px 16px; }
+  .navbar-collapse {
+    background-color: var(--azul-escuro);
+    border-radius: 0 0 12px 12px;
+    text-align: center;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .navbar-nav { width: 100%; }
+  .navbar-nav .nav-item { width: 100%; }
+}
