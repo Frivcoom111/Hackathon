@@ -8,11 +8,16 @@ import {
 import type { ChangePasswordInput, PaginationQuery } from "../../shared/schemas/common.schema";
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import type { PaginationMeta } from "../../shared/utils/response";
+import type { NotificationService } from "../notification/notification.service";
+import { NotificationType } from "../notification/notification.types";
 import type { StudentRepository } from "./student.repository";
 import type { UpdateStudentProfileInput } from "./student.schema";
 
 export class StudentService {
-  constructor(private readonly studentRepository: StudentRepository) {}
+  constructor(
+    private readonly studentRepository: StudentRepository,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async getProfile(userId: string) {
     const profile = await this.studentRepository.getProfile(userId);
@@ -65,7 +70,19 @@ export class StudentService {
       throw new BadRequestError("Candidatura não pode ser cancelada neste status.");
     }
 
-    return this.studentRepository.cancelApplication(applicationId);
+    const cancelled = await this.studentRepository.cancelApplication(applicationId);
+
+    try {
+      await this.notificationService.notifyCompany(application.job.companyId, {
+        type: NotificationType.APPLICATION_CANCELLED,
+        title: "Candidatura cancelada",
+        message: `${application.student.name} cancelou a candidatura para a vaga "${application.job.title}".`,
+      });
+    } catch {
+      // Falha ao notificar não deve reverter o cancelamento.
+    }
+
+    return cancelled;
   }
 
   private async getStudentOrThrow(userId: string) {

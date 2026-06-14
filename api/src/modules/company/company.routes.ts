@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { authMiddleware, requireCompany, requireCompanyAdmin } from "../../shared/middlewares/auth.middlewares";
+import { NotificationRepository } from "../notification/notification.repository";
+import { NotificationService } from "../notification/notification.service";
 import { CompanyController } from "./company.controller";
 import { CompanyRepository } from "./company.repository";
 import { CompanyService } from "./company.service";
@@ -8,7 +10,8 @@ import { CompanyService } from "./company.service";
 const router = Router();
 
 const repository = new CompanyRepository(prisma);
-const service = new CompanyService(repository);
+const notificationService = new NotificationService(new NotificationRepository(prisma));
+const service = new CompanyService(repository, notificationService);
 const controller = new CompanyController(service);
 
 // Toda rota exige COMPANY autenticada com MFA verificada.

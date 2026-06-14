@@ -6,7 +6,9 @@ import { env } from "../config/env";
 import "../modules/address/address.docs";
 import "../modules/auth/auth.docs";
 import "../modules/company/company.docs";
+import "../modules/course/course.docs";
 import "../modules/jobs/jobs.docs";
+import "../modules/notification/notification.docs";
 import "../modules/student/student.docs";
 import { generateSpec } from "./openapi";
 

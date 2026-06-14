@@ -101,7 +101,13 @@ export class StudentRepository {
   async getApplicationById(applicationId: string) {
     return this.prisma.application.findFirst({
       where: { id: applicationId, deletedAt: null },
-      select: { id: true, studentId: true, status: true },
+      select: {
+        id: true,
+        studentId: true,
+        status: true,
+        job: { select: { title: true, companyId: true } },
+        student: { select: { name: true } },
+      },
     });
   }
 

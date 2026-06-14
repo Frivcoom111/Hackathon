@@ -1,10 +1,15 @@
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../shared/errors/AppError";
 import type { PaginationMeta } from "../../shared/utils/response";
+import type { NotificationService } from "../notification/notification.service";
+import { NotificationType } from "../notification/notification.types";
 import type { JobsRepository } from "./jobs.repository";
 import type { ListJobsQuery } from "./jobs.schema";
 
 export class JobsService {
-  constructor(private readonly jobsRepository: JobsRepository) {}
+  constructor(
+    private readonly jobsRepository: JobsRepository,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async list(query: ListJobsQuery) {
     const { page, limit } = query;
@@ -35,13 +40,26 @@ export class JobsService {
     const resumePath = uploadedResumePath ?? student.resumePath;
     if (!resumePath) throw new BadRequestError("Cadastre um currículo antes de se candidatar.");
 
+    let application: Awaited<ReturnType<JobsRepository["createApplication"]>>;
     try {
-      return await this.jobsRepository.createApplication(student.id, jobId, resumePath);
+      application = await this.jobsRepository.createApplication(student.id, jobId, resumePath);
     } catch (error) {
       if ((error as { code?: string }).code === "P2002") {
         throw new ConflictError("Você já se candidatou a esta vaga.");
       }
       throw error;
     }
+
+    try {
+      await this.notificationService.notifyCompany(job.company.id, {
+        type: NotificationType.NEW_APPLICATION,
+        title: "Nova candidatura",
+        message: `Você recebeu uma nova candidatura para a vaga "${job.title}".`,
+      });
+    } catch {
+      // Falha ao notificar não deve invalidar a candidatura criada.
+    }
+
+    return application;
   }
 }

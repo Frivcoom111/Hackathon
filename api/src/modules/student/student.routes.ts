@@ -2,6 +2,8 @@ import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { authMiddleware, requireStudent } from "../../shared/middlewares/auth.middlewares";
 import { uploadResume } from "../../shared/middlewares/upload.middleware";
+import { NotificationRepository } from "../notification/notification.repository";
+import { NotificationService } from "../notification/notification.service";
 import { StudentController } from "./student.controller";
 import { StudentRepository } from "./student.repository";
 import { StudentService } from "./student.service";
@@ -9,7 +11,8 @@ import { StudentService } from "./student.service";
 const router = Router();
 
 const repository = new StudentRepository(prisma);
-const service = new StudentService(repository);
+const notificationService = new NotificationService(new NotificationRepository(prisma));
+const service = new StudentService(repository, notificationService);
 const controller = new StudentController(service);
 
 // Todas as rotas exigem estudante autenticado.
