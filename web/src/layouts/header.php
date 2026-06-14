@@ -18,7 +18,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- CSS do projeto -->
-  <link rel="stylesheet" href="<?= BASE ?>css/style.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/base.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/components.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/navbar.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/footer.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/home.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/vagas.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/auth.css">
 </head>
 <body>
 
