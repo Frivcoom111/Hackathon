@@ -1,0 +1,1146 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Hackathon API
+meta:
+  id: wrk_a8f8cbf8bbed463c8f6f0857b16388f5
+  created: 1781392285129
+  modified: 1781392285129
+  description: ""
+collection:
+  - name: Hackathon API
+    meta:
+      id: fld_c98ac04e92e44fd2918a76fbc0b43894
+      created: 1781392285131
+      modified: 1781396006658
+      sortKey: -1781392283950
+      description: ""
+    children:
+      - name: Auth
+        meta:
+          id: fld_ccac1253950e42a4abbbc8f67e2a72ad
+          created: 1781392285132
+          modified: 1781395897808
+          sortKey: -1781392283949
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/auth/register/student"
+            name: Register Student
+            meta:
+              id: req_38a3d3528db14b0998c65281596dffab
+              created: 1781392285133
+              modified: 1781392285133
+              isPrivate: false
+              description: Cria User(STUDENT) + Student + StudentCourse em transação. Não
+                requer autenticação.
+              sortKey: -1781392283948
+            method: POST
+            body:
+              mimeType: multipart/form-data
+              params:
+                - name: email
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: password
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: name
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: ra
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: cpf
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: phone
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: resumePath
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: courseId
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: status
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: startedAt
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: finishedAt
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: resume
+                  disabled: false
+                  fileName: ""
+                  type: file
+            headers:
+              - name: Content-Type
+                value: multipart/form-data
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/login"
+            name: Login
+            meta:
+              id: req_08ecff7e4aef4cdfaad74326992264d4
+              created: 1781392285134
+              modified: 1781395611558
+              isPrivate: false
+              description: STUDENT/ADMIN recebem JWT completo. COMPANY recebe um tempToken
+                (5min) e segue para o fluxo TOTP (setup no primeiro acesso,
+                verify nos seguintes).
+              sortKey: -1781392283946
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                	"email": "usuario@example.com",
+                	"password": "Password1@"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            scripts:
+              afterResponse: |-
+                const res = insomnia.response.json();
+                if (res && res.success && res.data) {
+                  const d = res.data;
+                  if (d.type === "AUTHENTICATED" && d.token) {
+                    insomnia.environment.set("TOKEN_STUDENT", d.token);
+                    console.log("TOKEN_STUDENT salvo");
+                  } else if (d.tempToken) {
+                    insomnia.environment.set("TOKEN_COMPANY", d.tempToken);
+                    console.log("TOKEN_COMPANY (temp) salvo");
+                  }
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/register/company"
+            name: Register Company
+            meta:
+              id: req_f122a35440bc432993019cd5e9f27709
+              created: 1781392285134
+              modified: 1781392285134
+              isPrivate: false
+              description: "Cria Address + Company(PENDING) + User(COMPANY, isActive:false) +
+                CompanyMember(ADMIN). Não retorna token: a empresa aguarda
+                aprovação."
+              sortKey: -1781392283947
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "usuario@example.com",
+                  "password": "Password1@",
+                  "name": "Nome Exemplo",
+                  "cnpj": "12345678000190",
+                  "description": "Descrição exemplo",
+                  "phone": "11999998888",
+                  "address": {
+                    "street": "Rua Exemplo",
+                    "number": "100",
+                    "complement": "Sala 1",
+                    "district": "Centro",
+                    "city": "São Paulo",
+                    "state": "SP",
+                    "zipCode": "01310100"
+                  },
+                  "member": {
+                    "name": "Nome Exemplo",
+                    "cpf": "12345678901",
+                    "phone": "11999998888"
+                  }
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/totp/setup"
+            name: TOTP Setup
+            meta:
+              id: req_c5310eae19a1427d821b898b0689ef05
+              created: 1781392285135
+              modified: 1781393332119
+              isPrivate: false
+              description: Usa o tempToken do login. Não exige MFA verificada.
+              sortKey: -1781392283945
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{ _.TOKEN_STUDENT }}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/totp/setup/confirm"
+            name: TOTP Confirm
+            meta:
+              id: req_832a27b7cf8c4bb7b601ccd403b88e4a
+              created: 1781392285136
+              modified: 1781395896260
+              isPrivate: false
+              description: Confirma o setup do TOTP e ativa a MFA.
+              sortKey: -1781392283944
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "code": "659638"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{ _.TOKEN_COMPANY }}"
+              prefix: ""
+            scripts:
+              afterResponse: |-
+                const res = insomnia.response.json();
+                if (res && res.success && res.data && res.data.token) {
+                  insomnia.environment.set("TOKEN_COMPANY", res.data.token);
+                  console.log("TOKEN_COMPANY final salvo");
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/totp/verify"
+            name: TOTP Verify
+            meta:
+              id: req_08814a09b54249e583684563339617b8
+              created: 1781392285138
+              modified: 1781395882022
+              isPrivate: false
+              description: Verifica o código TOTP em logins subsequentes.
+              sortKey: -1781392283943
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "code": ""
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{ _.TOKEN_COMPANY }}"
+              prefix: ""
+            scripts:
+              afterResponse: |-
+                const res = insomnia.response.json();
+                if (res && res.success && res.data && res.data.token) {
+                  insomnia.environment.set("TOKEN_COMPANY", res.data.token);
+                  console.log("TOKEN_COMPANY verificado salvo");
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/me"
+            name: Get Me
+            meta:
+              id: req_12a98fa7f8a749d3a8b46472d0cb2b48
+              created: 1781392285140
+              modified: 1781393387964
+              isPrivate: false
+              description: Conteúdo varia por role (STUDENT, COMPANY, ADMIN). Nunca expõe
+                password/totpSecret.
+              sortKey: -1781392283942
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{ _.TOKEN_COMPANY }}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Company
+        meta:
+          id: fld_a4b801117c754cffba792bc642c1b466
+          created: 1781392285141
+          modified: 1781396006658
+          sortKey: -1781392283941
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/company/profile"
+            name: Get Profile
+            meta:
+              id: req_fd2115404e77474f8a288f15cfec540b
+              created: 1781392285142
+              modified: 1781392285142
+              isPrivate: false
+              description: Retorna o perfil da empresa do membro autenticado.
+              sortKey: -1781392283940
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/profile"
+            name: Edit Profile
+            meta:
+              id: req_121ce116aa254943b9b4e168e03403f1
+              created: 1781392285143
+              modified: 1781392285143
+              isPrivate: false
+              description: Atualiza name, description e/ou phone (somente ADMIN). CNPJ não é
+                editável.
+              sortKey: -1781392283939
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "Nome Exemplo",
+                  "description": "Descrição exemplo",
+                  "phone": "11999998888"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/me"
+            name: Edit My Profile
+            meta:
+              id: req_78f8fd2996724194a9866188976ba1ea
+              created: 1781392285144
+              modified: 1781395983416
+              isPrivate: false
+              description: Atualiza os próprios dados (name, phone e/ou email).
+              sortKey: -1781392283938
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "aaaa",
+                  "phone": "11999998888",
+                  "email": "usuario@exaaaple.com"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/me/password"
+            name: Change My Password
+            meta:
+              id: req_37ec7c3dc2514908b314acaa5cb80ae3
+              created: 1781392285145
+              modified: 1781395422157
+              isPrivate: false
+              description: Altera a própria senha (exige a senha atual).
+              sortKey: -1781392283937
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "currentPassword": "NewPass2@",
+                  "newPassword": "Password1@",
+                  "confirmPassword": "Password1@"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/members"
+            name: List Members
+            meta:
+              id: req_ff808d5b295946c6ba8c834294308e67
+              created: 1781392285146
+              modified: 1781392285146
+              isPrivate: false
+              description: Lista os membros da empresa (somente ADMIN).
+              sortKey: -1781392283936
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/members/c2b331e9-f94f-4e17-ab63-b8d305480408"
+            name: Update Member
+            meta:
+              id: req_f352c509bf4445d8a683dea9b5f7a74e
+              created: 1781392285147
+              modified: 1781395237530
+              isPrivate: false
+              description: Atualiza name, phone e/ou role de um membro (somente ADMIN, não
+                pode alterar a si mesmo).
+              sortKey: -1781392283934
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "Nome Exemplo",
+                  "phone": "11999998888",
+                  "role": "RECRUITER"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/members"
+            name: Create Member
+            meta:
+              id: req_f746064de12f49f689db9addac7d8f31
+              created: 1781392285147
+              modified: 1781392285147
+              isPrivate: false
+              description: Cria um membro da empresa (somente ADMIN).
+              sortKey: -1781392283935
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "usuario@example.com",
+                  "password": "Password1@",
+                  "name": "Nome Exemplo",
+                  "cpf": "12345678901"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/members/c2b331e9-f94f-4e17-ab63-b8d305480408"
+            name: Deactivate Member
+            meta:
+              id: req_5f87bf0fd8c14cbb925c84cdc034765c
+              created: 1781392285148
+              modified: 1781395257455
+              isPrivate: false
+              description: Desativa um membro — soft delete (somente ADMIN, não pode desativar
+                a si mesmo).
+              sortKey: -1781392283933
+            method: DELETE
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/members/c2b331e9-f94f-4e17-ab63-b8d305480408/totp/re\
+              set"
+            name: Reset Member TOTP
+            meta:
+              id: req_c0e701a7a20a41e3963640939751eec4
+              created: 1781392285149
+              modified: 1781395451601
+              isPrivate: false
+              description: Reseta o TOTP de um membro (somente ADMIN, não pode resetar o
+                próprio).
+              sortKey: -1781392283932
+            method: POST
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs"
+            name: List Jobs
+            meta:
+              id: req_b527abea08c6439faaa1c1c15aadbca3
+              created: 1781392285150
+              modified: 1781392285150
+              isPrivate: false
+              description: Lista as vagas da empresa (paginado).
+              sortKey: -1781392283931
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs"
+            name: Create Job
+            meta:
+              id: req_eb7793be85434a97b8e832026e69fe98
+              created: 1781392285151
+              modified: 1781392285151
+              isPrivate: false
+              description: Cria uma vaga.
+              sortKey: -1781392283930
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "title": "Título Exemplo",
+                  "description": "Descrição exemplo",
+                  "area": "Tecnologia",
+                  "location": "São Paulo - SP"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            scripts:
+              afterResponse: |-
+                const res = insomnia.response.json();
+                if (res && res.success && res.data && res.data.id) {
+                  insomnia.environment.set("JOB_ID", res.data.id);
+                  console.log("JOB_ID salvo");
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs/5a84272e-1934-4b75-b1ca-bdf9344d548c"
+            name: Get Job
+            meta:
+              id: req_3bc5eef7fc074063ad6179679bb6f4b5
+              created: 1781392285152
+              modified: 1781396101085
+              isPrivate: false
+              description: Detalha uma vaga da empresa.
+              sortKey: -1781392283929
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs/5a84272e-1934-4b75-b1ca-bdf9344d548c"
+            name: Edit Job
+            meta:
+              id: req_f5bbcdeb5bb74a8988c5bf5bf9acbfb2
+              created: 1781392285160
+              modified: 1781396185167
+              isPrivate: false
+              description: Atualiza uma vaga.
+              sortKey: -1781392283928
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "title": "Título Exemplo",
+                  "description": "Descrição exemplo",
+                  "area": "Tecnologia",
+                  "requirements": "valor_exemplo",
+                  "salary": 2000,
+                	"courseId": "67558fe9-65f7-11f1-a4ac-a2aa23140b79"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs/5a84272e-1934-4b75-b1ca-bdf9344d548c/status"
+            name: Change Job Status
+            meta:
+              id: req_5ab4e8387c65481b9cad0ce1869f0e83
+              created: 1781392285162
+              modified: 1781396225945
+              isPrivate: false
+              description: Altera o status da vaga (CLOSED é terminal).
+              sortKey: -1781392283927
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "status": "ACTIVE"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/company/jobs/5a84272e-1934-4b75-b1ca-bdf9344d548c/applicatio\
+              ns/:id/status"
+            name: Change Application Status
+            meta:
+              id: req_9e2de189321c441f953ce8bae28859a6
+              created: 1781392285163
+              modified: 1781396253292
+              isPrivate: false
+              description: Atualiza o status de uma candidatura (ANALYSING | APPROVED |
+                REJECTED).
+              sortKey: -1781392283925
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "status": "ACTIVE"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+            pathParameters:
+              - name: id
+                value: ""
+          - url: "{{BASE_URL}}/company/jobs/5a84272e-1934-4b75-b1ca-bdf9344d548c/applicatio\
+              ns"
+            name: List Applications
+            meta:
+              id: req_a93e97db46c540c7801bb7f6dc237ac2
+              created: 1781392285163
+              modified: 1781396243515
+              isPrivate: false
+              description: Lista candidaturas de uma vaga (paginado).
+              sortKey: -1781392283926
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_COMPANY}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Jobs
+        meta:
+          id: fld_0af634108fdc4b0a9fa93dc7fb8d81c2
+          created: 1781392285164
+          modified: 1781392285164
+          sortKey: -1781392283924
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/jobs"
+            name: List Jobs
+            meta:
+              id: req_342c533f61a2415db6e323d959799b6b
+              created: 1781392285165
+              modified: 1781392285165
+              isPrivate: false
+              description: "Filtros opcionais: courseId, area, modality, search. Não requer
+                autenticação."
+              sortKey: -1781392283923
+            method: GET
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/jobs/:jobId"
+            name: Get Job
+            meta:
+              id: req_2cc65bf0092d407abc531b165ad5dda4
+              created: 1781392285166
+              modified: 1781392285166
+              isPrivate: false
+              description: Detalha uma vaga pública.
+              sortKey: -1781392283922
+            method: GET
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+            pathParameters:
+              - name: jobId
+                value: ""
+          - url: "{{BASE_URL}}/jobs/:jobId/apply"
+            name: Apply
+            meta:
+              id: req_5fe02c8a0eb94ce499b76c57771f2f5e
+              created: 1781392285168
+              modified: 1781392285168
+              isPrivate: false
+              description: Requer role STUDENT. Aceita multipart com `resume` opcional e
+                `coverLetter`.
+              sortKey: -1781392283921
+            method: POST
+            body:
+              mimeType: multipart/form-data
+              params:
+                - name: coverLetter
+                  value: valor_exemplo
+                  disabled: false
+                  type: text
+                - name: resume
+                  disabled: false
+                  fileName: ""
+                  type: file
+            headers:
+              - name: Content-Type
+                value: multipart/form-data
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            scripts:
+              afterResponse: |-
+                const res = insomnia.response.json();
+                if (res && res.success && res.data && res.data.id) {
+                  insomnia.environment.set("APPLICATION_ID", res.data.id);
+                  console.log("APPLICATION_ID salvo");
+                }
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+            pathParameters:
+              - name: jobId
+                value: ""
+      - name: Student
+        meta:
+          id: fld_b640a591eda341528f24382d3139f5d0
+          created: 1781392285170
+          modified: 1781392285170
+          sortKey: -1781392283920
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/student/profile"
+            name: Update Profile
+            meta:
+              id: req_7d5bbf2f5c224607ba86b2b1d313af5c
+              created: 1781392285172
+              modified: 1781392285172
+              isPrivate: false
+              description: Atualiza name, phone e/ou email do estudante.
+              sortKey: -1781392283918
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "name": "Nome Exemplo",
+                  "phone": "11999998888",
+                  "email": "usuario@example.com"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/profile"
+            name: Get Profile
+            meta:
+              id: req_95ebdd3efb4545838ead05a86c191335
+              created: 1781392285172
+              modified: 1781392285172
+              isPrivate: false
+              description: Retorna o perfil do estudante autenticado.
+              sortKey: -1781392283919
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/password"
+            name: Change Password
+            meta:
+              id: req_bda5230ad83c4e93abec48e01e47a9a0
+              created: 1781392285173
+              modified: 1781392285173
+              isPrivate: false
+              description: Altera a própria senha (exige a senha atual).
+              sortKey: -1781392283917
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "currentPassword": "Password1@",
+                  "newPassword": "NewPass2@",
+                  "confirmPassword": "NewPass2@"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/address"
+            name: Update Address
+            meta:
+              id: req_202f27a3724e48d29e42dd841f008e63
+              created: 1781392285174
+              modified: 1781392285174
+              isPrivate: false
+              description: Cria ou atualiza o endereço do estudante (upsert).
+              sortKey: -1781392283916
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "street": "Rua Exemplo",
+                  "number": "100",
+                  "district": "Centro",
+                  "city": "São Paulo",
+                  "state": "SP",
+                  "zipCode": "01310100"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/resume"
+            name: Update Resume
+            meta:
+              id: req_35c89dbba28a43eca20e142603b26265
+              created: 1781392285175
+              modified: 1781392285175
+              isPrivate: false
+              description: Atualiza o currículo (multipart, campo `resume`).
+              sortKey: -1781392283915
+            method: PATCH
+            body:
+              mimeType: multipart/form-data
+              params:
+                - name: resume
+                  disabled: false
+                  fileName: ""
+                  type: file
+            headers:
+              - name: Content-Type
+                value: multipart/form-data
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/applications"
+            name: List Applications
+            meta:
+              id: req_798faf826ce6485dbe258eb3e918a2b5
+              created: 1781392285176
+              modified: 1781392285176
+              isPrivate: false
+              description: Lista as candidaturas do estudante (paginado).
+              sortKey: -1781392283914
+            method: GET
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/student/applications/:id"
+            name: Cancel Application
+            meta:
+              id: req_a335d2a650ee4fed89d54d8df7695553
+              created: 1781392285176
+              modified: 1781392285176
+              isPrivate: false
+              description: Cancela uma candidatura (apenas PENDING ou ANALYSING).
+              sortKey: -1781392283913
+            method: DELETE
+            authentication:
+              type: bearer
+              disabled: false
+              token: "{{TOKEN_STUDENT}}"
+              prefix: ""
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+            pathParameters:
+              - name: id
+                value: ""
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_8a138a2877743a3b9e94578a27341dea1f803c87
+    created: 1781392285285
+    modified: 1781396006656
+environments:
+  name: Base Environment
+  meta:
+    id: env_8a138a2877743a3b9e94578a27341dea1f803c87
+    created: 1781392285178
+    modified: 1781396006657
+    isPrivate: false
+  data:
+    BASE_URL: http://localhost:3000
+    PHP_URL: http://localhost:8080
+    TOKEN_ADMIN: ""
+    TOKEN_USER: ""
+    TOKEN_COMPANY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiNTljODYwMy0xNmQ1LTQwY2QtYTUyMC03M2IzY2EwYWQ3MmUiLCJlbWFpbCI6InVzdWFyaW9AZXhhbXBsZS5jb20iLCJyb2xlIjoiQ09NUEFOWSIsIm1mYVZlcmlmaWVkIjp0cnVlLCJjb21wYW55TWVtYmVyUm9sZSI6IlJFQ1JVSVRFUiIsImlhdCI6MTc4MTM5NTg5NywiZXhwIjoxNzgxNDgyMjk3fQ.H1qiJYV83eI2oBXqNSvzgBwHmEn7zgCm_d83Et_2UB8
+    TOKEN_STUDENT: ""
+    COURSE_ID: 6755940a-65f7-11f1-a4ac-a2aa23140b79
+    JOB_ID: 5a84272e-1934-4b75-b1ca-bdf9344d548c
+    MEMBER_ID: ""
+    APPLICATION_ID: ""

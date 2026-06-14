@@ -1,9 +1,0 @@
-$kind: http-request
-description: Apenas COMPANY. Gera o secret e o QR Code (data URL PNG) para escanear no Google/Microsoft Authenticator. Use o TOKEN_COMPANY (tempToken) obtido no Login. O qrCode pode ser colado no navegador para visualizar a imagem.
-url: "{{BASE_URL}}/auth/totp/setup"
-method: GET
-auth:
-  type: bearer
-  credentials:
-    token: "{{TOKEN_COMPANY}}"
-order: 5000
