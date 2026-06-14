@@ -80,17 +80,8 @@ export const createJobSchema = z
   })
   .openapi({ title: "CreateJob" });
 
-export const updateJobSchema = z
-  .object({
-    title: z.string().min(2).max(150).optional(),
-    description: z.string().min(1).optional(),
-    area: z.string().min(1).max(100).optional(),
-    requirements: z.string().optional(),
-    salary: z.number().positive().optional(),
-    location: z.string().min(1).max(150).optional(),
-    modality: modalitySchema.optional(),
-    courseId: z.uuid().optional(),
-  })
+export const updateJobSchema = createJobSchema
+  .partial()
   .refine((data) => Object.keys(data).length > 0, { message: "Nenhum dado para atualizar." })
   .openapi({ title: "UpdateJob" });
 
