@@ -11,7 +11,7 @@ $resp = curl_exec($ch);
 $vagas = [];
 if ($resp) {
     $data = json_decode($resp, true);
-    foreach ($data['jobs'] ?? [] as $item) {
+    foreach ($data['data'] ?? [] as $item) {
         $vagas[] = new Vaga($item);
     }
 }

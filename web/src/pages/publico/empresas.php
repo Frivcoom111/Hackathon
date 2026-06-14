@@ -11,7 +11,7 @@ $resp = curl_exec($ch);
 $empresas = [];
 if ($resp) {
     $data = json_decode($resp, true);
-    foreach ($data['companies'] ?? [] as $item) {
+    foreach ($data['data'] ?? [] as $item) {
         $empresas[] = new Empresa($item);
     }
 }
