@@ -5,7 +5,7 @@
 
       <!-- Logo — usa BASE para montar o caminho certo independente de onde o PHP está rodando -->
       <a href="<?= BASE ?>index.php" class="footer-brand">
-        <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal UniALFA" height="28"
+        <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal UniALFA"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
         <span style="display:none;">Portal UniALFA</span>
       </a>

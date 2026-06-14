@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= isset($titulo_pagina) ? $titulo_pagina . ' | Hackathon' : 'Hackathon' ?></title>
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= BASE ?>assets/images/site/favcon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="<?= BASE ?>assets/images/site/favcon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="<?= BASE ?>assets/images/site/favcon.png">
 
   <!-- Bootstrap CSS (Local) -->
   <link href="<?= BASE ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">

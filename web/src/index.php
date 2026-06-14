@@ -14,8 +14,9 @@ $rotas = [
     'login'             => 'pages/auth/login.php',
     'cadastro'          => 'pages/auth/cadastro.php',
     'perfil'            => 'pages/aluno/perfil.php',
-    'empresa-dashboard' => 'pages/empresa/dashboard.php',
-    'empresa-vaga-form' => 'pages/empresa/vaga-form.php',
+    'empresa-dashboard'  => 'pages/empresa/dashboard.php',
+    'empresa-vaga-form'  => 'pages/empresa/vaga-form.php',
+    'empresa-candidatos' => 'pages/empresa/candidatos.php',
 ];
 
 // Título que aparece na aba do navegador para cada página
@@ -26,8 +27,9 @@ $titulos = [
     'login'             => 'Login',
     'cadastro'          => 'Cadastro',
     'perfil'            => 'Meu Perfil',
-    'empresa-dashboard' => 'Painel da Empresa',
-    'empresa-vaga-form' => 'Vaga',
+    'empresa-dashboard'  => 'Painel da Empresa',
+    'empresa-vaga-form'  => 'Vaga',
+    'empresa-candidatos' => 'Candidatos',
     '404'               => 'Página não encontrada',
 ];
 

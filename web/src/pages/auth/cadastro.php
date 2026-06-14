@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $ch = curl_init(API_URL . '/courses');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $resp   = curl_exec($ch);
-$cursos = json_decode($resp, true)['courses'] ?? [];
+$cursos = json_decode($resp, true)['data'] ?? [];
 ?>
 
 <main class="cadastro-page">

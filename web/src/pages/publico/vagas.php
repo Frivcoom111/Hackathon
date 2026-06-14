@@ -43,7 +43,7 @@ $resp = curl_exec($ch);
 $vagas = [];
 if ($resp) {
     $data = json_decode($resp, true);
-    foreach ($data['jobs'] ?? [] as $item) {
+    foreach ($data['data'] ?? [] as $item) {
         $vaga = new Vaga($item);
 
         // Filtra por palavra-chave no título
@@ -61,9 +61,7 @@ if ($resp) {
         // Filtra por modalidade (checkboxes)
         if (!in_array($vaga->getModalidade(), (array)$modalidades)) continue;
 
-        // Guarda o nome da empresa que vem junto na resposta da API
         $vaga->nomeEmpresa = $item['company']['name'] ?? 'Empresa';
-        $vaga->descricaoCompleta = $item['description'] ?? '';
 
         $vagas[] = $vaga;
     }
