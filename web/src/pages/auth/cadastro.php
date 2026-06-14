@@ -37,12 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
         }
 
-        $ch = curl_init('http://localhost:3000/auth/register/student');
+        $ch = curl_init(API_URL . '/auth/register/student');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $campos); // cURL detecta CURLFile e usa multipart
         $resp = curl_exec($ch);
-        curl_close($ch);
 
         $data = json_decode($resp, true);
 
@@ -80,13 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ],
         ];
 
-        $ch = curl_init('http://localhost:3000/auth/register/company');
+        $ch = curl_init(API_URL . '/auth/register/company');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
         $resp = curl_exec($ch);
-        curl_close($ch);
 
         $data = json_decode($resp, true);
 
@@ -101,10 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Busca os cursos disponíveis para o select do formulário de aluno
-$ch = curl_init('http://localhost:3000/courses');
+$ch = curl_init(API_URL . '/courses');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $resp   = curl_exec($ch);
-curl_close($ch);
 $cursos = json_decode($resp, true)['courses'] ?? [];
 ?>
 

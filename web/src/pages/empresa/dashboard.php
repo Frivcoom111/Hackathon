@@ -10,11 +10,10 @@ if (empty($_SESSION['token'])) {
 $token = $_SESSION['token'];
 
 // ── Busca o perfil da empresa logada ─────────────────────────────────────────
-$ch = curl_init('http://localhost:3000/company/profile');
+$ch = curl_init(API_URL . '/company/profile');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
 $resp = curl_exec($ch);
-curl_close($ch);
 
 $empresa = null;
 $data = json_decode($resp, true);
@@ -23,11 +22,10 @@ if (!empty($data['data'])) {
 }
 
 // ── Busca as vagas da empresa ─────────────────────────────────────────────────
-$ch = curl_init('http://localhost:3000/company/jobs?page=1&limit=50');
+$ch = curl_init(API_URL . '/company/jobs?page=1&limit=50');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
 $resp = curl_exec($ch);
-curl_close($ch);
 
 $vagas = [];
 $dataVagas = json_decode($resp, true);
