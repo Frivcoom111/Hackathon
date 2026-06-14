@@ -9,6 +9,8 @@ import {
 import type { ChangePasswordInput, PaginationQuery } from "../../shared/schemas/common.schema";
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import type { PaginationMeta } from "../../shared/utils/response";
+import type { NotificationService } from "../notification/notification.service";
+import { NotificationType } from "../notification/notification.types";
 import type { CompanyRepository } from "./company.repository";
 import type {
   ChangeApplicationStatusInput,
@@ -27,8 +29,18 @@ const JOB_STATUS_TRANSITIONS: Record<JobStatus, JobStatus[]> = {
   CLOSED: [],
 };
 
+// Mensagem exibida ao estudante conforme o novo status da candidatura.
+const APPLICATION_STATUS_MESSAGE: Partial<Record<ChangeApplicationStatusInput["status"], string>> = {
+  ANALYSING: "está em análise",
+  APPROVED: "foi aprovada",
+  REJECTED: "foi rejeitada",
+};
+
 export class CompanyService {
-  constructor(private readonly companyRepository: CompanyRepository) {}
+  constructor(
+    private readonly companyRepository: CompanyRepository,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   // ─── Perfil ───────────────────────────────────────────────────────────────
 
@@ -196,7 +208,22 @@ export class CompanyService {
       }
     }
 
-    return this.companyRepository.updateApplicationStatus(applicationId, data);
+    const updated = await this.companyRepository.updateApplicationStatus(applicationId, data);
+
+    const message = APPLICATION_STATUS_MESSAGE[data.status];
+    if (message) {
+      try {
+        await this.notificationService.create(application.student.userId, {
+          type: NotificationType.APPLICATION_STATUS,
+          title: "Atualização da candidatura",
+          message: `Sua candidatura para a vaga "${application.job.title}" ${message}.`,
+        });
+      } catch {
+        // Falha ao notificar não deve reverter a mudança de status.
+      }
+    }
+
+    return updated;
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────

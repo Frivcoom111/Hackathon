@@ -6,7 +6,9 @@ import { setupDocs } from "./docs/docs";
 import addressRoutes from "./modules/address/address.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import companyRoutes from "./modules/company/company.routes";
+import courseRoutes from "./modules/course/course.routes";
 import jobsRoutes from "./modules/jobs/jobs.routes";
+import notificationRoutes from "./modules/notification/notification.routes";
 import studentRoutes from "./modules/student/student.routes";
 import { errorHandler } from "./shared/middlewares/errorHandler.middlewares";
 import { globalRateLimiter } from "./shared/middlewares/rateLimit.middleware";
@@ -34,6 +36,8 @@ export const appBuild = async (): Promise<Express> => {
   app.use("/student", studentRoutes);
   app.use("/jobs", jobsRoutes);
   app.use("/address", addressRoutes);
+  app.use("/notifications", notificationRoutes);
+  app.use("/courses", courseRoutes);
 
   setupDocs(app);
 

@@ -64,7 +64,7 @@ export class JobsRepository {
   async getJobForApply(jobId: string) {
     return this.prisma.job.findFirst({
       where: { id: jobId, deletedAt: null },
-      select: { id: true, status: true, company: { select: { status: true } } },
+      select: { id: true, title: true, status: true, company: { select: { id: true, status: true } } },
     });
   }
 
