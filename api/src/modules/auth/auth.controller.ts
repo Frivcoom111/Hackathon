@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { UnauthorizedError } from "../../shared/errors/AppError";
+import { requireUser } from "../../shared/utils/requireUser";
 import { response } from "../../shared/utils/response";
 import { loginSchema, registerCompanySchema, registerStudentSchema, totpCodeSchema } from "./auth.schema";
 import type { AuthService } from "./auth.service";
@@ -34,7 +34,7 @@ export class AuthController {
   }
 
   async totpSetup(req: Request, res: Response): Promise<void> {
-    const user = this.requireUser(req);
+    const user = requireUser(req);
 
     const result = await this.authService.totpSetup(user.id, user.email);
 
@@ -42,7 +42,7 @@ export class AuthController {
   }
 
   async totpSetupConfirm(req: Request, res: Response): Promise<void> {
-    const user = this.requireUser(req);
+    const user = requireUser(req);
     const { code } = totpCodeSchema.parse(req.body);
 
     const result = await this.authService.totpSetupConfirm(user.id, code);
@@ -51,7 +51,7 @@ export class AuthController {
   }
 
   async totpVerify(req: Request, res: Response): Promise<void> {
-    const user = this.requireUser(req);
+    const user = requireUser(req);
     const { code } = totpCodeSchema.parse(req.body);
 
     const result = await this.authService.totpVerify(user.id, code);
@@ -60,18 +60,10 @@ export class AuthController {
   }
 
   async me(req: Request, res: Response): Promise<void> {
-    const user = this.requireUser(req);
+    const user = requireUser(req);
 
     const profile = await this.authService.getMe(user.id, user.role);
 
     res.status(200).json(response.success(profile));
-  }
-
-  // authMiddleware já popula req.user; este guard satisfaz o tipo e é defesa em profundidade.
-  private requireUser(req: Request) {
-    if (!req.user) {
-      throw new UnauthorizedError("Token não fornecido.");
-    }
-    return req.user;
   }
 }

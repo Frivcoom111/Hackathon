@@ -12,17 +12,12 @@ const repository = new JobsRepository(prisma);
 const service = new JobsService(repository);
 const controller = new JobsController(service);
 
-// Listagem e detalhe são públicos (sem auth).
+router.use(authMiddleware);
+
 router.get("/", controller.list.bind(controller));
 router.get("/:jobId", controller.getById.bind(controller));
 
 // Candidatura exige estudante autenticado; currículo opcional via multipart.
-router.post(
-  "/:jobId/apply",
-  authMiddleware,
-  requireStudent,
-  uploadResume.single("resume"),
-  controller.apply.bind(controller),
-);
+router.post("/:jobId/apply", requireStudent, uploadResume.single("resume"), controller.apply.bind(controller));
 
 export default router;

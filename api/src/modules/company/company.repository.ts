@@ -232,7 +232,6 @@ export class CompanyRepository {
           id: true,
           status: true,
           resumePath: true,
-          coverLetter: true,
           createdAt: true,
           student: { select: { id: true, name: true, ra: true } },
         },

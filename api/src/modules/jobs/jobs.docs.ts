@@ -1,7 +1,7 @@
 import { bearerAuth, errorResponse, paginatedResponse, successResponse } from "../../docs/helpers";
 import { registry } from "../../docs/registry";
 import { z } from "../../lib/zod";
-import { applyJobSchema, jobIdParamsSchema, listJobsQuerySchema } from "./jobs.schema";
+import { jobIdParamsSchema, listJobsQuerySchema } from "./jobs.schema";
 
 const TAG = "Jobs";
 
@@ -46,14 +46,16 @@ registry.registerPath({
   method: "get",
   path: "/jobs",
   tags: [TAG],
-  summary: "Lista vagas públicas (ACTIVE de empresas APPROVED).",
-  description: "Filtros opcionais: courseId, area, modality, search. Não requer autenticação.",
+  security: bearerAuth,
+  summary: "Lista vagas (ACTIVE de empresas APPROVED).",
+  description: "Filtros opcionais: courseId, area, modality, search. Requer autenticação.",
   request: { query: listJobsQuerySchema },
   responses: {
     200: {
-      description: "Lista paginada de vagas públicas.",
+      description: "Lista paginada de vagas.",
       content: { "application/json": { schema: paginatedResponse(jobListItem) } },
     },
+    401: error("Token inválido ou expirado."),
   },
 });
 
@@ -62,13 +64,15 @@ registry.registerPath({
   method: "get",
   path: "/jobs/{jobId}",
   tags: [TAG],
-  summary: "Detalha uma vaga pública.",
+  security: bearerAuth,
+  summary: "Detalha uma vaga.",
   request: { params: jobIdParamsSchema },
   responses: {
     200: {
       description: "Vaga encontrada.",
       content: { "application/json": { schema: successResponse(jobDetail) } },
     },
+    401: error("Token inválido ou expirado."),
     404: error("Vaga não encontrada."),
   },
 });
@@ -79,14 +83,16 @@ registry.registerPath({
   path: "/jobs/{jobId}/apply",
   tags: [TAG],
   security: bearerAuth,
-  summary: "Candidata o estudante autenticado a uma vaga (currículo opcional).",
-  description: "Requer role STUDENT. Aceita multipart com `resume` opcional e `coverLetter`.",
+  summary: "Candidata o estudante autenticado a uma vaga.",
+  description:
+    "Requer role STUDENT com endereço cadastrado. O currículo é obrigatório: " +
+    "envie `resume` (multipart) ou tenha um currículo no perfil.",
   request: {
     params: jobIdParamsSchema,
     body: {
       content: {
         "multipart/form-data": {
-          schema: applyJobSchema.extend({
+          schema: z.object({
             resume: z.string().openapi({ type: "string", format: "binary" }).optional(),
           }),
         },
@@ -98,7 +104,7 @@ registry.registerPath({
       description: "Candidatura enviada.",
       content: { "application/json": { schema: successResponse(applicationOut) } },
     },
-    400: error("Vaga indisponível para candidatura."),
+    400: error("Vaga indisponível, endereço ou currículo ausente."),
     401: error("Token inválido ou expirado."),
     403: error("Estudante inelegível."),
     409: error("Você já se candidatou a esta vaga."),

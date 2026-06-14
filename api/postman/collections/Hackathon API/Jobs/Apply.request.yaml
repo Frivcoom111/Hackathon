@@ -1,5 +1,5 @@
 $kind: http-request
-description: Candidatura a uma vaga (multipart/form-data). Requer estudante autenticado (TOKEN_STUDENT). `resume` e `coverLetter` são opcionais. Bloqueia candidatura duplicada e estudante inelegível.
+description: Candidatura a uma vaga (multipart/form-data). Requer estudante autenticado (TOKEN_STUDENT) com endereço cadastrado. Currículo obrigatório - envie `resume` ou tenha um no perfil. Bloqueia candidatura duplicada e estudante inelegível.
 url: "{{BASE_URL}}/jobs/:jobId/apply"
 method: POST
 pathVariables:
@@ -7,9 +7,6 @@ pathVariables:
 body:
   type: formdata
   content:
-    - type: text
-      key: coverLetter
-      value: Tenho grande interesse nesta vaga de estágio.
     - type: file
       key: resume
       src:

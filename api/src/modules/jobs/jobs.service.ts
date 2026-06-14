@@ -19,7 +19,7 @@ export class JobsService {
     return job;
   }
 
-  async apply(userId: string, jobId: string, resumePath: string | undefined, coverLetter?: string) {
+  async apply(userId: string, jobId: string, uploadedResumePath?: string) {
     const job = await this.jobsRepository.getJobForApply(jobId);
     if (!job) throw new NotFoundError("Vaga não encontrada.");
     if (job.status !== "ACTIVE" || job.company.status !== "APPROVED") {
@@ -29,9 +29,14 @@ export class JobsService {
     const student = await this.jobsRepository.getStudentByUserId(userId);
     if (!student) throw new NotFoundError("Estudante não encontrado.");
     if (!student.isEligible) throw new ForbiddenError("Estudante inelegível.");
+    if (!student.addressId) throw new BadRequestError("Cadastre um endereço antes de se candidatar.");
+
+    // Currículo enviado na candidatura tem prioridade; senão usa o do perfil. Obrigatório.
+    const resumePath = uploadedResumePath ?? student.resumePath;
+    if (!resumePath) throw new BadRequestError("Cadastre um currículo antes de se candidatar.");
 
     try {
-      return await this.jobsRepository.createApplication(student.id, jobId, resumePath, coverLetter);
+      return await this.jobsRepository.createApplication(student.id, jobId, resumePath);
     } catch (error) {
       if ((error as { code?: string }).code === "P2002") {
         throw new ConflictError("Você já se candidatou a esta vaga.");

@@ -19,7 +19,6 @@ model Address {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   company       Company?
-  companyMember CompanyMember?
   student       Student?
 }
 
@@ -118,14 +117,12 @@ model CompanyMember {
   id        String            @id @default(uuid())
   companyId String
   userId    String            @unique
-  addressId String?           @unique
   role      CompanyMemberRole @default(RECRUITER)
   name      String
   cpf       String            @unique @db.VarChar(11)
   phone     String?           @db.VarChar(11)
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
-  address   Address?          @relation(fields: [addressId], references: [id])
   company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -161,7 +158,6 @@ model Application {
   jobId       String
   status      ApplicationStatus @default(PENDING)
   resumePath  String?
-  coverLetter String?           @db.Text
   deletedAt   DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
