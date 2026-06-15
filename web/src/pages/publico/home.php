@@ -11,7 +11,7 @@ $vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 <section class="banner-section">
   <div class="container">
     <div class="banner-box">
-      <img src="assets/images/site/banner.png" alt="Banner"
+      <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estagios UniALFA"
            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
       <div class="banner-placeholder" style="display:none;">
         <span>Banner</span>

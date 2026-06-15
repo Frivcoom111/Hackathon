@@ -12,7 +12,6 @@ class Candidatura {
     private string $alunoId;
     private string $vagaId;
     private string $status;
-    private ?string $curriculo;
     private ?string $cartaApresentacao;
     private ?string $deletadoEm;
     private string $criadoEm;
@@ -23,7 +22,6 @@ class Candidatura {
         $this->alunoId            = $dados['studentId']   ?? '';
         $this->vagaId             = $dados['jobId']       ?? '';
         $this->status             = $dados['status']      ?? self::STATUS_PENDENTE;
-        $this->curriculo          = $dados['resumePath']  ?? null;
         $this->cartaApresentacao  = $dados['coverLetter'] ?? null;
         $this->deletadoEm         = $dados['deletedAt']   ?? null;
         $this->criadoEm           = $dados['createdAt']   ?? '';
@@ -36,7 +34,6 @@ class Candidatura {
     public function getAlunoId(): string              { return $this->alunoId; }
     public function getVagaId(): string               { return $this->vagaId; }
     public function getStatus(): string               { return $this->status; }
-    public function getCurriculo(): ?string           { return $this->curriculo; }
     public function getCartaApresentacao(): ?string   { return $this->cartaApresentacao; }
     public function getDeletadoEm(): ?string          { return $this->deletadoEm; }
     public function getCriadoEm(): string             { return $this->criadoEm; }
@@ -45,7 +42,6 @@ class Candidatura {
     // ── Setters ────────────────────────────────────────────────────────────────
 
     public function setStatus(string $status): void              { $this->status = $status; }
-    public function setCurriculo(?string $path): void            { $this->curriculo = $path; }
     public function setCartaApresentacao(?string $carta): void   { $this->cartaApresentacao = $carta; }
 
     // ── Utilitários ────────────────────────────────────────────────────────────
@@ -90,7 +86,6 @@ class Candidatura {
             'studentId'   => $this->alunoId,
             'jobId'       => $this->vagaId,
             'status'      => $this->status,
-            'resumePath'  => $this->curriculo,
             'coverLetter' => $this->cartaApresentacao,
         ];
     }

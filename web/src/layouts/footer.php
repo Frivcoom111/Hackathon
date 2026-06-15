@@ -1,3 +1,6 @@
+<?php $semFooter = in_array($pagina ?? '', ['login', 'cadastro'], true); ?>
+
+<?php if (!$semFooter): ?>
 <footer>
   <div class="container">
 
@@ -27,6 +30,7 @@
 
   </div>
 </footer>
+<?php endif; ?>
 
 <!-- Bootstrap JS (local) — carrega o JS do Bootstrap para modais, menu hamburguer etc. -->
 <script src="<?= BASE ?>assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

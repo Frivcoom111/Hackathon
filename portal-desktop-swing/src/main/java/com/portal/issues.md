@@ -5,77 +5,65 @@ Após a issue ser criada, a branch é aberta e o nome é passado para commit e p
 
 ---
 
-## Issue 3 — Dashboard com contadores e Design Patterns
+## Issue 1 — Gestão de Alunos e Relatórios TXT
 
 **Instrução para o Copilot:**
 
 Crie uma issue com as seguintes informações:
 
 **Título:**
-`feat(java): Dashboard com contadores e aplicação de Design Patterns`
+`feat(java): Gestão de Alunos e Geração de Relatórios TXT`
 
 **Descrição:**
 
 ```
 ## O que foi implementado
 
-### Dashboard com contadores (DashboardHomePanel)
-Painel inicial exibido ao fazer login, com visão geral do sistema em tempo real.
+### Gestão de Alunos
+Módulo completo de administração de alunos no Back Office Java (Swing).
 
-**Contadores:**
-- Empresas Pendentes — aguardando análise do admin
-- Vagas Ativas — publicadas e disponíveis
-- Candidaturas Abertas — com status PENDING ou ANALYSING
-- Alunos Aptos — com isEligible = true
+**Fluxo:**
+- Admin cadastra aluno (cria User + Student em transação única)
+- Admin edita dados do aluno
+- Admin marca aluno como Apto ou Inapto para estágio (isEligible)
+- Admin importa lista de alunos via arquivo .txt
 
-**Características:**
-- 4 cards padronizados em azul (UX consistente)
-- Botão "Atualizar" recarrega os dados do banco sem reabrir a tela
-- Saudação com e-mail do usuário logado
-- Item "Início" adicionado ao menu lateral como entrada padrão ao logar
-
-**Arquivos criados:**
-- `model/DashboardStats.java` — POJO com os 4 contadores
-- `dao/DashboardDAO.java` — query única com 4 subqueries paralelas
-- `gui/dashboard/DashboardHomePanel.java` — painel de contadores
-
-**Arquivos alterados:**
-- `gui/dashboard/DashboardFrame.java` — painel "home" registrado e definido como padrão
+**Arquivos criados/alterados:**
+- `model/Student.java` — adicionados userId, email, phone
+- `dao/StudentDAO.java` — findAll (JOIN com User), findByTerm, existsByRa, existsByCpf, saveWithUser (transação), update, toggleEligible
+- `dao/UserDAO.java` — adicionados save() e existsByEmail()
+- `service/StudentService.java` — listar, buscar, criar, editar, toggleEligivel, importar
+- `gui/students/StudentListPanel.java` — tabela com busca por nome/RA, badge de aptidão colorido
+- `gui/students/StudentFormDialog.java` — formulário criar/editar (senha inicial = CPF)
+- `gui/students/StudentImportDialog.java` — seleção de .txt, preview antes de importar
+- `util/FileImportUtil.java` — parser atualizado (formato: nome;ra;cpf;email)
 
 ---
 
-### Design Patterns aplicados
-Cinco padrões documentados e implementados no projeto:
+### Geração de Relatórios TXT
+Painel com 4 tipos de relatório, com seleção de pasta de destino via JFileChooser.
 
-| Pattern | Onde | Descrição |
-|---|---|---|
-| Singleton | `config/DatabaseConfig.java` | Pool HikariCP único; construtor privado adicionado |
-| DAO | `dao/BaseDAO.java` + DAOs | Isolamento de acesso ao banco por entidade |
-| Factory Method | `util/ButtonFactory.java` | Criação padronizada de botões Swing (primary, secondary, danger) |
-| Facade | `service/*.java` | Services expõem operações de alto nível para a GUI |
-| Template Method | `dao/BaseDAO.java` | `getConnection()` reutilizado por todos os DAOs concretos |
+**Relatórios disponíveis:**
+- Empresas cadastradas (nome, CNPJ formatado, status, telefone)
+- Alunos cadastrados (nome, RA, CPF, aptidão)
+- Vagas disponíveis (título, área, modalidade, status, salário)
+- Candidaturas (nome do aluno, vaga, status)
 
-**Arquivos criados:**
-- `util/ButtonFactory.java` — Factory Method para botões padronizados
-
-**Arquivos alterados:**
-- `config/DatabaseConfig.java` — construtor privado + javadoc Singleton
-- `misc/md/ESTUTURA.md` — tabela de Design Patterns documentada
-
----
-
-### Correção de UX
-Todos os elementos de interface padronizados em azul (0x1565C0):
-- Cards do dashboard: fundo azul claro, texto e borda azul
-- Header do DashboardHomePanel: azul padrão
-- Títulos dos cards de relatório: azul padrão
+**Arquivos criados/alterados:**
+- `dao/JobDAO.java` — findAll (vagas não deletadas)
+- `dao/ApplicationDAO.java` — findAll com JOIN em Student e Job
+- `model/Application.java` — adicionados studentName e jobTitle
+- `service/ReportService.java` — orquestra os 4 relatórios com timestamp no nome do arquivo
+- `util/ReportExporter.java` — atualizado para exibir nomes legíveis nas candidaturas e CNPJ formatado
+- `gui/reports/ReportPanel.java` — 4 cards coloridos, seleção de pasta, abre o Explorer após gerar
+- `gui/dashboard/DashboardFrame.java` — item Relatórios adicionado ao menu lateral
 
 ## Fora do escopo (próximas issues)
-- Exportação de relatórios em CSV
-- Exportação de relatórios em PDF
-- Controle de perfis de acesso (ADMIN, COORDENADOR, OPERADOR)
+- Consulta de Vagas (JobListPanel, JobDetailDialog)
+- Consulta de Candidaturas (ApplicationListPanel, ApplicationDetailDialog)
+- Exportação em PDF e CSV
 ```
 
-**Branch:** `feat/vinicius/dashboard-patterns`
+**Branch:** `feat/vinicius/alunos-relatorios`
 
 ---

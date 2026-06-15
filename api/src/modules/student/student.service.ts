@@ -47,11 +47,6 @@ export class StudentService {
     await this.studentRepository.updatePassword(userId, await generateHash(data.newPassword));
   }
 
-  async updateResume(userId: string, resumePath: string) {
-    const student = await this.getStudentOrThrow(userId);
-    return this.studentRepository.updateResume(student.id, resumePath);
-  }
-
   async listApplications(userId: string, query: PaginationQuery) {
     const student = await this.getStudentOrThrow(userId);
     const { page, limit } = query;

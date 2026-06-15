@@ -1,23 +1,34 @@
 /* ===== Cadastro ===== */
 /* Mesma largura/altura da tela de login; o form rola quando há muitos campos. */
 .cadastro-page {
-  min-height: calc(100vh - 64px);
-  display: flex; align-items: center; padding: 40px 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 34px 18px;
+  background:
+    linear-gradient(90deg, rgba(2,31,65,.92), rgba(2,31,65,.78)),
+    url("../assets/images/site/login.png") center/cover no-repeat;
 }
 .cadastro-container {
-  display: flex; width: 100%; max-width: 920px;
-  margin: 0 auto; background: var(--branco);
-  border-radius: 16px; overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: flex;
+  width: 100%;
+  max-width: 1120px;
+  min-height: 620px;
+  margin: 0 auto;
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 26px 70px rgba(0,0,0,.30);
 }
 .cadastro-imagem {
-  flex: 1; background: var(--azul-fundo);
+  flex: 1.08; background: var(--azul-fundo);
   display: flex; align-items: center; justify-content: center;
-  min-height: 520px;
+  min-height: 620px;
 }
 .cadastro-imagem img { width: 100%; height: 100%; object-fit: cover; }
-.cadastro-form-box   { flex: 1; padding: 40px 36px; overflow-y: auto; max-height: calc(100vh - 80px); }
-.cadastro-titulo     { font-size: 1.6rem; font-weight: 700; color: var(--texto-titulo); margin-bottom: 4px; }
+.cadastro-form-box   { flex: .92; padding: 46px; overflow-y: auto; max-height: calc(100vh - 68px); }
+.cadastro-titulo     { font-size: 2rem; font-weight: 700; color: var(--texto-titulo); margin-bottom: 4px; }
 .cadastro-sub        { font-size: 0.9rem; color: var(--texto-secundario); margin-bottom: 24px; }
 
 /* abas Aluno / Empresa */
@@ -37,7 +48,9 @@
 .cadastro-login { text-align: center; font-size: 0.875rem; color: var(--texto-secundario); margin-top: 20px; margin-bottom: 0; }
 
 @media (max-width: 767px) {
-  .cadastro-container { flex-direction: column; border-radius: 0; margin: 0; }
-  .cadastro-imagem    { min-height: 180px; }
+  .cadastro-page      { padding: 0; align-items: stretch; }
+  .cadastro-container { flex-direction: column; border-radius: 0; margin: 0; min-height: 100vh; }
+  .cadastro-imagem    { min-height: 220px; flex: none; }
   .cadastro-form-box  { padding: 28px 20px; max-height: none; }
+  .cadastro-titulo    { font-size: 1.55rem; }
 }

@@ -14,7 +14,7 @@ const addressSelect = {
 export class StudentRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  // Identidade mínima do estudante logado (ownership, elegibilidade, endereço).
+  // Dados minimos para confirmar que o aluno logado existe.
   async getStudentByUserId(userId: string) {
     return this.prisma.student.findUnique({
       where: { userId },
@@ -31,7 +31,6 @@ export class StudentRepository {
         ra: true,
         cpf: true,
         phone: true,
-        resumePath: true,
         isEligible: true,
         user: { select: { id: true, email: true, role: true, isActive: true, createdAt: true } },
         address: { select: addressSelect },
@@ -48,7 +47,7 @@ export class StudentRepository {
     });
   }
 
-  // Atualiza name/phone (Student) e e-mail (User) numa transação.
+  // Atualiza dados basicos do aluno e, se vier no payload, o e-mail do usuario.
   async updateProfile(studentId: string, userId: string, data: UpdateStudentProfileInput) {
     const { email, ...profile } = data;
     return this.prisma.$transaction(async (tx) => {
@@ -69,14 +68,6 @@ export class StudentRepository {
     await this.prisma.user.update({ where: { id: userId }, data: { password: passwordHash } });
   }
 
-  async updateResume(studentId: string, resumePath: string) {
-    return this.prisma.student.update({
-      where: { id: studentId },
-      data: { resumePath },
-      select: { id: true, resumePath: true },
-    });
-  }
-
   async listApplications(studentId: string, skip: number, take: number) {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.application.findMany({
@@ -84,7 +75,6 @@ export class StudentRepository {
         select: {
           id: true,
           status: true,
-          resumePath: true,
           createdAt: true,
           job: { select: { id: true, title: true, company: { select: { name: true } } } },
         },
@@ -111,7 +101,7 @@ export class StudentRepository {
     });
   }
 
-  // Soft delete: marca como CANCELLED e preenche deletedAt (nunca apaga a linha).
+  // Cancela sem apagar de verdade, para manter historico.
   async cancelApplication(applicationId: string) {
     return this.prisma.application.update({
       where: { id: applicationId },

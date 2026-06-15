@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import { BadRequestError } from "../../shared/errors/AppError";
 import { changePasswordSchema, idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import { requireUser } from "../../shared/utils/requireUser";
 import { response } from "../../shared/utils/response";
@@ -27,15 +26,6 @@ export class StudentController {
     const data = changePasswordSchema.parse(req.body);
     await this.studentService.changePassword(user.id, data);
     res.status(200).json(response.success(null, "Senha alterada com sucesso."));
-  }
-
-  async updateResume(req: Request, res: Response): Promise<void> {
-    const user = requireUser(req);
-    if (!req.file) throw new BadRequestError("O currículo é obrigatório.");
-
-    const resumePath = `uploads/resumes/${req.file.filename}`;
-    const result = await this.studentService.updateResume(user.id, resumePath);
-    res.status(200).json(response.success(result, "Currículo atualizado com sucesso."));
   }
 
   async listApplications(req: Request, res: Response): Promise<void> {

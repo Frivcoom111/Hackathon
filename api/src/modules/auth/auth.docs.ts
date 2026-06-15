@@ -21,10 +21,8 @@ const error = (description: string) => ({
   content: { "application/json": { schema: errorResponse } },
 });
 
-// Documentação dos campos enviados como multipart (inclui o arquivo `resume`).
-const registerStudentBody = registerStudentSchema
-  .extend({ resume: z.string().openapi({ type: "string", format: "binary" }).optional() })
-  .openapi({ title: "RegisterStudentForm" });
+// Corpo enviado em JSON no cadastro de estudante.
+const registerStudentBody = registerStudentSchema.openapi({ title: "RegisterStudentBody" });
 
 const qrCodeResponse = z.object({ qrCode: z.string() }).openapi({ title: "QrCodeResponse" });
 const tokenResponse = z.object({ token: z.string() }).openapi({ title: "TokenResponse" });
@@ -44,10 +42,10 @@ registry.registerPath({
   method: "post",
   path: "/auth/register/student",
   tags: [TAG],
-  summary: "Registra um estudante (multipart, currículo opcional).",
+  summary: "Registra um estudante.",
   description: "Cria User(STUDENT) + Student + StudentCourse em transação. Não requer autenticação.",
   request: {
-    body: { content: { "multipart/form-data": { schema: registerStudentBody } } },
+    body: jsonBody(registerStudentBody),
   },
   responses: {
     201: {

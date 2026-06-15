@@ -36,11 +36,12 @@ $ehEmpresa      = $logado && $api->jwt()->isCompany();
 $ehAdminEmpresa = $logado && $api->jwt()->isCompanyAdmin();
 $ehAluno        = $logado && $api->jwt()->isStudent();
 
-// Páginas de autenticação usam um cabeçalho enxuto (só a logo, centralizada).
+// Login e cadastro ficam sem navbar para deixar o foco no formulario.
 $paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
 ?>
 
-<nav class="navbar navbar-expand-lg sticky-top<?= $paginaAuth ? ' navbar-auth' : '' ?>">
+<?php if (!$paginaAuth): ?>
+<nav class="navbar navbar-expand-lg sticky-top">
   <div class="container navbar-container">
 
     <!-- Logo -->
@@ -48,7 +49,6 @@ $paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
       <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal de Estágios UniALFA">
     </a>
 
-    <?php if (!$paginaAuth): ?>
     <!-- Botão hamburguer (mobile) -->
     <button class="navbar-toggler border-0" type="button"
             data-bs-toggle="collapse" data-bs-target="#navbarMenu"
@@ -91,7 +91,6 @@ $paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
       <?php endif; ?>
 
     </div>
-    <?php endif; ?>
-
   </div>
 </nav>
+<?php endif; ?>

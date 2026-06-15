@@ -23,11 +23,6 @@ class EstudanteService extends BaseService
         ], true);
     }
 
-    public function atualizarCurriculo(array $arquivo): array
-    {
-        return $this->client->postMultipart('/student/resume', [], $arquivo, true);
-    }
-
     public function endereco(): array
     {
         return $this->client->get('/address/me', [], true);

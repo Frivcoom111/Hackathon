@@ -178,7 +178,7 @@ PENDING → ANALYSING → APPROVED
 
 ```
 # Uma linha por aluno, campos separados por ;
-# nome;ra;cpf;email;periodo;curso
+# nome;ra;cpf;email
 João Silva;20240001;123.456.789-00;joao@unialfa.edu.br;3;Sistemas de Informação
 Maria Souza;20240002;987.654.321-00;maria@unialfa.edu.br;5;Engenharia de Software
 ```

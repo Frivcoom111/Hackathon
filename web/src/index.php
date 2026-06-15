@@ -38,7 +38,7 @@ $pagina = $_GET['page'] ?? 'home';
 
 if ($pagina === 'logout') {
     session_destroy();
-    header('Location: ' . BASE . 'index.php?page=home');
+    header('Location: ' . BASE . 'index.php?page=login');
     exit;
 }
 

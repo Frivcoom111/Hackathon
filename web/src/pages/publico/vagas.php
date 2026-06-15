@@ -39,8 +39,10 @@ foreach ($resp['data'] ?? [] as $item) {
     if ($bolsaMin > 0 && ($vaga->getSalario() ?? 0) < $bolsaMin)       continue;
     if (!in_array($vaga->getModalidade(), (array)$modalidades))         continue;
 
-    $vaga->nomeEmpresa = $item['company']['name'] ?? 'Empresa';
-    $vagas[] = $vaga;
+    $vagas[] = [
+        'vaga' => $vaga,
+        'empresa' => $item['company']['name'] ?? 'Empresa',
+    ];
 }
 ?>
 
@@ -171,7 +173,11 @@ foreach ($resp['data'] ?? [] as $item) {
 
         <?php else: ?>
           <div class="row g-4">
-            <?php foreach ($vagas as $vaga): ?>
+            <?php foreach ($vagas as $itemVaga): ?>
+              <?php
+                $vaga = $itemVaga['vaga'];
+                $nomeEmpresa = $itemVaga['empresa'];
+              ?>
               <div class="col-lg-6 col-12">
                 <div class="vaga-card">
                   <div class="vaga-card-top">
@@ -183,7 +189,7 @@ foreach ($resp['data'] ?? [] as $item) {
                     <span class="vaga-badge">Estágio</span>
                   </div>
                   <h5 class="vaga-titulo"><?= htmlspecialchars($vaga->getTitulo()) ?></h5>
-                  <p class="vaga-empresa"><?= htmlspecialchars($vaga->nomeEmpresa) ?></p>
+                  <p class="vaga-empresa"><?= htmlspecialchars($nomeEmpresa) ?></p>
                   <div class="vaga-infos">
                     <span><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($vaga->getLocalizacao()) ?></span>
                     <span><i class="bi bi-laptop"></i> <?= htmlspecialchars($vaga->getArea()) ?></span>
@@ -194,7 +200,7 @@ foreach ($resp['data'] ?? [] as $item) {
                     <button class="btn btn-primary btn-sm" onclick="abrirModal(this)"
                       data-id="<?= htmlspecialchars($vaga->getId()) ?>"
                       data-titulo="<?= htmlspecialchars($vaga->getTitulo()) ?>"
-                      data-empresa="<?= htmlspecialchars($vaga->nomeEmpresa) ?>"
+                      data-empresa="<?= htmlspecialchars($nomeEmpresa) ?>"
                       data-local="<?= htmlspecialchars($vaga->getLocalizacao()) ?>"
                       data-area="<?= htmlspecialchars($vaga->getArea()) ?>"
                       data-modalidade="<?= $vaga->getModalidadeLabel() ?>"
@@ -265,7 +271,8 @@ foreach ($resp['data'] ?? [] as $item) {
 
 <script>
 function abrirModal(btn) {
-  document.getElementById('modal-vaga-id').value          = btn.dataset.id;
+  const inputVagaId = document.getElementById('modal-vaga-id');
+  if (inputVagaId) inputVagaId.value = btn.dataset.id;
   document.getElementById('modal-titulo').textContent     = btn.dataset.titulo;
   document.getElementById('modal-empresa').textContent    = btn.dataset.empresa;
   document.getElementById('modal-modalidade').textContent = btn.dataset.modalidade;

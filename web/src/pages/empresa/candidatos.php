@@ -102,14 +102,6 @@ $candidaturas = array_map(fn($item) => new Candidatura($item), $itensRaw);
                   <i class="bi bi-calendar"></i>
                   Candidatou-se em <?= date('d/m/Y', strtotime($candidatura->getCriadoEm())) ?>
                 </span>
-                <?php if ($candidatura->getCurriculo()): ?>
-                  <span>
-                    <i class="bi bi-file-earmark-text"></i>
-                    <a href="<?= htmlspecialchars($candidatura->getCurriculo()) ?>" target="_blank">
-                      Ver currículo
-                    </a>
-                  </span>
-                <?php endif; ?>
               </div>
 
               <?php if (!$candidatura->isRejeitada() && !$candidatura->isCancelada()): ?>

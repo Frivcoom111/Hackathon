@@ -14,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Cadastro de aluno ─────────────────────────────────────────────────────
     } elseif ($tipo === 'aluno') {
+        $statusCurso = $_POST['statusCurso'] ?? 'ACTIVE';
+
         $campos = [
             'email'     => trim($_POST['email']    ?? ''),
             'password'  => $senha,
@@ -22,20 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''),
             'phone'     => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
             'courseId'  => trim($_POST['courseId'] ?? ''),
+            'status'    => $statusCurso,
             'startedAt' => $_POST['startedAt']     ?? '',
         ];
 
-        $arquivo = [];
-        if (!empty($_FILES['curriculo']['tmp_name'])) {
-            $arquivo = [
-                'field' => 'resume',
-                'path'  => $_FILES['curriculo']['tmp_name'],
-                'name'  => $_FILES['curriculo']['name'],
-                'mime'  => $_FILES['curriculo']['type'] ?: 'application/octet-stream',
-            ];
+        if ($statusCurso === 'COMPLETED') {
+            $campos['finishedAt'] = $_POST['finishedAt'] ?? '';
         }
 
-        $data = $api->auth()->registrarEstudante($campos, $arquivo);
+        $data = $api->auth()->registrarEstudante($campos);
 
         if ($data['success'] ?? false) {
             $_SESSION['msg_sucesso'] = 'Cadastro realizado! Faça login para continuar.';
@@ -90,7 +87,7 @@ $semCursos  = empty($cursos);
   <div class="cadastro-container">
 
     <div class="cadastro-imagem">
-      <img src="<?= BASE ?>assets/images/site/cadastro.png" alt="Cadastro">
+      <img src="<?= BASE ?>assets/images/site/login.png" alt="Cadastro">
     </div>
 
     <div class="cadastro-form-box">
@@ -116,8 +113,7 @@ $semCursos  = empty($cursos);
 
       <!-- ── FORMULÁRIO ALUNO ── -->
       <form id="form-aluno" class="cadastro-form <?= $abaAtiva === 'empresa' ? 'd-none' : '' ?>"
-            method="POST" action="<?= BASE ?>index.php?page=cadastro"
-            enctype="multipart/form-data">
+            method="POST" action="<?= BASE ?>index.php?page=cadastro">
         <input type="hidden" name="tipo" value="aluno">
         <div class="row g-3">
 
@@ -164,14 +160,23 @@ $semCursos  = empty($cursos);
             <?php endif; ?>
           </div>
 
-          <div class="col-12">
+          <div class="col-md-6">
+            <label class="form-label" for="statusCurso">Status do curso</label>
+            <select name="statusCurso" id="statusCurso" class="form-select" onchange="toggleConclusao()">
+              <option value="ACTIVE">Em andamento</option>
+              <option value="COMPLETED">Finalizado</option>
+              <option value="CANCELLED">Não finalizado</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
             <label class="form-label">Data de início do curso</label>
             <input type="date" name="startedAt" class="form-control" required>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Currículo <span class="text-muted small">(opcional)</span></label>
-            <input type="file" name="curriculo" class="form-control" accept=".pdf,.jpg,.png">
+          <div class="col-12 d-none" id="campoConclusao">
+            <label class="form-label" for="finishedAt">Data de conclusão do curso</label>
+            <input type="date" name="finishedAt" id="finishedAt" class="form-control">
           </div>
 
           <div class="col-12">
@@ -307,5 +312,16 @@ function trocarAba(tipo, btn) {
   btn.classList.add('active');
   document.getElementById('form-aluno').classList.toggle('d-none',   tipo !== 'aluno');
   document.getElementById('form-empresa').classList.toggle('d-none', tipo !== 'empresa');
+}
+
+function toggleConclusao() {
+  const status = document.getElementById('statusCurso').value;
+  const campo = document.getElementById('campoConclusao');
+  const input = document.getElementById('finishedAt');
+  const finalizado = status === 'COMPLETED';
+
+  campo.classList.toggle('d-none', !finalizado);
+  input.required = finalizado;
+  if (!finalizado) input.value = '';
 }
 </script>

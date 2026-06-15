@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { authMiddleware, requireStudent } from "../../shared/middlewares/auth.middlewares";
-import { uploadResume } from "../../shared/middlewares/upload.middleware";
 import { NotificationRepository } from "../notification/notification.repository";
 import { NotificationService } from "../notification/notification.service";
 import { StudentController } from "./student.controller";
@@ -21,7 +20,6 @@ router.use(authMiddleware, requireStudent);
 router.get("/profile", controller.getProfile.bind(controller));
 router.patch("/profile", controller.updateProfile.bind(controller));
 router.patch("/password", controller.changePassword.bind(controller));
-router.patch("/resume", uploadResume.single("resume"), controller.updateResume.bind(controller));
 router.get("/applications", controller.listApplications.bind(controller));
 router.delete("/applications/:id", controller.cancelApplication.bind(controller));
 
