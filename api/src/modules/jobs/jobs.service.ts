@@ -20,28 +20,28 @@ export class JobsService {
 
   async getById(jobId: string) {
     const job = await this.jobsRepository.getPublicById(jobId);
-    if (!job) throw new NotFoundError("Vaga nao encontrada.");
+    if (!job) throw new NotFoundError("Vaga não encontrada.");
     return job;
   }
 
   async apply(userId: string, jobId: string) {
     const job = await this.jobsRepository.getJobForApply(jobId);
-    if (!job) throw new NotFoundError("Vaga nao encontrada.");
+    if (!job) throw new NotFoundError("Vaga não encontrada.");
     if (job.status !== "ACTIVE" || job.company.status !== "APPROVED") {
-      throw new BadRequestError("Vaga indisponivel para candidatura.");
+      throw new BadRequestError("Vaga indisponível para candidatura.");
     }
 
     const student = await this.jobsRepository.getStudentByUserId(userId);
-    if (!student) throw new NotFoundError("Estudante nao encontrado.");
-    if (!student.isEligible) throw new ForbiddenError("Estudante inelegivel.");
-    if (!student.addressId) throw new BadRequestError("Cadastre um endereco antes de se candidatar.");
+    if (!student) throw new NotFoundError("Estudante não encontrado.");
+    if (!student.isEligible) throw new ForbiddenError("Estudante inelegível.");
+    if (!student.addressId) throw new BadRequestError("Cadastre um endereço antes de se candidatar.");
 
     let application: Awaited<ReturnType<JobsRepository["createApplication"]>>;
     try {
       application = await this.jobsRepository.createApplication(student.id, jobId);
     } catch (error) {
       if ((error as { code?: string }).code === "P2002") {
-        throw new ConflictError("Voce ja se candidatou a esta vaga.");
+        throw new ConflictError("Você já se candidatou a esta vaga.");
       }
       throw error;
     }
@@ -50,10 +50,10 @@ export class JobsService {
       await this.notificationService.notifyCompany(job.company.id, {
         type: NotificationType.NEW_APPLICATION,
         title: "Nova candidatura",
-        message: `Voce recebeu uma nova candidatura para a vaga "${job.title}".`,
+        message: `Você recebeu uma nova candidatura para a vaga "${job.title}".`,
       });
     } catch {
-      // Falha ao notificar nao deve invalidar a candidatura criada.
+      // Falha ao notificar não deve invalidar a candidatura criada.
     }
 
     return application;

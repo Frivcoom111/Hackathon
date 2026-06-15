@@ -8,17 +8,18 @@
 
       <!-- Logo — usa BASE para montar o caminho certo independente de onde o PHP está rodando -->
       <a href="<?= BASE ?>index.php" class="footer-brand">
-        <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal UniALFA" height="28"
+        <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal UniALFA"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
         <span style="display:none;">Portal UniALFA</span>
       </a>
 
-      <!-- Links de navegação — espelha o menu do header -->
+      <?php if (empty($paginaAuth)): ?>
+      <!-- Links de navegação — espelha o menu do header (ocultos nas telas de login/cadastro) -->
       <ul class="footer-links">
         <li><a href="<?= BASE ?>index.php?page=home">Início</a></li>
         <li><a href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
-        <li><a href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
       </ul>
+      <?php endif; ?>
 
       <!-- Ano gerado automaticamente pelo PHP -->
       <p class="footer-copy">

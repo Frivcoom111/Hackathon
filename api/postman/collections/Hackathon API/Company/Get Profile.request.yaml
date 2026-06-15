@@ -1,9 +1,0 @@
-$kind: http-request
-description: Retorna o perfil da empresa do membro autenticado. Qualquer membro COMPANY (MFA verificada).
-url: "{{BASE_URL}}/company/profile"
-method: GET
-auth:
-  type: bearer
-  credentials:
-    token: "{{TOKEN_COMPANY}}"
-order: 1000

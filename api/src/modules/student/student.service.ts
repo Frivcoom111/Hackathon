@@ -21,7 +21,7 @@ export class StudentService {
 
   async getProfile(userId: string) {
     const profile = await this.studentRepository.getProfile(userId);
-    if (!profile) throw new NotFoundError("Perfil nao encontrado.");
+    if (!profile) throw new NotFoundError("Perfil não encontrado.");
     return profile;
   }
 
@@ -31,7 +31,7 @@ export class StudentService {
       return await this.studentRepository.updateProfile(student.id, userId, data);
     } catch (error) {
       if ((error as { code?: string }).code === "P2002") {
-        throw new ConflictError("E-mail ja esta em uso.");
+        throw new ConflictError("E-mail já está em uso.");
       }
       throw error;
     }
@@ -39,7 +39,7 @@ export class StudentService {
 
   async changePassword(userId: string, data: ChangePasswordInput): Promise<void> {
     const user = await this.studentRepository.getUserPassword(userId);
-    if (!user) throw new NotFoundError("Usuario nao encontrado.");
+    if (!user) throw new NotFoundError("Usuário não encontrado.");
 
     const isMatch = await compareHash(data.currentPassword, user.password);
     if (!isMatch) throw new UnauthorizedError("Senha atual incorreta.");
@@ -58,11 +58,11 @@ export class StudentService {
     const student = await this.getStudentOrThrow(userId);
 
     const application = await this.studentRepository.getApplicationById(applicationId);
-    if (!application) throw new NotFoundError("Candidatura nao encontrada.");
+    if (!application) throw new NotFoundError("Candidatura não encontrada.");
     if (application.studentId !== student.id) throw new ForbiddenError("Acesso negado.");
 
     if (application.status !== "PENDING" && application.status !== "ANALYSING") {
-      throw new BadRequestError("Candidatura nao pode ser cancelada neste status.");
+      throw new BadRequestError("Candidatura não pode ser cancelada neste status.");
     }
 
     const cancelled = await this.studentRepository.cancelApplication(applicationId);
@@ -74,7 +74,7 @@ export class StudentService {
         message: `${application.student.name} cancelou a candidatura para a vaga "${application.job.title}".`,
       });
     } catch {
-      // Falha ao notificar nao deve reverter o cancelamento.
+      // Falha ao notificar não deve reverter o cancelamento.
     }
 
     return cancelled;
@@ -82,7 +82,7 @@ export class StudentService {
 
   private async getStudentOrThrow(userId: string) {
     const student = await this.studentRepository.getStudentByUserId(userId);
-    if (!student) throw new NotFoundError("Estudante nao encontrado.");
+    if (!student) throw new NotFoundError("Estudante não encontrado.");
     return student;
   }
 

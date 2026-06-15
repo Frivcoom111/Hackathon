@@ -1,0 +1,189 @@
+/* ── Botões ── */
+
+/* azul que vira amarelo no hover */
+.btn-primary {
+  background-color: var(--azul-principal);
+  border-color: var(--azul-principal);
+  color: var(--branco);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+.btn-warning {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: var(--amarelo-hover);
+  border-color: var(--amarelo-hover);
+  color: var(--texto-titulo);
+}
+
+/* botão "Entrar" semi-transparente usado na navbar */
+.btn-entrar {
+  background-color: rgba(13, 110, 253, 0.25);
+  border: 1px solid var(--azul-principal);
+  color: var(--branco);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.btn-entrar:hover,
+.btn-entrar:focus {
+  background-color: var(--amarelo-principal);
+  border-color: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+/* ── Formulários ── */
+.form-control,
+.form-select {
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  color: var(--texto-padrao);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
+}
+.form-label { font-weight: 500; color: var(--texto-titulo); }
+
+/* ── Cards genéricos ── */
+.card {
+  background-color: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+.card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); }
+.card-title { font-family: var(--fonte-titulo); font-weight: 600; color: var(--texto-titulo); }
+.card-text  { color: var(--texto-padrao); }
+
+/* ── Badges de status ── */
+.badge-azul      { background-color: var(--azul-principal);    color: var(--branco); }
+.badge-amarelo   { background-color: var(--amarelo-principal); color: var(--texto-titulo); }
+.badge-success   { background-color: #198754; color: #fff; }
+.badge-danger    { background-color: #dc3545; color: #fff; }
+.badge-warning   { background-color: var(--amarelo-principal); color: var(--texto-titulo); }
+.badge-secondary { background-color: #6c757d; color: #fff; }
+.badge-info      { background-color: var(--azul-claro); color: #fff; }
+
+/* ── Card de vaga — usado na home e na listagem ── */
+.vaga-card {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  height: 100%;
+}
+.vaga-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+.vaga-card-top { display: flex; align-items: center; justify-content: space-between; }
+
+.empresa-logo {
+  width: 44px; height: 44px;
+  border-radius: 8px; border: 1px solid var(--borda); overflow: hidden;
+}
+.empresa-logo img { width: 100%; height: 100%; object-fit: contain; }
+.empresa-logo-placeholder {
+  width: 100%; height: 100%;
+  background: var(--fundo-pagina);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--texto-secundario); font-size: 1.2rem;
+}
+
+.vaga-badge         { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: rgba(13,110,253,0.1); color: var(--azul-principal); }
+.vaga-badge-amarelo { background: rgba(255,193,7,0.15); color: #BA7517; }
+.vaga-titulo   { font-size: 1rem; font-weight: 600; color: var(--texto-titulo); margin: 0; font-family: var(--fonte-titulo); }
+.vaga-empresa  { font-size: 0.85rem; color: var(--texto-secundario); margin: 0; }
+.vaga-infos    { display: flex; flex-direction: column; gap: 4px; }
+.vaga-infos span { font-size: 0.82rem; color: var(--texto-secundario); }
+.vaga-infos i  { color: var(--azul-principal); margin-right: 4px; }
+
+/* rodapé do card — salário à esquerda, botão à direita */
+.vaga-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--borda); }
+.vaga-bolsa  { font-size: 0.95rem; font-weight: 700; color: var(--texto-titulo); }
+
+/* Perfil do aluno em estilo rede profissional */
+.profile-page { background: #eef3f8; min-height: 100vh; }
+.profile-card,
+.profile-panel {
+  background: #fff;
+  border: 1px solid #d7e0ea;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(2,31,65,.06);
+}
+.profile-cover { height: 220px; background: var(--azul-fundo); overflow: hidden; }
+.profile-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center 34%; }
+.profile-main {
+  position: relative;
+  display: flex;
+  gap: 24px;
+  padding: 0 28px 28px;
+}
+.profile-avatar {
+  width: 132px; height: 132px;
+  margin-top: -66px;
+  border: 5px solid #fff;
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--azul-principal), var(--azul-fundo));
+  color: #fff; font-size: 3.25rem; font-weight: 700;
+  box-shadow: 0 12px 30px rgba(2,31,65,.22);
+  flex-shrink: 0;
+}
+.profile-info { padding-top: 20px; min-width: 0; }
+.profile-info h1 { font-size: 1.85rem; margin-bottom: 2px; }
+.profile-headline { margin: 0 0 4px; color: var(--texto-titulo); font-weight: 600; }
+.profile-location { margin: 0; color: var(--texto-secundario); font-size: .92rem; }
+.profile-location button {
+  border: none; padding: 0; background: transparent;
+  color: var(--azul-principal); font-weight: 600;
+}
+.profile-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.profile-grid { display: grid; gap: 16px; margin-top: 16px; }
+.profile-panel { padding: 24px; }
+.profile-panel h2 { font-size: 1.25rem; margin-bottom: 12px; }
+.profile-panel p { color: var(--texto-padrao); margin-bottom: 0; }
+.profile-education { display: flex; gap: 14px; align-items: flex-start; }
+.profile-education-icon {
+  width: 46px; height: 46px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: #e8f1ff; color: var(--azul-principal); font-size: 1.25rem;
+}
+.profile-education strong,
+.profile-education span,
+.profile-education small { display: block; }
+.profile-education span { color: var(--texto-secundario); }
+.profile-education small { color: var(--texto-secundario); font-size: .82rem; }
+.profile-applications { display: grid; gap: 10px; }
+.profile-application {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px; border: 1px solid #dce5ef; border-radius: 10px;
+  background: #fbfdff;
+}
+.profile-application p { margin: 6px 0 0; color: var(--texto-secundario); font-size: .9rem; }
+.profile-empty,
+.profile-empty-inline {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; color: var(--texto-secundario);
+}
+.profile-empty { min-height: 360px; background: #fff; border-radius: 12px; }
+.profile-empty i,
+.profile-empty-inline i { font-size: 2.2rem; color: var(--azul-principal); }
+
+@media (max-width: 767px) {
+  .profile-cover { height: 150px; }
+  .profile-main { display: block; padding: 0 18px 22px; }
+  .profile-avatar { width: 104px; height: 104px; margin-top: -52px; font-size: 2.5rem; }
+  .profile-info h1 { font-size: 1.45rem; }
+  .profile-application { align-items: flex-start; flex-direction: column; }
+}

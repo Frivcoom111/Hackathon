@@ -1,0 +1,44 @@
+/* altura fixa 64px — igual à navbar */
+footer {
+  background-color: var(--azul-escuro);
+  color: var(--branco);
+  font-size: 0.875rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+footer a { color: var(--azul-claro); text-decoration: none; transition: color 0.2s; }
+footer a:hover { color: var(--amarelo-principal); }
+
+/* logo | links | copyright em linha única — nunca quebra */
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 16px;
+  width: 100%;
+}
+.footer-brand {
+  color: var(--branco);
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.footer-brand img { height: 40px; width: auto; object-fit: contain; }
+
+.footer-links {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; gap: 20px; flex-wrap: nowrap;
+}
+.footer-links a { color: var(--azul-claro); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; white-space: nowrap; }
+.footer-links a:hover { color: var(--amarelo-principal); }
+.footer-copy { font-size: 0.8rem; color: var(--texto-secundario); margin: 0; white-space: nowrap; flex-shrink: 0; }
+
+/* mobile — esconde links para caber em uma linha */
+@media (max-width: 767px) {
+  .footer-links { display: none; }
+  .footer-copy  { font-size: 0.7rem; }
+}

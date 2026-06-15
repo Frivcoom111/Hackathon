@@ -1,39 +1,20 @@
-﻿<?php
-// Carrega a classe Vaga para representar cada vaga retornada pela API
+<?php
 require_once __DIR__ . '/../../classes/Vaga.php';
-require_once __DIR__ . '/../../api.php';
 
-// Chama a API via cURL para buscar as 3 Ãºltimas vagas ativas
-$vagas = [];
-$jobs = api_items(api_get('/jobs?limit=3&status=ACTIVE'), 'jobs');
-if ($jobs === []) {
-    $jobs = array_slice(demo_jobs(), 0, 3);
-}
+\App\Auth\Guard::requireLogin($api->jwt());
 
-foreach ($jobs as $item) {
-    $vagas[] = new Vaga($item);
-}
+$resp  = $api->vagas()->listar(['limit' => 3, 'status' => 'ACTIVE']);
+$vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 ?>
 
+<!-- BANNER -->
 <section class="banner-section">
   <div class="container">
     <div class="banner-box">
-      <div class="banner-copy">
-        <span class="banner-kicker">Portal de Estagios UniALFA</span>
-        <h1>Conectando alunos a oportunidades reais na regiao.</h1>
-        <p>Vagas, empresas parceiras e candidaturas em um fluxo simples para alunos e recrutadores.</p>
-        <div class="banner-actions">
-          <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-warning fw-semibold">
-            <i class="bi bi-search me-1"></i> Buscar vagas
-          </a>
-          <a href="<?= BASE ?>index.php?page=empresas" class="btn btn-outline-light">
-            <i class="bi bi-building me-1"></i> Empresas
-          </a>
-        </div>
-      </div>
-
-      <div class="banner-media">
-        <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estagios UniALFA">
+      <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estagios UniALFA"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+      <div class="banner-placeholder" style="display:none;">
+        <span>Banner</span>
       </div>
     </div>
   </div>
@@ -46,7 +27,7 @@ foreach ($jobs as $item) {
     <div class="vagas-header">
       <div>
         <h2 class="vagas-titulo">Vagas em destaque</h2>
-        <p class="vagas-sub">Oportunidades selecionadas para vocÃª</p>
+        <p class="vagas-sub">Oportunidades selecionadas para você</p>
       </div>
       <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-outline-primary btn-sm">Ver todas</a>
     </div>
@@ -54,14 +35,12 @@ foreach ($jobs as $item) {
     <div class="row g-4">
 
       <?php if (empty($vagas)): ?>
-        <!-- Sem vagas: API offline ou nenhuma vaga ativa -->
         <div class="col-12 text-center py-4">
           <i class="bi bi-briefcase fs-2 text-secondary"></i>
-          <p class="text-secondary mt-2">Nenhuma vaga disponÃ­vel no momento.</p>
+          <p class="text-secondary mt-2">Nenhuma vaga disponível no momento.</p>
         </div>
 
       <?php else: ?>
-        <!-- Renderiza um card para cada vaga recebida da API -->
         <?php foreach ($vagas as $vaga): ?>
           <div class="col-lg-4 col-md-6">
             <div class="vaga-card">
@@ -71,7 +50,7 @@ foreach ($jobs as $item) {
                     <i class="bi bi-building"></i>
                   </div>
                 </div>
-                <span class="vaga-badge">EstÃ¡gio</span>
+                <span class="vaga-badge">Estágio</span>
               </div>
               <h5 class="vaga-titulo"><?= htmlspecialchars($vaga->getTitulo()) ?></h5>
               <p class="vaga-empresa"><?= htmlspecialchars($vaga->getArea()) ?></p>
@@ -80,7 +59,6 @@ foreach ($jobs as $item) {
                 <span><i class="bi bi-building"></i> <?= htmlspecialchars($vaga->getModalidadeLabel()) ?></span>
               </div>
               <div class="vaga-footer">
-                <!-- getSalarioFormatado() retorna "R$ 1.200,00" ou "A combinar" -->
                 <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
                 <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-primary btn-sm">Ver vaga</a>
               </div>
@@ -92,4 +70,3 @@ foreach ($jobs as $item) {
     </div>
   </div>
 </section>
-

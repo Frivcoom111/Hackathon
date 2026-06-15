@@ -1,9 +1,0 @@
-$kind: http-request
-description: Rota protegida. Retorna o perfil do usuário autenticado a partir do JWT. O conteúdo varia conforme a role (STUDENT, COMPANY, ADMIN). Troque o token conforme o usuário que deseja testar.
-url: "{{BASE_URL}}/auth/me"
-method: GET
-auth:
-  type: bearer
-  credentials:
-    token: "{{TOKEN_STUDENT}}"
-order: 4000
