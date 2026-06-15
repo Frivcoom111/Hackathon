@@ -8,6 +8,10 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Senha obrigatoria."),
 });
 
+export const totpCodeSchema = z.object({
+  code: z.string().regex(/^\d{6}$/, "Informe o codigo de 6 digitos."),
+});
+
 export const registerStudentSchema = z.object({
   email: z.email("E-mail invalido."),
   password: passwordSchema,
@@ -22,7 +26,6 @@ export const registerStudentSchema = z.object({
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),
   startedAt: z.coerce.date(),
   finishedAt: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
-  resumePath: z.string().optional(),
 });
 
 export const registerCompanySchema = z.object({
@@ -54,6 +57,30 @@ export const registerCompanySchema = z.object({
   }),
 });
 
+export const studentResponseSchema = z.object({
+  userId: z.uuid(),
+  name: z.string(),
+  ra: z.string(),
+  phone: z.string().nullable().optional(),
+});
+
+export const companyResponseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  cnpj: z.string(),
+  status: z.enum(["PENDING", "ANALYSING", "APPROVED", "BLOCKED"]),
+  members: z.array(
+    z.object({
+      userId: z.uuid(),
+      name: z.string(),
+      role: z.enum(["ADMIN", "RECRUITER"]),
+    }),
+  ),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
+export type TotpCodeInput = z.infer<typeof totpCodeSchema>;
 export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
 export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
+export type StudentResponse = z.infer<typeof studentResponseSchema>;
+export type CompanyResponse = z.infer<typeof companyResponseSchema>;

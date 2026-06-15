@@ -25,6 +25,8 @@ class Vaga {
     private ?string $deletadoEm;
     private string $criadoEm;
     private string $atualizadoEm;
+    public string $nomeEmpresa = 'Empresa';
+    public string $descricaoCompleta = '';
 
     public function __construct(array $dados) {
         $this->id           = $dados['id']           ?? '';

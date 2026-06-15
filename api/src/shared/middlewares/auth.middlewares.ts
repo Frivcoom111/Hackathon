@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
-import { Role } from "../../generated/prisma/enums";
+import { CompanyMemberRole, Role } from "../../generated/prisma/enums";
+import { prisma } from "../../lib/prisma";
 import { ForbiddenError, UnauthorizedError } from "../errors/AppError";
 import type { JwtPayload } from "../utils/generateToken";
 
@@ -17,11 +18,21 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: decoded.sub },
+      select: { isActive: true },
+    });
+
+    if (!dbUser?.isActive) {
+      throw new ForbiddenError("Conta inativa. Aguarde a aprovacao da empresa.");
+    }
+
     req.user = {
       id: decoded.sub,
       email: decoded.email,
       role: decoded.role,
       mfaVerified: decoded.mfaVerified,
+      companyMemberRole: decoded.companyMemberRole,
     };
 
     next();
@@ -34,6 +45,26 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
 };
 
 // Exige role específica e, opcionalmente, MFA verificada.
+export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Token nao fornecido.");
+    }
+
+    if (req.user.role !== Role.COMPANY || !req.user.mfaVerified) {
+      throw new ForbiddenError();
+    }
+
+    if (req.user.companyMemberRole !== CompanyMemberRole.ADMIN) {
+      throw new ForbiddenError("Apenas administradores da empresa podem executar esta acao.");
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 const requireRole = (role: Role, options: { mfa: boolean }) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {

@@ -1,66 +1,68 @@
 <?php
-// Inicia a sessão para guardar o token e dados do usuário logado no servidor
+// Inicia a sessao para guardar o login do usuario.
 session_start();
+ob_start();
 
-// BASE é o prefixo usado nos links e assets (ex: imagens, CSS, JS)
-// Deixamos vazio porque o index.php fica na raiz do projeto
+// Como o index.php fica na raiz, a base dos links fica vazia.
 define('BASE', '');
 
-// Mapa de rotas: cada chave é o valor do ?page= na URL
-// e o valor é o arquivo PHP que será carregado dentro do <main>
+// Rotas simples do portal.
 $rotas = [
-    'home'      => 'pages/home.php',
-    'cadastro'  => 'pages/cadastro.php',
-    'login'     => 'pages/login.php',
-    'vagas'     => 'pages/vagas.php',
-    'empresas'  => 'pages/empresas.php',
-    // 'alunos' removido — gerenciado pelo back office Java, não pelo portal web
-    'perfil'    => 'pages/perfil.php',
+    'home'               => 'pages/publico/home.php',
+    'cadastro'           => 'pages/auth/cadastro.php',
+    'login'              => 'pages/auth/login.php',
+    'vagas'              => 'pages/publico/vagas.php',
+    'empresas'           => 'pages/publico/empresas.php',
+    'perfil'             => 'pages/aluno/perfil.php',
+    'empresa-dashboard'  => 'pages/empresa/dashboard.php',
+    'empresa-vaga-form'  => 'pages/empresa/vaga-form.php',
+    'empresa-candidatos' => 'pages/empresa/candidatos.php',
 ];
 
-// Título que aparece na aba do navegador para cada página
+// Titulo da aba do navegador.
 $titulos = [
-    'home'      => 'Início',
-    'cadastro'  => 'Cadastro',
-    'login'     => 'Login',
-    'vagas'     => 'Vagas',
-    'empresas'  => 'Empresas',
-    // 'alunos' removido — mesma razão acima
-    'perfil'    => 'Meu Perfil',
-    '404'       => 'Página não encontrada',
+    'home'              => 'Inicio',
+    'cadastro'          => 'Cadastro',
+    'login'             => 'Login',
+    'vagas'             => 'Vagas',
+    'empresas'          => 'Empresas',
+    'perfil'            => 'Meu Perfil',
+    'empresa-dashboard' => 'Painel da Empresa',
+    'empresa-vaga-form' => 'Vaga da Empresa',
+    'empresa-candidatos' => 'Candidatos',
+    '404'               => 'Pagina nao encontrada',
 ];
 
-// Pega o parâmetro ?page= da URL; se não vier nada, abre a home
+// Se nao vier ?page=, abre a home.
 $pagina = $_GET['page'] ?? 'home';
 
-// Segurança: se o usuário digitar uma rota que não existe, vai para 404
-// Isso evita que alguém tente carregar arquivos arbitrários do servidor
+if ($pagina === 'logout') {
+    session_destroy();
+    header('Location: ' . BASE . 'index.php?page=login');
+    exit;
+}
+
+// Se alguem tentar uma pagina que nao existe, mostra 404.
 if (!array_key_exists($pagina, $rotas)) {
     $pagina = '404';
 }
 
 $titulo_pagina = $titulos[$pagina];
 
-// Carrega o cabeçalho (navbar + <head> do HTML)
+// Carrega o cabecalho do site.
 require 'layouts/header.php';
 ?>
 
 <main>
-  <?php
-  // Se for 404, mostra mensagem direto aqui sem precisar de arquivo separado
-  if ($pagina === '404'):
-  ?>
+  <?php if ($pagina === '404'): ?>
     <div class="container py-5 text-center">
-      <h2>Página não encontrada</h2>
-      <p class="text-secondary">A página que você tentou acessar não existe.</p>
-      <a href="<?= BASE ?>index.php" class="btn btn-primary">Voltar para o início</a>
+      <h2>Pagina nao encontrada</h2>
+      <p class="text-secondary">A pagina que voce tentou acessar nao existe.</p>
+      <a href="<?= BASE ?>index.php" class="btn btn-primary">Voltar para o inicio</a>
     </div>
-  <?php
-  else:
-    // Carrega o arquivo da página correspondente à rota
-    require $rotas[$pagina];
-  endif;
-  ?>
+  <?php else: ?>
+    <?php require $rotas[$pagina]; ?>
+  <?php endif; ?>
 </main>
 
 <?php require 'layouts/footer.php'; ?>

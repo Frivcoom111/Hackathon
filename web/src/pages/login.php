@@ -1,137 +1,115 @@
 <?php
-// Todo o fluxo de login é feito aqui no PHP via cURL — sem JS chamando a API
+require_once __DIR__ . '/../api.php';
 
-$erro        = '';
+$erro = '';
 $mostrarTotp = false;
-$qrCode      = '';
+$qrCode = '';
+$totpEmail = $_SESSION['totp_email'] ?? '';
+$totpTipoAtual = $_SESSION['totp_tipo'] ?? '';
+$totpSessionKeys = ['tempToken', 'totp_tipo', 'qrCode', 'totp_email'];
 
-// Exibe mensagem deixada pelo cadastro (ex: "Cadastro realizado!")
-if (!empty($_SESSION['msg_sucesso'])) {
-    $sucesso = $_SESSION['msg_sucesso'];
-    unset($_SESSION['msg_sucesso']);
-} else {
-    $sucesso = '';
+function limpar_totp(array $keys): void
+{
+    foreach ($keys as $key) unset($_SESSION[$key]);
 }
 
-// Limpa estado TOTP se o usuário clicou em "Voltar"
+function redirecionar(string $pagina): never
+{
+    header('Location: ' . BASE . 'index.php?page=' . $pagina);
+    exit;
+}
+
+function preparar_totp(array $data, string $modo, string $emailFallback): array
+{
+    $_SESSION['tempToken'] = $data['data']['tempToken'] ?? '';
+    $_SESSION['totp_tipo'] = $modo;
+    $_SESSION['totp_email'] = $data['data']['user']['email'] ?? $emailFallback;
+    $setup = api_get('/auth/totp/setup', $_SESSION['tempToken']);
+    $_SESSION['qrCode'] = $setup['data']['qrCode'] ?? '';
+
+    return ['mostrar' => true, 'qrCode' => $_SESSION['qrCode'], 'email' => $_SESSION['totp_email'], 'tipo' => $modo];
+}
+
+$sucesso = $_SESSION['msg_sucesso'] ?? '';
+unset($_SESSION['msg_sucesso']);
+
 if (isset($_GET['voltar'])) {
-    unset($_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
+    limpar_totp($totpSessionKeys);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $acao = $_POST['acao'] ?? 'login';
-
-    // ── Etapa 1: e-mail e senha ───────────────────────────────────────────────
-    if ($acao === 'login') {
-        $ch = curl_init('http://localhost:3000/auth/login');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            'email'    => trim($_POST['email'] ?? ''),
+    if (($_POST['acao'] ?? 'login') === 'login') {
+        $email = trim($_POST['email'] ?? '');
+        $data = api_post_json('/auth/login', [
+            'email' => $email,
             'password' => $_POST['senha'] ?? '',
-        ]));
-        $resp = curl_exec($ch);
-        curl_close($ch);
-
-        $data = json_decode($resp, true);
+        ]);
 
         if (!($data['success'] ?? false)) {
-            $erro = $data['message'] ?? 'Credenciais inválidas.';
+            $erro = $data['message'] ?? 'Credenciais invalidas.';
         } else {
             $tipo = $data['data']['type'] ?? '';
 
             if ($tipo === 'AUTHENTICATED') {
-                // Aluno — salva token na session e vai para a home
                 $_SESSION['token'] = $data['data']['token'];
-                header('Location: ' . BASE . 'index.php?page=home');
-                exit;
+                $_SESSION['role'] = strtoupper($data['data']['user']['role'] ?? 'STUDENT') === 'COMPANY' ? 'empresa' : 'aluno';
+                redirecionar($_SESSION['role'] === 'empresa' ? 'empresa-dashboard' : 'home');
+            }
 
-            } elseif ($tipo === 'TOTP_SETUP') {
-                // Empresa sem TOTP — precisa escanear o QR code pela primeira vez
-                $_SESSION['tempToken'] = $data['data']['tempToken'];
-                $_SESSION['totp_tipo'] = 'setup';
-
-                $ch2 = curl_init('http://localhost:3000/auth/totp/setup');
-                curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch2, CURLOPT_HTTPHEADER, [
-                    'Authorization: Bearer ' . $data['data']['tempToken'],
-                ]);
-                $resp2 = curl_exec($ch2);
-                curl_close($ch2);
-
-                $data2  = json_decode($resp2, true);
-                $qrCode = $data2['data']['qrCode'] ?? '';
-                $_SESSION['qrCode'] = $qrCode;
-                $mostrarTotp = true;
-
-            } elseif ($tipo === 'TOTP_REQUIRED') {
-                // Empresa com TOTP já configurado — só digita o código
-                $_SESSION['tempToken'] = $data['data']['tempToken'];
-                $_SESSION['totp_tipo'] = 'verify';
-                $mostrarTotp = true;
+            if (in_array($tipo, ['TOTP_SETUP', 'TOTP_REQUIRED'], true)) {
+                $totp = preparar_totp($data, $tipo === 'TOTP_SETUP' ? 'setup' : 'verify', $email);
+                $mostrarTotp = $totp['mostrar'];
+                $qrCode = $totp['qrCode'];
+                $totpEmail = $totp['email'];
+                $totpTipoAtual = $totp['tipo'];
             }
         }
+    }
 
-    // ── Etapa 2: código TOTP ─────────────────────────────────────────────────
-    } elseif ($acao === 'totp') {
+    if (($_POST['acao'] ?? '') === 'totp') {
         $tempToken = $_SESSION['tempToken'] ?? '';
-        $totpTipo  = $_SESSION['totp_tipo'] ?? 'verify';
+        $totpTipo = $_SESSION['totp_tipo'] ?? 'verify';
+        $rota = $totpTipo === 'setup' ? '/auth/totp/setup/confirm' : '/auth/totp/verify';
 
-        $rota = $totpTipo === 'setup'
-            ? 'http://localhost:3000/auth/totp/setup/confirm'
-            : 'http://localhost:3000/auth/totp/verify';
-
-        $ch = curl_init($rota);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $tempToken,
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        $data = api_post_json($rota, [
             'code' => trim($_POST['codigo'] ?? ''),
-        ]));
-        $resp = curl_exec($ch);
-        curl_close($ch);
-
-        $data = json_decode($resp, true);
+        ], $tempToken);
 
         if (!($data['success'] ?? false)) {
-            $erro        = $data['message'] ?? 'Código inválido.';
+            $erro = $data['message'] ?? 'Codigo invalido.';
             $mostrarTotp = true;
-            $qrCode      = $_SESSION['qrCode'] ?? '';
+            $qrCode = $_SESSION['qrCode'] ?? '';
+            $totpEmail = $_SESSION['totp_email'] ?? '';
+            $totpTipoAtual = $_SESSION['totp_tipo'] ?? '';
         } else {
             $_SESSION['token'] = $data['data']['token'];
-            unset($_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
-            header('Location: ' . BASE . 'index.php?page=home');
-            exit;
+            $_SESSION['role'] = 'empresa';
+            limpar_totp($totpSessionKeys);
+            redirecionar('empresa-dashboard');
         }
     }
 }
 ?>
 
 <main class="login-page">
-  <div class="login-container">
-
+  <div class="login-container <?= $mostrarTotp ? 'authenticator-container' : '' ?>">
     <div class="login-imagem">
       <img src="<?= BASE ?>assets/images/site/login.png" alt="Login">
     </div>
 
-    <div class="login-form-box">
-
-      <div class="login-tabs">
-        <a href="<?= BASE ?>index.php?page=login" class="login-tab active">Entrar</a>
-        <a href="<?= BASE ?>index.php?page=cadastro" class="login-tab">Cadastrar</a>
-      </div>
+    <div class="login-form-box <?= $mostrarTotp ? 'authenticator-form-box' : '' ?>">
+      <?php if (!$mostrarTotp): ?>
+        <div class="login-tabs">
+          <a href="<?= BASE ?>index.php?page=login" class="login-tab active">Entrar</a>
+          <a href="<?= BASE ?>index.php?page=cadastro" class="login-tab">Cadastrar</a>
+        </div>
+      <?php endif; ?>
 
       <?php if ($sucesso): ?>
         <div class="alert alert-success mb-3"><?= htmlspecialchars($sucesso) ?></div>
       <?php endif; ?>
 
       <?php if (!$mostrarTotp): ?>
-
-        <!-- Tela 1: login com e-mail e senha -->
         <h2 class="login-titulo">Logar sua conta</h2>
         <p class="login-sub">Bem-vindo de volta!</p>
 
@@ -167,62 +145,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn btn-primary w-100">Entrar</button>
           </div>
         </form>
-
       <?php else: ?>
-
-        <!-- Tela 2: verificação TOTP (apenas empresas) -->
-        <h2 class="login-titulo">Confirme seu acesso</h2>
-
-        <?php if ($qrCode): ?>
-          <p class="login-sub">Escaneie o QR code com Google Authenticator e insira o código gerado.</p>
-          <div class="text-center my-3">
-            <img src="<?= htmlspecialchars($qrCode) ?>" alt="QR Code" style="max-width:200px; border-radius:8px;">
+        <div class="authenticator-header">
+          <div class="authenticator-icon">
+            <i class="bi bi-shield-lock"></i>
           </div>
-        <?php else: ?>
-          <p class="login-sub">Insira o código de 6 dígitos do seu aplicativo autenticador.</p>
+          <div>
+            <span class="authenticator-kicker">Acesso seguro</span>
+            <h2 class="login-titulo mb-1">Verificacao da empresa</h2>
+            <p class="login-sub mb-0">
+              Escaneie o QR Code ou use o codigo atual do seu aplicativo autenticador.
+            </p>
+          </div>
+        </div>
+
+        <?php if ($totpEmail): ?>
+          <div class="authenticator-account">
+            <i class="bi bi-building-check"></i>
+            <span><?= htmlspecialchars($totpEmail) ?></span>
+          </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?= BASE ?>index.php?page=login" class="row g-3">
-          <input type="hidden" name="acao" value="totp">
-
-          <div class="col-12">
-            <label class="form-label">Código de confirmação</label>
-            <input type="text" name="codigo" class="form-control input-token"
-                   placeholder="000000" maxlength="6" inputmode="numeric" required>
-          </div>
-
-          <?php if ($erro): ?>
-            <div class="col-12">
-              <div class="alert alert-danger py-2 mb-0"><?= htmlspecialchars($erro) ?></div>
+        <div class="authenticator-panel">
+          <?php if ($qrCode): ?>
+            <div class="authenticator-qr-card">
+              <span class="authenticator-step">1</span>
+              <img src="<?= htmlspecialchars($qrCode) ?>" alt="QR Code do Authenticator">
+              <p>Escaneie no Google Authenticator, Microsoft Authenticator ou app similar.</p>
+            </div>
+          <?php else: ?>
+            <div class="authenticator-qr-card authenticator-verify-card">
+              <span class="authenticator-step">1</span>
+              <div class="authenticator-lock">
+                <i class="bi bi-phone-lock"></i>
+              </div>
+              <p>Use o codigo que aparece no aplicativo autenticador ja configurado.</p>
             </div>
           <?php endif; ?>
 
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary w-100">Confirmar</button>
-          </div>
+          <form method="POST" action="<?= BASE ?>index.php?page=login" class="authenticator-code-card">
+            <input type="hidden" name="acao" value="totp">
+            <span class="authenticator-step">2</span>
 
-          <div class="col-12 text-center">
-            <a href="<?= BASE ?>index.php?page=login&voltar=1" class="btn-voltar">
-              <i class="bi bi-arrow-left me-1"></i> Voltar
+            <label class="form-label" for="codigo-auth">Codigo de 6 digitos</label>
+            <input type="text" name="codigo" id="codigo-auth" class="form-control input-token"
+                   placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                   pattern="[0-9]{6}" required autofocus>
+
+            <?php if ($erro): ?>
+              <div class="alert alert-danger py-2 mb-0"><?= htmlspecialchars($erro) ?></div>
+            <?php endif; ?>
+
+            <button type="submit" class="btn btn-primary w-100">Confirmar acesso</button>
+
+            <a href="<?= BASE ?>index.php?page=login&voltar=1" class="btn-voltar authenticator-back">
+              <i class="bi bi-arrow-left me-1"></i> Voltar para login
             </a>
-          </div>
-        </form>
-
+          </form>
+        </div>
       <?php endif; ?>
 
-      <p class="login-cadastro">
-        Não tem uma conta? <a href="<?= BASE ?>index.php?page=cadastro">Cadastre-se</a>
-      </p>
-
+      <?php if (!$mostrarTotp): ?>
+        <p class="login-cadastro">
+          Nao tem uma conta? <a href="<?= BASE ?>index.php?page=cadastro">Cadastre-se</a>
+        </p>
+      <?php endif; ?>
     </div>
   </div>
 </main>
 
 <script>
-// Apenas toggle de visibilidade da senha — sem chamada à API
 function toggleSenha() {
   const input = document.getElementById('login-senha');
   const icone = document.getElementById('icone-senha');
+
   if (input.type === 'password') {
     input.type = 'text';
     icone.className = 'bi bi-eye-slash';
@@ -230,5 +226,12 @@ function toggleSenha() {
     input.type = 'password';
     icone.className = 'bi bi-eye';
   }
+}
+
+const codigoAuth = document.getElementById('codigo-auth');
+if (codigoAuth) {
+  codigoAuth.addEventListener('input', () => {
+    codigoAuth.value = codigoAuth.value.replace(/\D/g, '').slice(0, 6);
+  });
 }
 </script>

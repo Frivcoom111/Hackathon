@@ -31,14 +31,44 @@ const defaultCompanies = [
 ];
 
 export async function ensurePortalSeed(prisma: PrismaClient) {
-  const courseCount = await prisma.course.count();
-  if (courseCount === 0) {
-    await prisma.course.createMany({ data: defaultCourses });
+  for (const course of defaultCourses) {
+    const existing = await prisma.course.findFirst({
+      where: {
+        OR: [{ name: course.name }, { code: course.code }],
+      },
+    });
+
+    if (existing) {
+      await prisma.course.update({
+        where: { id: existing.id },
+        data: {
+          name: course.name,
+          code: course.code,
+          periods: course.periods,
+          isActive: true,
+        },
+      });
+    } else {
+      await prisma.course.create({ data: course });
+    }
   }
 
-  const companyCount = await prisma.company.count();
-  if (companyCount === 0) {
-    await prisma.company.createMany({ data: defaultCompanies });
+  for (const company of defaultCompanies) {
+    const existing = await prisma.company.findUnique({ where: { cnpj: company.cnpj } });
+
+    if (existing) {
+      await prisma.company.update({
+        where: { id: existing.id },
+        data: {
+          name: company.name,
+          description: company.description,
+          phone: company.phone,
+          status: company.status,
+        },
+      });
+    } else {
+      await prisma.company.create({ data: company });
+    }
   }
 
   const jobCount = await prisma.job.count();

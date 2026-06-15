@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FileImportUtil {
 
-    // Formato: nome;ra;cpf;email;periodo;curso  (curso é ignorado pelo back office)
+    // Formato: nome;ra;cpf;email
     public static List<Student> parseStudents(String filePath) throws IOException {
         List<Student> students = new ArrayList<>();
 
@@ -24,7 +24,7 @@ public class FileImportUtil {
                 if (line.isEmpty() || line.startsWith("#")) continue;
 
                 String[] fields = line.split(";");
-                if (fields.length < 5) {
+                if (fields.length < 4) {
                     System.err.println("Linha " + lineNumber + " ignorada (campos insuficientes): " + line);
                     continue;
                 }

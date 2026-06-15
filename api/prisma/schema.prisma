@@ -69,7 +69,6 @@ model Address {
 
   student       Student?
   company       Company?
-  companyMember CompanyMember?
 }
 
 model User {
@@ -109,6 +108,10 @@ model Student {
   ra         String   @unique
   cpf        String   @unique @db.VarChar(11)
   phone      String?  @db.VarChar(11)
+  headline   String?  @db.VarChar(160)
+  summary    String?  @db.Text
+  profilePhotoPath String?
+  coverPhotoPath   String?
   isEligible Boolean  @default(true)
   resumePath String?
   createdAt  DateTime @default(now())
@@ -170,7 +173,6 @@ model CompanyMember {
   id        String            @id @default(uuid())
   companyId String
   userId    String            @unique
-  addressId String?           @unique
   role      CompanyMemberRole @default(RECRUITER)
   name      String
   cpf       String            @unique @db.VarChar(11)
@@ -180,7 +182,6 @@ model CompanyMember {
 
   company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  address Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
 
   @@unique([companyId, userId])
 }
@@ -212,7 +213,6 @@ model Application {
   jobId       String
   status      ApplicationStatus @default(PENDING)
   resumePath  String?
-  coverLetter String?           @db.Text
   deletedAt   DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt

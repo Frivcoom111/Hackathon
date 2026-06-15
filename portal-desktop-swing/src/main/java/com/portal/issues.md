@@ -36,7 +36,7 @@ Módulo completo de administração de alunos no Back Office Java (Swing).
 - `gui/students/StudentListPanel.java` — tabela com busca por nome/RA, badge de aptidão colorido
 - `gui/students/StudentFormDialog.java` — formulário criar/editar (senha inicial = CPF)
 - `gui/students/StudentImportDialog.java` — seleção de .txt, preview antes de importar
-- `util/FileImportUtil.java` — parser atualizado (formato: nome;ra;cpf;email;periodo;curso)
+- `util/FileImportUtil.java` — parser atualizado (formato: nome;ra;cpf;email)
 
 ---
 

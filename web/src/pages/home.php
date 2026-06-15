@@ -1,31 +1,39 @@
 <?php
 // Carrega a classe Vaga para representar cada vaga retornada pela API
 require_once __DIR__ . '/../classes/Vaga.php';
+require_once __DIR__ . '/../api.php';
 
 // Chama a API via cURL para buscar as 3 últimas vagas ativas
-$ch = curl_init('http://localhost:3000/jobs?limit=3&status=ACTIVE');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // retorna a resposta em vez de imprimir
-$resp = curl_exec($ch);
-curl_close($ch);
-
-// Converte o JSON da API em objetos Vaga
 $vagas = [];
-if ($resp) {
-    $data = json_decode($resp, true);
-    foreach ($data['jobs'] ?? [] as $item) {
-        $vagas[] = new Vaga($item);
-    }
+$jobs = api_items(api_get('/jobs?limit=3&status=ACTIVE'), 'jobs');
+if ($jobs === []) {
+    $jobs = array_slice(demo_jobs(), 0, 3);
+}
+
+foreach ($jobs as $item) {
+    $vagas[] = new Vaga($item);
 }
 ?>
 
-<!-- BANNER -->
 <section class="banner-section">
   <div class="container">
     <div class="banner-box">
-      <img src="assets/images/site/banner.png" alt="Banner"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-      <div class="banner-placeholder" style="display:none;">
-        <span>Banner</span>
+      <div class="banner-copy">
+        <span class="banner-kicker">Portal de Estagios UniALFA</span>
+        <h1>Conectando alunos a oportunidades reais na regiao.</h1>
+        <p>Vagas, empresas parceiras e candidaturas em um fluxo simples para alunos e recrutadores.</p>
+        <div class="banner-actions">
+          <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-warning fw-semibold">
+            <i class="bi bi-search me-1"></i> Buscar vagas
+          </a>
+          <a href="<?= BASE ?>index.php?page=empresas" class="btn btn-outline-light">
+            <i class="bi bi-building me-1"></i> Empresas
+          </a>
+        </div>
+      </div>
+
+      <div class="banner-media">
+        <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estagios UniALFA">
       </div>
     </div>
   </div>

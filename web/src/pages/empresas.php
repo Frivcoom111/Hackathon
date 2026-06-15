@@ -1,20 +1,17 @@
 <?php
 // Carrega a classe Empresa para representar cada empresa retornada pela API
 require_once __DIR__ . '/../classes/Empresa.php';
+require_once __DIR__ . '/../api.php';
 
 // Chama a API via cURL para buscar as empresas aprovadas
-$ch = curl_init('http://localhost:3000/companies');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // retorna a resposta em vez de imprimir
-$resp = curl_exec($ch);
-curl_close($ch);
-
-// Converte o JSON da API em objetos Empresa
 $empresas = [];
-if ($resp) {
-    $data = json_decode($resp, true);
-    foreach ($data['companies'] ?? [] as $item) {
-        $empresas[] = new Empresa($item);
-    }
+$companies = api_items(api_get('/companies'), 'companies');
+if ($companies === []) {
+    $companies = demo_companies();
+}
+
+foreach ($companies as $item) {
+    $empresas[] = new Empresa($item);
 }
 ?>
 

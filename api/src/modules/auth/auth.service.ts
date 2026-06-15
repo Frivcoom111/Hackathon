@@ -1,8 +1,10 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import { generateSecret, generateURI, verify } from "otplib";
+import QRCode from "qrcode";
 import { ConflictError, NotFoundError, UnauthorizedError } from "../../shared/errors/AppError";
 import { compareHash, generateHash } from "../../shared/utils/bcryptUtils";
 import { generateToken } from "../../shared/utils/generateToken";
-import type { LoginInput, RegisterCompanyInput, RegisterStudentInput } from "./auth.schema";
+import type { LoginInput, RegisterCompanyInput, RegisterStudentInput, TotpCodeInput } from "./auth.schema";
 
 export class AuthService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -29,23 +31,81 @@ export class AuthService {
       throw new UnauthorizedError("E-mail ou senha invalidos.");
     }
 
-    const token = generateToken({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      mfaVerified: true,
+    if (user.role === "STUDENT") {
+      return {
+        type: "AUTHENTICATED",
+        token: this.makeToken(user, true),
+        user: this.publicUser(user),
+      };
+    }
+
+    const tempToken = this.makeToken(user, false);
+
+    if (!user.totpEnabled || !user.totpSecret) {
+      return {
+        type: "TOTP_SETUP",
+        tempToken,
+        user: this.publicUser(user),
+      };
+    }
+
+    return {
+      type: "TOTP_REQUIRED",
+      tempToken,
+      user: this.publicUser(user),
+    };
+  }
+
+  async setupTotp(userId: string) {
+    const user = await this.findUserForTotp(userId);
+    const secret = user.totpSecret ?? generateSecret();
+
+    if (!user.totpSecret) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { totpSecret: secret },
+      });
+    }
+
+    const otpauth = generateURI({
+      issuer: "Portal Estagios UniALFA",
+      label: user.email,
+      secret,
+    });
+    const qrCode = await QRCode.toDataURL(otpauth);
+
+    return { qrCode, otpauth };
+  }
+
+  async confirmTotp(userId: string, data: TotpCodeInput) {
+    const user = await this.findUserForTotp(userId);
+    await this.checkTotpCode(user.totpSecret, data.code);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { totpEnabled: true },
     });
 
     return {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.student?.name ?? user.companyMember?.name ?? user.companyMember?.company.name ?? "Usuario",
-        student: user.student,
-        company: user.companyMember?.company ?? null,
-      },
+      type: "AUTHENTICATED",
+      token: this.makeToken(user, true),
+      user: this.publicUser(user),
+    };
+  }
+
+  async verifyTotp(userId: string, data: TotpCodeInput) {
+    const user = await this.findUserForTotp(userId);
+
+    if (!user.totpEnabled) {
+      throw new UnauthorizedError("Authenticator ainda nao foi configurado.");
+    }
+
+    await this.checkTotpCode(user.totpSecret, data.code);
+
+    return {
+      type: "AUTHENTICATED",
+      token: this.makeToken(user, true),
+      user: this.publicUser(user),
     };
   }
 
@@ -70,7 +130,6 @@ export class AuthService {
             ra: data.ra,
             cpf: data.cpf,
             phone: data.phone,
-            resumePath: data.resumePath,
           },
         });
 
@@ -145,6 +204,71 @@ export class AuthService {
   private async ensureCourseExists(courseId: string) {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new NotFoundError("Curso nao encontrado.");
+  }
+
+  private async findUserForTotp(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        student: true,
+        companyMember: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedError("Usuario nao autorizado.");
+    }
+
+    if (user.role === "STUDENT") {
+      throw new UnauthorizedError("Authenticator e usado apenas para empresa ou administrador.");
+    }
+
+    return user;
+  }
+
+  private async checkTotpCode(secret: string | null, code: string) {
+    const result = secret ? await verify({ secret, token: code }) : null;
+
+    if (!result?.valid) {
+      throw new UnauthorizedError("Codigo do Authenticator invalido.");
+    }
+  }
+
+  private makeToken(
+    user: {
+      id: string;
+      email: string;
+      role: "ADMIN" | "COMPANY" | "STUDENT";
+      companyMember?: { role?: "ADMIN" | "RECRUITER" } | null;
+    },
+    mfaVerified: boolean,
+  ) {
+    return generateToken({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      mfaVerified,
+      companyMemberRole: user.companyMember?.role,
+    });
+  }
+
+  private publicUser(user: {
+    id: string;
+    email: string;
+    role: "ADMIN" | "COMPANY" | "STUDENT";
+    student?: { name: string } | null;
+    companyMember?: { name: string; company?: { name: string } | null } | null;
+  }) {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.student?.name ?? user.companyMember?.name ?? user.companyMember?.company?.name ?? "Usuario",
+    };
   }
 
   private handleUniqueError(error: unknown) {
