@@ -1,27 +1,71 @@
 /* ── Banner ── */
-.banner-section { padding: 32px 0 24px; }
+.banner-section {
+  padding: 32px 0 24px;
+}
+
 .banner-box {
+  position: relative;
   width: 100%;
-  border-radius: 12px;
+  /* Altura fluida: acompanha a largura sem cortes estranhos. */
+  height: clamp(180px, 30vw, 340px);
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--borda);
+  box-shadow: 0 10px 30px rgba(2, 31, 65, .12);
 }
-.banner-box img { width: 100%; height: 280px; object-fit: cover; display: block; }
+
+.banner-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Leve gradiente para dar acabamento e melhorar contraste sobre a imagem. */
+.banner-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(2, 31, 65, .45), rgba(2, 31, 65, 0) 55%);
+  pointer-events: none;
+}
+
 .banner-placeholder {
-  width: 100%; height: 280px;
+  width: 100%;
+  height: 100%;
   background: var(--azul-fundo);
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
   font-size: 1.1rem;
   font-family: var(--fonte-titulo);
   letter-spacing: 1px;
 }
 
 /* ── Seção de vagas em destaque ── */
-.vagas-section { padding: 40px 0 64px; }
+.vagas-section {
+  padding: 40px 0 64px;
+}
+
 .vagas-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   margin-bottom: 28px;
 }
-.vagas-titulo { font-size: 1.6rem; font-weight: 700; color: var(--texto-titulo); margin-bottom: 4px; font-family: var(--fonte-titulo); }
-.vagas-sub    { font-size: 0.9rem; color: var(--texto-secundario); margin: 0; }
+
+.vagas-titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+  margin-bottom: 4px;
+  font-family: var(--fonte-titulo);
+}
+
+.vagas-sub {
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}

@@ -4,64 +4,217 @@
   padding: 48px 0 40px;
   text-align: center;
 }
-.vagas-hero-titulo { color: var(--branco); font-size: 2rem; margin-bottom: 8px; }
-.vagas-hero-sub    { color: rgba(255,255,255,0.7); font-size: 1rem; margin-bottom: 28px; }
 
-.vagas-busca { max-width: 760px; margin: 0 auto; }
+.vagas-hero-titulo {
+  color: var(--branco);
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.vagas-hero-sub {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin-bottom: 28px;
+}
+
+.vagas-busca {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
 .vagas-busca-inner {
-  display: flex; gap: 8px;
+  display: flex;
+  gap: 8px;
   background: var(--branco);
-  border-radius: 10px; padding: 8px; flex-wrap: wrap;
+  border-radius: 10px;
+  padding: 8px;
+  flex-wrap: wrap;
 }
+
 .vagas-busca-campo {
-  flex: 1; min-width: 180px;
-  position: relative; display: flex; align-items: center;
+  flex: 1;
+  min-width: 180px;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
-.vagas-busca-campo i { position: absolute; left: 12px; color: var(--texto-secundario); font-size: 0.95rem; }
-.vagas-busca-campo .form-control { border: none; padding-left: 34px; background: transparent; box-shadow: none; }
-.vagas-busca-campo .form-control:focus { box-shadow: none; }
-.vagas-busca .btn { border-radius: 8px; }
+
+.vagas-busca-campo i {
+  position: absolute;
+  left: 12px;
+  color: var(--texto-secundario);
+  font-size: 0.95rem;
+}
+
+.vagas-busca-campo .form-control {
+  border: none;
+  padding-left: 34px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.vagas-busca-campo .form-control:focus {
+  box-shadow: none;
+}
+
+.vagas-busca .btn {
+  border-radius: 8px;
+}
 
 /* ── Layout: sidebar + lista ── */
-.vagas-lista-section { padding: 40px 0 64px; }
-.vagas-lista-layout  { display: flex; gap: 28px; align-items: flex-start; }
+.vagas-lista-section {
+  padding: 40px 0 64px;
+}
+
+.vagas-lista-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
 
 /* sidebar fica fixo ao rolar */
 .vagas-filtros {
-  width: 220px; flex-shrink: 0;
+  width: 220px;
+  flex-shrink: 0;
   background: var(--branco);
   border: 1px solid var(--borda);
-  border-radius: 12px; padding: 20px;
-  position: sticky; top: 80px;
+  border-radius: 12px;
+  padding: 20px;
+  position: sticky;
+  top: 80px;
 }
-.filtros-titulo { font-family: var(--fonte-titulo); font-weight: 700; color: var(--texto-titulo); margin-bottom: 16px; font-size: 0.95rem; }
-.filtro-grupo { margin-bottom: 20px; }
-.filtro-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--texto-secundario); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.filtro-grupo .form-check { margin-bottom: 6px; }
-.filtro-grupo .form-check-label { font-size: 0.875rem; color: var(--texto-padrao); }
 
-.vagas-lista-conteudo { flex: 1; min-width: 0; }
-.vagas-lista-header   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.vagas-total   { font-size: 0.875rem; color: var(--texto-secundario); margin: 0; }
-.vagas-ordenar { width: auto; font-size: 0.875rem; }
+.filtros-titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  color: var(--texto-titulo);
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.filtro-grupo {
+  margin-bottom: 20px;
+}
+
+.filtro-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.filtro-grupo .form-check {
+  margin-bottom: 6px;
+}
+
+.filtro-grupo .form-check-label {
+  font-size: 0.875rem;
+  color: var(--texto-padrao);
+}
+
+.vagas-lista-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.vagas-lista-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.vagas-total {
+  font-size: 0.875rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}
+
+.vagas-ordenar {
+  width: auto;
+  font-size: 0.875rem;
+}
 
 /* estado vazio */
-.vagas-vazio { flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; text-align: center; color: var(--texto-secundario); gap: 12px; }
-.vagas-vazio i { font-size: 2.5rem; opacity: 0.4; }
-.vagas-vazio p { margin: 0; font-size: 0.95rem; }
+.vagas-vazio {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  text-align: center;
+  color: var(--texto-secundario);
+  gap: 12px;
+}
+
+.vagas-vazio i {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+
+.vagas-vazio p {
+  margin: 0;
+  font-size: 0.95rem;
+}
 
 /* ── Modal de detalhes ── */
-.vaga-modal-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-.empresa-logo-lg { width: 64px; height: 64px; flex-shrink: 0; border-radius: 12px; border: 1px solid var(--borda); overflow: hidden; }
-.vaga-modal-titulo { font-size: 1.3rem; font-weight: 700; color: var(--texto-titulo); }
-.vaga-modal-infos  { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0; }
-.vaga-modal-infos span { font-size: 0.875rem; color: var(--texto-secundario); }
-.vaga-modal-infos i    { color: var(--azul-principal); margin-right: 4px; }
+.vaga-modal-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.empresa-logo-lg {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--borda);
+  overflow: hidden;
+}
+
+.vaga-modal-titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+}
+
+.vaga-modal-infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.vaga-modal-infos span {
+  font-size: 0.875rem;
+  color: var(--texto-secundario);
+}
+
+.vaga-modal-infos i {
+  color: var(--azul-principal);
+  margin-right: 4px;
+}
 
 /* mobile */
 @media (max-width: 767px) {
-  .vagas-lista-layout  { flex-direction: column; }
-  .vagas-filtros       { width: 100%; position: static; }
-  .vagas-busca-inner   { flex-direction: column; }
-  .vagas-busca-campo   { min-width: 0; }
+  .vagas-lista-layout {
+    flex-direction: column;
+  }
+
+  .vagas-filtros {
+    width: 100%;
+    position: static;
+  }
+
+  .vagas-busca-inner {
+    flex-direction: column;
+  }
+
+  .vagas-busca-campo {
+    min-width: 0;
+  }
 }

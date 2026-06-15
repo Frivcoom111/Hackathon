@@ -41,40 +41,40 @@ export class AuthService {
 
     const tempToken = this.makeToken(user, false);
 
+    // Primeiro acesso (sem TOTP ativo): gera/salva o secret e ja devolve o QR
+    // na propria resposta do login. O front confirma em POST /totp/setup/confirm.
     if (!user.totpEnabled || !user.totpSecret) {
+      const secret = user.totpSecret ?? generateSecret();
+
+      if (!user.totpSecret) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { totpSecret: secret },
+        });
+      }
+
+      const otpauth = generateURI({
+        issuer: "Portal Estagios UniALFA",
+        label: user.email,
+        secret,
+      });
+      const qrCode = await QRCode.toDataURL(otpauth);
+
       return {
         type: "TOTP_SETUP",
         tempToken,
+        qrCode,
+        otpauth,
         user: this.publicUser(user),
       };
     }
 
+    // Acessos seguintes: TOTP ja ativo, basta validar o codigo em /totp/verify.
     return {
       type: "TOTP_REQUIRED",
       tempToken,
       user: this.publicUser(user),
     };
-  }
-
-  async setupTotp(userId: string) {
-    const user = await this.findUserForTotp(userId);
-    const secret = user.totpSecret ?? generateSecret();
-
-    if (!user.totpSecret) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { totpSecret: secret },
-      });
-    }
-
-    const otpauth = generateURI({
-      issuer: "Portal Estagios UniALFA",
-      label: user.email,
-      secret,
-    });
-    const qrCode = await QRCode.toDataURL(otpauth);
-
-    return { qrCode, otpauth };
   }
 
   async confirmTotp(userId: string, data: TotpCodeInput) {

@@ -24,7 +24,6 @@ const error = (description: string) => ({
 // Corpo enviado em JSON no cadastro de estudante.
 const registerStudentBody = registerStudentSchema.openapi({ title: "RegisterStudentBody" });
 
-const qrCodeResponse = z.object({ qrCode: z.string() }).openapi({ title: "QrCodeResponse" });
 const tokenResponse = z.object({ token: z.string() }).openapi({ title: "TokenResponse" });
 const loginResponse = z
   .object({
@@ -85,7 +84,8 @@ registry.registerPath({
   summary: "Autentica e inicia o fluxo de acesso.",
   description:
     "STUDENT/ADMIN recebem JWT completo. COMPANY recebe um tempToken (5min) e segue para o " +
-    "fluxo TOTP (setup no primeiro acesso, verify nos seguintes).",
+    "fluxo TOTP. No primeiro acesso (TOTP_SETUP) o QR code ja vem na resposta e a empresa " +
+    "confirma em /totp/setup/confirm; nos acessos seguintes (TOTP_REQUIRED) basta /totp/verify.",
   request: { body: jsonBody(loginSchema) },
   responses: {
     200: {
@@ -94,24 +94,6 @@ registry.registerPath({
     },
     401: error("Credenciais inválidas."),
     403: error("Empresa aguardando aprovação ou conta desativada."),
-  },
-});
-
-// ─── GET /auth/totp/setup ─────────────────────────────────────────────────────
-registry.registerPath({
-  method: "get",
-  path: "/auth/totp/setup",
-  tags: [TAG],
-  security: bearerAuth,
-  summary: "Retorna o QR code para configurar o TOTP.",
-  description: "Usa o tempToken do login. Não exige MFA verificada.",
-  responses: {
-    200: {
-      description: "QR code gerado.",
-      content: { "application/json": { schema: successResponse(qrCodeResponse) } },
-    },
-    400: error("TOTP já configurado."),
-    401: error("Token inválido ou expirado."),
   },
 });
 

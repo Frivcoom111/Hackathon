@@ -29,12 +29,6 @@ router.post("/register/company", async (req, res) => {
   res.status(201).json(response.success(result, "Empresa cadastrada com sucesso."));
 });
 
-router.get("/totp/setup", authMiddleware, async (req, res) => {
-  const result = await service.setupTotp(req.user!.id);
-
-  res.status(200).json(response.success(result, "Escaneie o QR Code no Authenticator."));
-});
-
 router.post("/totp/setup/confirm", authMiddleware, async (req, res) => {
   const data = totpCodeSchema.parse(req.body);
   const result = await service.confirmTotp(req.user!.id, data);

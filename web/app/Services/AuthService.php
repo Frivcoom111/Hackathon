@@ -17,11 +17,6 @@ class AuthService extends BaseService
         return $this->client->get('/auth/me', [], true);
     }
 
-    public function totpSetup(): array
-    {
-        return $this->client->get('/auth/totp/setup', [], true);
-    }
-
     public function totpSetupConfirm(string $code): array
     {
         return $this->client->post('/auth/totp/setup/confirm', ['code' => $code], true);

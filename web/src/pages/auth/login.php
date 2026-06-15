@@ -36,29 +36,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
 
             } elseif ($tipo === 'TOTP_SETUP') {
+                // Primeiro acesso: o QR ja vem na resposta do login.
                 $tempToken = $data['data']['tempToken'];
                 $api->jwt()->save($tempToken);
                 $api->jwt()->saveTempToken($tempToken);
                 $_SESSION['totp_tipo'] = 'setup';
                 $_SESSION['totp_email'] = $data['data']['user']['email'] ?? trim($_POST['email'] ?? '');
 
-                $setupResp = $api->auth()->totpSetup();
-                $qrCode    = $setupResp['data']['qrCode'] ?? '';
+                $qrCode = $data['data']['qrCode'] ?? '';
                 $_SESSION['qrCode'] = $qrCode;
                 $totpEmail = $_SESSION['totp_email'];
                 $mostrarTotp = true;
 
             } elseif ($tipo === 'TOTP_REQUIRED') {
+                // Acessos seguintes: TOTP ja ativo, pede apenas o codigo (sem QR).
                 $tempToken = $data['data']['tempToken'];
                 $api->jwt()->save($tempToken);
                 $api->jwt()->saveTempToken($tempToken);
                 $_SESSION['totp_tipo'] = 'verify';
                 $_SESSION['totp_email'] = $data['data']['user']['email'] ?? trim($_POST['email'] ?? '');
+                unset($_SESSION['qrCode']);
 
-                $setupResp = $api->auth()->totpSetup();
-                $qrCode    = $setupResp['data']['qrCode'] ?? '';
-                $_SESSION['qrCode'] = $qrCode;
-                $totpEmail = $_SESSION['totp_email'];
+                $qrCode      = '';
+                $totpEmail   = $_SESSION['totp_email'];
                 $mostrarTotp = true;
             }
         }
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php if (!$mostrarTotp): ?>
 
         <!-- Tela 1: login com e-mail e senha -->
-        <h2 class="login-titulo">Logar sua conta</h2>
+        <h2 class="login-titulo">Acesse sua conta</h2>
         <p class="login-sub">Bem-vindo de volta!</p>
 
         <form method="POST" action="<?= BASE ?>index.php?page=login" class="row g-3">
@@ -150,6 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <?php else: ?>
 
+        <?php $totpModo = $_SESSION['totp_tipo'] ?? 'verify'; ?>
+
         <div class="authenticator-header">
           <div class="authenticator-icon">
             <i class="bi bi-shield-lock"></i>
@@ -158,7 +160,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="authenticator-kicker">Acesso seguro</span>
             <h2 class="login-titulo mb-1">Verificacao da empresa</h2>
             <p class="login-sub mb-0">
-              Escaneie o QR Code e informe o codigo gerado no aplicativo autenticador.
+              <?php if ($totpModo === 'setup'): ?>
+                Escaneie o QR Code no aplicativo autenticador e informe o codigo gerado.
+              <?php else: ?>
+                Informe o codigo de 6 digitos do seu aplicativo autenticador.
+              <?php endif; ?>
             </p>
           </div>
         </div>
@@ -170,7 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         <?php endif; ?>
 
-        <div class="authenticator-panel">
+        <div class="authenticator-panel <?= $totpModo === 'setup' ? 'authenticator-panel--setup' : 'authenticator-panel--verify' ?>">
+          <?php if ($totpModo === 'setup'): ?>
           <div class="authenticator-qr-card">
             <span class="authenticator-step">1</span>
             <?php if ($qrCode): ?>
@@ -183,10 +190,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <p>O QR Code nao voltou da API. Use o codigo atual do app ja configurado.</p>
             <?php endif; ?>
           </div>
+          <?php endif; ?>
 
           <form method="POST" action="<?= BASE ?>index.php?page=login" class="authenticator-code-card">
             <input type="hidden" name="acao" value="totp">
+            <?php if ($totpModo === 'setup'): ?>
             <span class="authenticator-step">2</span>
+            <?php endif; ?>
 
             <label class="form-label" for="codigo-auth">Codigo de 6 digitos</label>
             <input type="text" name="codigo" id="codigo-auth" class="form-control input-token"

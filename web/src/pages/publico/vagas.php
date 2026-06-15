@@ -28,7 +28,8 @@ $area        = trim($_GET['area']   ?? '');
 $bolsaMin    = (int)($_GET['bolsa'] ?? 0);
 $modalidades = $_GET['modalidade'] ?? ['PRESENCIAL', 'REMOTE', 'HYBRID'];
 
-$resp  = $api->vagas()->listar(['status' => 'ACTIVE']);
+// A API ja retorna apenas vagas ACTIVE de empresas aprovadas (filtro interno).
+$resp  = $api->vagas()->listar();
 $vagas = [];
 foreach ($resp['data'] ?? [] as $item) {
     $vaga = new Vaga($item);

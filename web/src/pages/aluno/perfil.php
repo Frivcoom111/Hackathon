@@ -121,7 +121,7 @@ $statusLabels = [
     <?php if (!$aluno): ?>
       <div class="profile-empty">
         <i class="bi bi-person-x"></i>
-        <h2>Nao foi possivel carregar seu perfil</h2>
+        <h2>Não foi possivel carregar seu perfil</h2>
         <p>Entre novamente para atualizar seus dados.</p>
         <a href="<?= BASE ?>index.php?page=login" class="btn btn-primary">Fazer login</a>
       </div>

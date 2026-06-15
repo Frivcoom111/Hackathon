@@ -31,14 +31,6 @@ export class AuthController {
     res.status(200).json(response.success(result, "Login realizado com sucesso."));
   }
 
-  async totpSetup(req: Request, res: Response): Promise<void> {
-    const user = requireUser(req);
-
-    const result = await this.authService.setupTotp(user.id);
-
-    res.status(200).json(response.success(result));
-  }
-
   async totpSetupConfirm(req: Request, res: Response): Promise<void> {
     const user = requireUser(req);
     const data = totpCodeSchema.parse(req.body);

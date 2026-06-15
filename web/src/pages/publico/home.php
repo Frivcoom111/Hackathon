@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../classes/Vaga.php';
 
 \App\Auth\Guard::requireLogin($api->jwt());
 
-$resp  = $api->vagas()->listar(['limit' => 3, 'status' => 'ACTIVE']);
+$resp  = $api->vagas()->listar(['limit' => 3]);
 $vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 ?>
 
