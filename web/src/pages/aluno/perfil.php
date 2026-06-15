@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         salvarMensagemPerfil(
             $api->estudante()->atualizarPerfil($dados),
             'Perfil atualizado com sucesso.',
-            'Nao foi possivel atualizar o perfil.'
+            'Não foi possível atualizar o perfil.'
         );
         perfilRedirect();
     }
@@ -51,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         salvarMensagemPerfil(
             $api->estudante()->salvarEndereco($dados, !empty($_POST['endereco_existente'])),
-            'Endereco atualizado com sucesso.',
-            'Nao foi possivel atualizar o endereco.'
+            'Endereço atualizado com sucesso.',
+            'Não foi possível atualizar o endereço.'
         );
         perfilRedirect();
     }
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             salvarMensagemPerfil(
                 $api->candidaturas()->cancelar($id),
                 'Candidatura cancelada.',
-                'Nao foi possivel cancelar a candidatura.'
+                'Não foi possível cancelar a candidatura.'
             );
         }
         perfilRedirect();
@@ -87,7 +87,7 @@ unset($_SESSION['perfil_sucesso'], $_SESSION['perfil_erro']);
 $user = $perfilData['user'] ?? [];
 $cursos = $perfilData['courses'] ?? [];
 $cursoAtual = $cursos[0] ?? [];
-$cursoNome = $cursoAtual['course']['name'] ?? 'Curso nao informado';
+$cursoNome = $cursoAtual['course']['name'] ?? 'Curso não informado';
 $cursoStatus = $cursoAtual['status'] ?? 'ACTIVE';
 $endereco = $perfilData['address'] ?? [];
 $cidade = $endereco['city'] ?? 'Umuarama';
@@ -98,7 +98,7 @@ $telefone = $perfilData['phone'] ?? '';
 $statusLabels = [
     'ACTIVE' => 'Em andamento',
     'COMPLETED' => 'Finalizado',
-    'CANCELLED' => 'Nao finalizado',
+    'CANCELLED' => 'Não finalizado',
 ];
 ?>
 
@@ -121,14 +121,14 @@ $statusLabels = [
     <?php if (!$aluno): ?>
       <div class="profile-empty">
         <i class="bi bi-person-x"></i>
-        <h2>Não foi possivel carregar seu perfil</h2>
+        <h2>Não foi possível carregar seu perfil</h2>
         <p>Entre novamente para atualizar seus dados.</p>
         <a href="<?= BASE ?>index.php?page=login" class="btn btn-primary">Fazer login</a>
       </div>
     <?php else: ?>
       <article class="profile-card">
         <div class="profile-cover">
-          <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estagios UniALFA">
+          <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estágios UniALFA">
         </div>
 
         <div class="profile-main">
@@ -149,7 +149,7 @@ $statusLabels = [
                 Editar perfil
               </button>
               <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEndereco">
-                Editar endereco
+                Editar endereço
               </button>
               <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-outline-secondary btn-sm">Buscar vagas</a>
             </div>
@@ -161,23 +161,23 @@ $statusLabels = [
         <section class="profile-panel">
           <h2>Sobre</h2>
           <p>
-            Perfil academico vinculado ao Portal de Estagios UniALFA. Aqui o aluno acompanha
-            suas informacoes principais, curso e candidaturas realizadas.
+            Perfil acadêmico vinculado ao Portal de Estágios UniALFA. Aqui o aluno acompanha
+            suas informações principais, curso e candidaturas realizadas.
           </p>
         </section>
 
         <section class="profile-panel">
-          <h2>Formacao</h2>
+          <h2>Formação</h2>
           <div class="profile-education">
             <div class="profile-education-icon"><i class="bi bi-mortarboard"></i></div>
             <div>
               <strong><?= htmlspecialchars($cursoNome) ?></strong>
               <span><?= htmlspecialchars($statusLabels[$cursoStatus] ?? $cursoStatus) ?></span>
               <?php if (!empty($cursoAtual['startedAt'])): ?>
-                <small>Inicio: <?= date('d/m/Y', strtotime($cursoAtual['startedAt'])) ?></small>
+                <small>Início: <?= date('d/m/Y', strtotime($cursoAtual['startedAt'])) ?></small>
               <?php endif; ?>
               <?php if (!empty($cursoAtual['finishedAt'])): ?>
-                <small>Conclusao: <?= date('d/m/Y', strtotime($cursoAtual['finishedAt'])) ?></small>
+                <small>Conclusão: <?= date('d/m/Y', strtotime($cursoAtual['finishedAt'])) ?></small>
               <?php endif; ?>
             </div>
           </div>
@@ -192,7 +192,7 @@ $statusLabels = [
           <?php if (empty($candidaturas)): ?>
             <div class="profile-empty-inline">
               <i class="bi bi-briefcase"></i>
-              <p>Voce ainda nao se candidatou a nenhuma vaga.</p>
+              <p>Você ainda não se candidatou a nenhuma vaga.</p>
             </div>
           <?php else: ?>
             <div class="profile-applications">
@@ -230,8 +230,8 @@ $statusLabels = [
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-              <p><strong>E-mail:</strong> <?= htmlspecialchars($email ?: 'Nao informado') ?></p>
-              <p><strong>Telefone:</strong> <?= htmlspecialchars($telefone ?: 'Nao informado') ?></p>
+              <p><strong>E-mail:</strong> <?= htmlspecialchars($email ?: 'Não informado') ?></p>
+              <p><strong>Telefone:</strong> <?= htmlspecialchars($telefone ?: 'Não informado') ?></p>
               <p><strong>RA:</strong> <?= htmlspecialchars($aluno->getRa()) ?></p>
               <p><strong>CPF:</strong> <?= $aluno->getCpfFormatado() ?></p>
             </div>
@@ -275,7 +275,7 @@ $statusLabels = [
             <input type="hidden" name="acao" value="endereco">
             <input type="hidden" name="endereco_existente" value="<?= !empty($endereco) ? '1' : '' ?>">
             <div class="modal-header">
-              <h5 class="modal-title">Editar endereco</h5>
+              <h5 class="modal-title">Editar endereço</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body row g-3">
@@ -284,7 +284,7 @@ $statusLabels = [
                 <input type="text" name="street" class="form-control" value="<?= htmlspecialchars($endereco['street'] ?? '') ?>" required>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Numero</label>
+                <label class="form-label">Número</label>
                 <input type="text" name="number" class="form-control" value="<?= htmlspecialchars($endereco['number'] ?? '') ?>" required>
               </div>
               <div class="col-md-6">

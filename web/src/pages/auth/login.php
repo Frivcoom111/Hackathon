@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mostrarTotp = true;
 
             } elseif ($tipo === 'TOTP_REQUIRED') {
-                // Acessos seguintes: TOTP ja ativo, pede apenas o codigo (sem QR).
+                // Acessos seguintes: TOTP já ativo, pede apenas o código (sem QR).
                 $tempToken = $data['data']['tempToken'];
                 $api->jwt()->save($tempToken);
                 $api->jwt()->saveTempToken($tempToken);
@@ -158,12 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <div>
             <span class="authenticator-kicker">Acesso seguro</span>
-            <h2 class="login-titulo mb-1">Verificacao da empresa</h2>
+            <h2 class="login-titulo mb-1">Verificação da empresa</h2>
             <p class="login-sub mb-0">
               <?php if ($totpModo === 'setup'): ?>
-                Escaneie o QR Code no aplicativo autenticador e informe o codigo gerado.
+                Escaneie o QR Code no aplicativo autenticador e informe o código gerado.
               <?php else: ?>
-                Informe o codigo de 6 digitos do seu aplicativo autenticador.
+                Informe o código de 6 dígitos do seu aplicativo autenticador.
               <?php endif; ?>
             </p>
           </div>
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="authenticator-lock">
                 <i class="bi bi-phone-lock"></i>
               </div>
-              <p>O QR Code nao voltou da API. Use o codigo atual do app ja configurado.</p>
+              <p>O QR Code não voltou da API. Use o código atual do app já configurado.</p>
             <?php endif; ?>
           </div>
           <?php endif; ?>
@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="authenticator-step">2</span>
             <?php endif; ?>
 
-            <label class="form-label" for="codigo-auth">Codigo de 6 digitos</label>
+            <label class="form-label" for="codigo-auth">Código de 6 dígitos</label>
             <input type="text" name="codigo" id="codigo-auth" class="form-control input-token"
                    placeholder="000000" maxlength="6" inputmode="numeric"
                    autocomplete="one-time-code" pattern="[0-9]{6}" required autofocus>
