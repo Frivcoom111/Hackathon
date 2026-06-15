@@ -1,70 +1,46 @@
 <?php
 require_once __DIR__ . '/../../classes/Vaga.php';
 
-// Handle candidatura
+\App\Auth\Guard::requireLogin($api->jwt());
+
+// Só estudante pode se candidatar.
+$podeCandidatar  = $api->jwt()->isStudent();
 $msgCandidatura  = '';
 $erroCandidatura = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vaga_id'])) {
-    if (empty($_SESSION['token'])) {
-        header('Location: ' . BASE . 'index.php?page=login');
-        exit;
-    }
-    $vagaIdApply = trim($_POST['vaga_id']);
-    $ch = curl_init(API_URL . '/jobs/' . $vagaIdApply . '/apply');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $_SESSION['token'],
-        'Content-Type: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([]));
-    $resp = curl_exec($ch);
-    $data = json_decode($resp, true);
-    if ($data['success'] ?? false) {
-        $msgCandidatura = 'Candidatura enviada com sucesso!';
+    if (!$podeCandidatar) {
+        $erroCandidatura = 'Apenas estudantes podem se candidatar a vagas.';
     } else {
-        $erroCandidatura = $data['message'] ?? 'Erro ao se candidatar. Tente novamente.';
+        $vagaIdApply = trim($_POST['vaga_id']);
+        $data = $api->vagas()->candidatar($vagaIdApply);
+        if ($data['success'] ?? false) {
+            $msgCandidatura = 'Candidatura enviada com sucesso!';
+        } else {
+            $erroCandidatura = $data['message'] ?? 'Erro ao se candidatar. Tente novamente.';
+        }
     }
 }
 
-// Lê os filtros enviados pelo formulário (método GET)
-$busca    = trim($_GET['busca']  ?? '');
-$cidade   = trim($_GET['cidade'] ?? '');
-$area     = trim($_GET['area']   ?? '');
-$bolsaMin = (int)($_GET['bolsa'] ?? 0);
+$busca       = trim($_GET['busca']  ?? '');
+$cidade      = trim($_GET['cidade'] ?? '');
+$area        = trim($_GET['area']   ?? '');
+$bolsaMin    = (int)($_GET['bolsa'] ?? 0);
 $modalidades = $_GET['modalidade'] ?? ['PRESENCIAL', 'REMOTE', 'HYBRID'];
 
-// Chama a API via cURL para buscar todas as vagas ativas
-$ch = curl_init(API_URL . '/jobs?status=ACTIVE');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$resp = curl_exec($ch);
-
-// Converte o JSON e aplica os filtros no PHP
+$resp  = $api->vagas()->listar(['status' => 'ACTIVE']);
 $vagas = [];
-if ($resp) {
-    $data = json_decode($resp, true);
-    foreach ($data['data'] ?? [] as $item) {
-        $vaga = new Vaga($item);
+foreach ($resp['data'] ?? [] as $item) {
+    $vaga = new Vaga($item);
 
-        // Filtra por palavra-chave no título
-        if ($busca && stripos($vaga->getTitulo(), $busca) === false) continue;
+    if ($busca  && stripos($vaga->getTitulo(),     $busca)  === false) continue;
+    if ($cidade && stripos($vaga->getLocalizacao(), $cidade) === false) continue;
+    if ($area   && stripos($vaga->getArea(),        $area)   === false) continue;
+    if ($bolsaMin > 0 && ($vaga->getSalario() ?? 0) < $bolsaMin)       continue;
+    if (!in_array($vaga->getModalidade(), (array)$modalidades))         continue;
 
-        // Filtra por cidade na localização
-        if ($cidade && stripos($vaga->getLocalizacao(), $cidade) === false) continue;
-
-        // Filtra por área
-        if ($area && stripos($vaga->getArea(), $area) === false) continue;
-
-        // Filtra por bolsa mínima (ignora vagas sem salário se filtro estiver ativo)
-        if ($bolsaMin > 0 && ($vaga->getSalario() ?? 0) < $bolsaMin) continue;
-
-        // Filtra por modalidade (checkboxes)
-        if (!in_array($vaga->getModalidade(), (array)$modalidades)) continue;
-
-        $vaga->nomeEmpresa = $item['company']['name'] ?? 'Empresa';
-
-        $vagas[] = $vaga;
-    }
+    $vaga->nomeEmpresa = $item['company']['name'] ?? 'Empresa';
+    $vagas[] = $vaga;
 }
 ?>
 
@@ -74,7 +50,6 @@ if ($resp) {
     <h1 class="vagas-hero-titulo">Vagas de Estágio</h1>
     <p class="vagas-hero-sub">Encontre a oportunidade ideal para o seu perfil</p>
 
-    <!-- Formulário de busca — envia via GET para recarregar a página com filtros -->
     <form class="vagas-busca" method="GET" action="<?= BASE ?>index.php">
       <input type="hidden" name="page" value="vagas">
       <div class="vagas-busca-inner">
@@ -98,7 +73,7 @@ if ($resp) {
 <div class="container mt-3">
   <div class="alert alert-success alert-dismissible fade show" role="alert">
     <?= htmlspecialchars($msgCandidatura) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
   </div>
 </div>
 <?php endif; ?>
@@ -106,7 +81,7 @@ if ($resp) {
 <div class="container mt-3">
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
     <?= htmlspecialchars($erroCandidatura) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
   </div>
 </div>
 <?php endif; ?>
@@ -116,10 +91,10 @@ if ($resp) {
   <div class="container">
     <div class="vagas-lista-layout">
 
-      <!-- SIDEBAR DE FILTROS — envia via GET junto com a busca -->
+      <!-- SIDEBAR DE FILTROS -->
       <aside class="vagas-filtros">
         <form method="GET" action="<?= BASE ?>index.php" id="form-filtros">
-          <input type="hidden" name="page" value="vagas">
+          <input type="hidden" name="page"   value="vagas">
           <input type="hidden" name="busca"  value="<?= htmlspecialchars($busca) ?>">
           <input type="hidden" name="cidade" value="<?= htmlspecialchars($cidade) ?>">
 
@@ -128,7 +103,6 @@ if ($resp) {
           <div class="filtro-grupo">
             <label class="filtro-label">Modalidade</label>
             <?php
-            // Cada checkbox mantém o estado se o filtro já foi aplicado
             $mods = ['PRESENCIAL' => 'Presencial', 'REMOTE' => 'Remoto', 'HYBRID' => 'Híbrido'];
             foreach ($mods as $val => $label):
                 $checked = in_array($val, (array)$modalidades) ? 'checked' : '';
@@ -170,7 +144,6 @@ if ($resp) {
           </div>
 
           <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">Aplicar filtros</button>
-          <!-- Limpar filtros: volta para a página sem parâmetros -->
           <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-link btn-sm w-100 mt-1 text-secondary">
             Limpar filtros
           </a>
@@ -188,7 +161,6 @@ if ($resp) {
         </div>
 
         <?php if (empty($vagas)): ?>
-          <!-- Sem resultados -->
           <div class="vagas-vazio">
             <i class="bi bi-search"></i>
             <p>Nenhuma vaga encontrada com os filtros selecionados.</p>
@@ -219,7 +191,6 @@ if ($resp) {
                   </div>
                   <div class="vaga-footer">
                     <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
-                    <!-- Passa os dados da vaga para o modal via data attributes -->
                     <button class="btn btn-primary btn-sm" onclick="abrirModal(this)"
                       data-id="<?= htmlspecialchars($vaga->getId()) ?>"
                       data-titulo="<?= htmlspecialchars($vaga->getTitulo()) ?>"
@@ -244,12 +215,12 @@ if ($resp) {
   </div>
 </section>
 
-<!-- MODAL: detalhes da vaga (preenchido via data attributes — sem chamada à API) -->
+<!-- MODAL: detalhes da vaga -->
 <div class="modal fade" id="modal-vaga" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content vaga-modal-content">
       <div class="modal-header border-0 pb-0">
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body pt-0 px-4 pb-4">
 
@@ -278,10 +249,12 @@ if ($resp) {
         </div>
 
         <div class="d-flex gap-2 mt-4">
+          <?php if ($podeCandidatar): ?>
           <form method="POST" action="<?= BASE ?>index.php?page=vagas" id="form-candidatura">
             <input type="hidden" name="vaga_id" id="modal-vaga-id" value="">
             <button type="submit" class="btn btn-primary px-4">Candidatar-se</button>
           </form>
+          <?php endif; ?>
           <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
         </div>
 
@@ -291,13 +264,12 @@ if ($resp) {
 </div>
 
 <script>
-// Preenche o modal com os dados do card clicado (vindo de data attributes — sem API)
 function abrirModal(btn) {
-  document.getElementById('modal-vaga-id').value         = btn.dataset.id;
-  document.getElementById('modal-titulo').textContent    = btn.dataset.titulo;
-  document.getElementById('modal-empresa').textContent   = btn.dataset.empresa;
+  document.getElementById('modal-vaga-id').value          = btn.dataset.id;
+  document.getElementById('modal-titulo').textContent     = btn.dataset.titulo;
+  document.getElementById('modal-empresa').textContent    = btn.dataset.empresa;
   document.getElementById('modal-modalidade').textContent = btn.dataset.modalidade;
-  document.getElementById('modal-descricao').textContent = btn.dataset.descricao;
+  document.getElementById('modal-descricao').textContent  = btn.dataset.descricao;
 
   document.getElementById('modal-infos').innerHTML = `
     <span><i class="bi bi-geo-alt"></i> ${btn.dataset.local}</span>
@@ -307,7 +279,7 @@ function abrirModal(btn) {
 
   const requisitos = btn.dataset.requisitos;
   if (requisitos) {
-    document.getElementById('modal-requisitos').textContent      = requisitos;
+    document.getElementById('modal-requisitos').textContent       = requisitos;
     document.getElementById('modal-requisitos-bloco').style.display = 'block';
   } else {
     document.getElementById('modal-requisitos-bloco').style.display = 'none';

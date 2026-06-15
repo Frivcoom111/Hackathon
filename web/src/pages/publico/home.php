@@ -1,20 +1,10 @@
 <?php
-// Carrega a classe Vaga para representar cada vaga retornada pela API
 require_once __DIR__ . '/../../classes/Vaga.php';
 
-// Chama a API via cURL para buscar as 3 últimas vagas ativas
-$ch = curl_init(API_URL . '/jobs?limit=3&status=ACTIVE');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // retorna a resposta em vez de imprimir
-$resp = curl_exec($ch);
+\App\Auth\Guard::requireLogin($api->jwt());
 
-// Converte o JSON da API em objetos Vaga
-$vagas = [];
-if ($resp) {
-    $data = json_decode($resp, true);
-    foreach ($data['data'] ?? [] as $item) {
-        $vagas[] = new Vaga($item);
-    }
-}
+$resp  = $api->vagas()->listar(['limit' => 3, 'status' => 'ACTIVE']);
+$vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 ?>
 
 <!-- BANNER -->
@@ -45,14 +35,12 @@ if ($resp) {
     <div class="row g-4">
 
       <?php if (empty($vagas)): ?>
-        <!-- Sem vagas: API offline ou nenhuma vaga ativa -->
         <div class="col-12 text-center py-4">
           <i class="bi bi-briefcase fs-2 text-secondary"></i>
           <p class="text-secondary mt-2">Nenhuma vaga disponível no momento.</p>
         </div>
 
       <?php else: ?>
-        <!-- Renderiza um card para cada vaga recebida da API -->
         <?php foreach ($vagas as $vaga): ?>
           <div class="col-lg-4 col-md-6">
             <div class="vaga-card">
@@ -71,7 +59,6 @@ if ($resp) {
                 <span><i class="bi bi-building"></i> <?= htmlspecialchars($vaga->getModalidadeLabel()) ?></span>
               </div>
               <div class="vaga-footer">
-                <!-- getSalarioFormatado() retorna "R$ 1.200,00" ou "A combinar" -->
                 <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
                 <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-primary btn-sm">Ver vaga</a>
               </div>

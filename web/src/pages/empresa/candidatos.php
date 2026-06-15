@@ -1,14 +1,10 @@
 <?php
 require_once __DIR__ . '/../../classes/Candidatura.php';
 
-if (empty($_SESSION['token'])) {
-    header('Location: ' . BASE . 'index.php?page=login');
-    exit;
-}
+\App\Auth\Guard::requireCompany($api->jwt());
 
-$token  = $_SESSION['token'];
-$vagaId = trim($_GET['vaga_id'] ?? '');
-$erro   = '';
+$vagaId  = trim($_GET['vaga_id'] ?? '');
+$erro    = '';
 $sucesso = '';
 
 if (!$vagaId) {
@@ -16,22 +12,12 @@ if (!$vagaId) {
     exit;
 }
 
-// ── Atualiza status da candidatura ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['candidatura_id'], $_POST['status'])) {
-    $candidaturaId = trim($_POST['candidatura_id']);
-    $novoStatus    = trim($_POST['status']);
-
-    $ch = curl_init(API_URL . '/company/jobs/' . $vagaId . '/applications/' . $candidaturaId . '/status');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $token,
-        'Content-Type: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['status' => $novoStatus]));
-    $resp = curl_exec($ch);
-    $data = json_decode($resp, true);
-
+    $data = $api->companhia()->alterarStatusCandidatura(
+        $vagaId,
+        trim($_POST['candidatura_id']),
+        trim($_POST['status'])
+    );
     if ($data['success'] ?? false) {
         $sucesso = 'Status atualizado com sucesso!';
     } else {
@@ -39,25 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['candidatura_id'], $_P
     }
 }
 
-// ── Busca os dados da vaga ────────────────────────────────────────────────────
-$ch = curl_init(API_URL . '/company/jobs/' . $vagaId);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
-$dataVaga = json_decode($resp, true);
-$tituloVaga = $dataVaga['data']['title'] ?? 'Vaga';
+$respVaga   = $api->companhia()->vaga($vagaId);
+$tituloVaga = $respVaga['data']['title'] ?? 'Vaga';
 
-// ── Busca as candidaturas da vaga ─────────────────────────────────────────────
-$ch = curl_init(API_URL . '/company/jobs/' . $vagaId . '/applications?page=1&limit=50');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
-$dataApps = json_decode($resp, true);
-
-$candidaturas = [];
-foreach ($dataApps['data'] ?? [] as $item) {
-    $candidaturas[] = new Candidatura($item);
-}
+$respApps     = $api->companhia()->candidatos($vagaId);
+$itensRaw     = $respApps['data'] ?? [];
+$candidaturas = array_map(fn($item) => new Candidatura($item), $itensRaw);
 ?>
 
 <!-- TOPO -->
@@ -77,14 +50,14 @@ foreach ($dataApps['data'] ?? [] as $item) {
     <?php if ($sucesso): ?>
       <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
         <?= htmlspecialchars($sucesso) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
       </div>
     <?php endif; ?>
 
     <?php if ($erro): ?>
       <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
         <?= htmlspecialchars($erro) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
       </div>
     <?php endif; ?>
 
@@ -101,21 +74,11 @@ foreach ($dataApps['data'] ?? [] as $item) {
       </p>
 
       <div class="row g-4">
-        <?php foreach ($candidaturas as $candidatura): ?>
-          <?php $aluno = $_POST['candidatura_id'] ?? '' === $candidatura->getId()
-              ? null : null; // nome vem no item direto ?>
-          <?php
-            // A API retorna os dados do aluno dentro do item
-            $nomeAluno = '';
-            $raAluno   = '';
-            foreach ($dataApps['data'] ?? [] as $item) {
-                if ($item['id'] === $candidatura->getId()) {
-                    $nomeAluno = $item['student']['name'] ?? 'Aluno';
-                    $raAluno   = $item['student']['ra']   ?? '';
-                    break;
-                }
-            }
-          ?>
+        <?php foreach ($itensRaw as $index => $item):
+            $candidatura = $candidaturas[$index];
+            $nomeAluno   = $item['student']['name'] ?? 'Aluno';
+            $raAluno     = $item['student']['ra']   ?? '';
+        ?>
           <div class="col-lg-6 col-12">
             <div class="vaga-card">
               <div class="vaga-card-top">
@@ -149,7 +112,6 @@ foreach ($dataApps['data'] ?? [] as $item) {
                 <?php endif; ?>
               </div>
 
-              <!-- Só permite mudar status se não estiver cancelada ou rejeitada -->
               <?php if (!$candidatura->isRejeitada() && !$candidatura->isCancelada()): ?>
                 <div class="vaga-footer">
                   <form method="POST"

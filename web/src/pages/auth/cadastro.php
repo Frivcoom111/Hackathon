@@ -1,8 +1,6 @@
 <?php
-// Todo o fluxo de cadastro é feito aqui no PHP via cURL — sem JS chamando a API
-
 $erro     = '';
-$abaAtiva = 'aluno'; // mantém a aba ativa após erro de validação
+$abaAtiva = 'aluno';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo     = $_POST['tipo'] ?? 'aluno';
@@ -16,34 +14,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Cadastro de aluno ─────────────────────────────────────────────────────
     } elseif ($tipo === 'aluno') {
-        // Monta os campos do formulário para enviar como multipart/form-data
         $campos = [
             'email'     => trim($_POST['email']    ?? ''),
             'password'  => $senha,
             'name'      => trim($_POST['nome']     ?? ''),
             'ra'        => trim($_POST['ra']        ?? ''),
-            'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''), // remove pontuação
+            'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''),
             'phone'     => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
             'courseId'  => trim($_POST['courseId'] ?? ''),
             'startedAt' => $_POST['startedAt']     ?? '',
         ];
 
-        // Anexa o currículo se foi enviado
+        $arquivo = [];
         if (!empty($_FILES['curriculo']['tmp_name'])) {
-            $campos['resume'] = new CURLFile(
-                $_FILES['curriculo']['tmp_name'],
-                $_FILES['curriculo']['type'] ?: 'application/octet-stream',
-                $_FILES['curriculo']['name']
-            );
+            $arquivo = [
+                'field' => 'resume',
+                'path'  => $_FILES['curriculo']['tmp_name'],
+                'name'  => $_FILES['curriculo']['name'],
+                'mime'  => $_FILES['curriculo']['type'] ?: 'application/octet-stream',
+            ];
         }
 
-        $ch = curl_init(API_URL . '/auth/register/student');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $campos); // cURL detecta CURLFile e usa multipart
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $api->auth()->registrarEstudante($campos, $arquivo);
 
         if ($data['success'] ?? false) {
             $_SESSION['msg_sucesso'] = 'Cadastro realizado! Faça login para continuar.';
@@ -55,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Cadastro de empresa ───────────────────────────────────────────────────
     } elseif ($tipo === 'empresa') {
-        // Monta o payload JSON com os dados da empresa, endereço e responsável
         $payload = [
             'email'       => trim($_POST['email']     ?? ''),
             'password'    => $senha,
@@ -79,14 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ],
         ];
 
-        $ch = curl_init(API_URL . '/auth/register/company');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $api->auth()->registrarEmpresa($payload);
 
         if ($data['success'] ?? false) {
             $_SESSION['msg_sucesso'] = 'Empresa cadastrada! Aguarde a aprovação pelo administrador.';
@@ -98,11 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Busca os cursos disponíveis para o select do formulário de aluno
-$ch = curl_init(API_URL . '/courses');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$resp   = curl_exec($ch);
-$cursos = json_decode($resp, true)['data'] ?? [];
+$cursos     = $api->cursos()->listar();
+$semCursos  = empty($cursos);
 ?>
 
 <main class="cadastro-page">
@@ -122,7 +103,6 @@ $cursos = json_decode($resp, true)['data'] ?? [];
       <h2 class="cadastro-titulo">Crie sua conta</h2>
       <p class="cadastro-sub">Escolha o tipo de conta para continuar</p>
 
-      <!-- Abas aluno / empresa — JS só para trocar a exibição, sem chamada à API -->
       <div class="cadastro-tabs">
         <button class="cadastro-tab <?= $abaAtiva === 'aluno' ? 'active' : '' ?>"
                 onclick="trocarAba('aluno', this)">Aluno</button>
@@ -167,8 +147,8 @@ $cursos = json_decode($resp, true)['data'] ?? [];
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Curso</label>
-            <select name="courseId" class="form-select" required>
+            <label class="form-label" for="courseId">Curso</label>
+            <select name="courseId" id="courseId" class="form-select" required <?= $semCursos ? 'disabled' : '' ?>>
               <option value="">Selecione o curso</option>
               <?php foreach ($cursos as $curso): ?>
                 <option value="<?= htmlspecialchars($curso['id']) ?>">
@@ -176,6 +156,12 @@ $cursos = json_decode($resp, true)['data'] ?? [];
                 </option>
               <?php endforeach; ?>
             </select>
+            <?php if ($semCursos): ?>
+              <div class="form-text text-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Não foi possível carregar a lista de cursos. Verifique se a API está ativa e tente novamente.
+              </div>
+            <?php endif; ?>
           </div>
 
           <div class="col-12">
@@ -316,7 +302,6 @@ $cursos = json_decode($resp, true)['data'] ?? [];
 </main>
 
 <script>
-// Alterna entre os formulários de aluno e empresa — só troca exibição, sem API
 function trocarAba(tipo, btn) {
   document.querySelectorAll('.cadastro-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');

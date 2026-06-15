@@ -24,23 +24,31 @@
   <link rel="stylesheet" href="<?= BASE ?>css/footer.css">
   <link rel="stylesheet" href="<?= BASE ?>css/home.css">
   <link rel="stylesheet" href="<?= BASE ?>css/vagas.css">
-  <link rel="stylesheet" href="<?= BASE ?>css/auth.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/login.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/cadastro.css">
 </head>
 <body>
 
 <?php
-$logado = !empty($_SESSION['token']);
-$role   = $_SESSION['role'] ?? '';
+// Papel lido direto da JWT (não mais de $_SESSION['role'], que nunca era setado).
+$logado         = $api->jwt()->hasToken();
+$ehEmpresa      = $logado && $api->jwt()->isCompany();
+$ehAdminEmpresa = $logado && $api->jwt()->isCompanyAdmin();
+$ehAluno        = $logado && $api->jwt()->isStudent();
+
+// Páginas de autenticação usam um cabeçalho enxuto (só a logo, centralizada).
+$paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
 ?>
 
-<nav class="navbar navbar-expand-lg sticky-top">
+<nav class="navbar navbar-expand-lg sticky-top<?= $paginaAuth ? ' navbar-auth' : '' ?>">
   <div class="container navbar-container">
 
     <!-- Logo -->
     <a class="navbar-brand fw-bold" href="<?= BASE ?>index.php">
-      <img src="<?= BASE ?>assets/images/site/logo.png" alt="Hackathon">
+      <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal de Estágios UniALFA">
     </a>
 
+    <?php if (!$paginaAuth): ?>
     <!-- Botão hamburguer (mobile) -->
     <button class="navbar-toggler border-0" type="button"
             data-bs-toggle="collapse" data-bs-target="#navbarMenu"
@@ -51,11 +59,15 @@ $role   = $_SESSION['role'] ?? '';
     <!-- Conteúdo colapsável -->
     <div class="collapse navbar-collapse" id="navbarMenu">
 
-      <!-- Links centralizados — "Alunos" foi removido pois é exclusivo do admin (back office Java) -->
       <ul class="navbar-nav mx-auto align-items-center gap-lg-1 text-center">
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=home">Início</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
+        <?php if ($ehEmpresa): ?>
+          <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresa-dashboard">Painel</a></li>
+          <?php if ($ehAdminEmpresa): ?>
+            <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresa-membros">Membros</a></li>
+          <?php endif; ?>
+        <?php endif; ?>
       </ul>
 
       <?php if (!$logado): ?>
@@ -63,11 +75,9 @@ $role   = $_SESSION['role'] ?? '';
         <a href="<?= BASE ?>index.php?page=login" class="btn btn-entrar btn-sm px-3">Entrar</a>
         <a href="<?= BASE ?>index.php?page=cadastro" class="btn btn-warning btn-sm px-3 fw-semibold">Cadastrar</a>
       </div>
-      <?php endif; ?>
-
-      <?php if ($logado): ?>
+      <?php else: ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
-        <?php if ($role === 'empresa'): ?>
+        <?php if ($ehEmpresa): ?>
           <a href="<?= BASE ?>index.php?page=empresa-dashboard" class="btn btn-entrar btn-sm px-3">
             <i class="bi bi-grid me-1"></i> Painel
           </a>
@@ -81,5 +91,7 @@ $role   = $_SESSION['role'] ?? '';
       <?php endif; ?>
 
     </div>
+    <?php endif; ?>
+
   </div>
 </nav>

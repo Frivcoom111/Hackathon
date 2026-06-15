@@ -1,51 +1,27 @@
 <?php
-// Carrega as classes necessárias
 require_once __DIR__ . '/../../classes/Aluno.php';
 require_once __DIR__ . '/../../classes/Candidatura.php';
 
-// Se não estiver logado, redireciona para o login
-if (empty($_SESSION['token'])) {
-    header('Location: ' . BASE . 'index.php?page=login');
-    exit;
-}
+\App\Auth\Guard::requireStudent($api->jwt());
 
-$token = $_SESSION['token'];
-
-// ── Cancela candidatura se o aluno clicou no botão ───────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'cancelar') {
     $id = $_POST['candidatura_id'] ?? '';
     if ($id) {
-        $ch = curl_init(API_URL . '/student/applications/' . $id);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-        curl_exec($ch);
+        $api->candidaturas()->cancelar($id);
     }
     header('Location: ' . BASE . 'index.php?page=perfil');
     exit;
 }
 
-// ── Busca o perfil do aluno logado via cURL ───────────────────────────────────
-$ch = curl_init(API_URL . '/student/profile');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
-
 $aluno = null;
-$data  = json_decode($resp, true);
-if (!empty($data['data'])) {
-    $aluno = new Aluno($data['data']);
+$resp  = $api->estudante()->perfil();
+if (!empty($resp['data'])) {
+    $aluno = new Aluno($resp['data']);
 }
 
-// ── Busca as candidaturas do aluno logado via cURL ────────────────────────────
-$ch = curl_init(API_URL . '/student/applications?page=1&limit=20');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
-
 $candidaturas = [];
-$dataCandy    = json_decode($resp, true);
-foreach ($dataCandy['data'] ?? [] as $item) {
+$respCandy    = $api->candidaturas()->minhas();
+foreach ($respCandy['data'] ?? [] as $item) {
     $candidaturas[] = new Candidatura($item);
 }
 ?>
@@ -62,7 +38,6 @@ foreach ($dataCandy['data'] ?? [] as $item) {
   <div class="container py-4">
 
     <?php if (!$aluno): ?>
-      <!-- API ainda não implementou a rota ou token inválido -->
       <div class="text-center py-5">
         <i class="bi bi-person-x fs-2 text-secondary"></i>
         <p class="text-secondary mt-2">Não foi possível carregar seu perfil.</p>
@@ -136,11 +111,10 @@ foreach ($dataCandy['data'] ?? [] as $item) {
                   <p class="descricao"><?= htmlspecialchars($candidatura->getCartaApresentacao()) ?></p>
                 <?php endif; ?>
 
-                <!-- Cancelar só permite se estiver pendente ou em análise -->
                 <?php if ($candidatura->isPendente() || $candidatura->getStatus() === 'ANALYSING'): ?>
                   <div class="vaga-footer">
                     <form method="POST" action="<?= BASE ?>index.php?page=perfil">
-                      <input type="hidden" name="acao"          value="cancelar">
+                      <input type="hidden" name="acao"           value="cancelar">
                       <input type="hidden" name="candidatura_id" value="<?= $candidatura->getId() ?>">
                       <button type="submit" class="btn btn-outline-danger btn-sm"
                               onclick="return confirm('Cancelar esta candidatura?')">

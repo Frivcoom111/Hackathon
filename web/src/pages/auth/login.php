@@ -1,11 +1,8 @@
 <?php
-// Todo o fluxo de login é feito aqui no PHP via cURL — sem JS chamando a API
-
 $erro        = '';
 $mostrarTotp = false;
 $qrCode      = '';
 
-// Exibe mensagem deixada pelo cadastro (ex: "Cadastro realizado!")
 if (!empty($_SESSION['msg_sucesso'])) {
     $sucesso = $_SESSION['msg_sucesso'];
     unset($_SESSION['msg_sucesso']);
@@ -13,9 +10,8 @@ if (!empty($_SESSION['msg_sucesso'])) {
     $sucesso = '';
 }
 
-// Limpa estado TOTP se o usuário clicou em "Voltar"
 if (isset($_GET['voltar'])) {
-    unset($_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
+    unset($_SESSION['token'], $_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,17 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Etapa 1: e-mail e senha ───────────────────────────────────────────────
     if ($acao === 'login') {
-        $ch = curl_init(API_URL . '/auth/login');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            'email'    => trim($_POST['email'] ?? ''),
-            'password' => $_POST['senha'] ?? '',
-        ]));
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $api->auth()->login(
+            trim($_POST['email'] ?? ''),
+            $_POST['senha'] ?? ''
+        );
 
         if (!($data['success'] ?? false)) {
             $erro = $data['message'] ?? 'Credenciais inválidas.';
@@ -41,31 +30,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tipo = $data['data']['type'] ?? '';
 
             if ($tipo === 'AUTHENTICATED') {
-                $_SESSION['token'] = $data['data']['token'];
-                $_SESSION['role']  = 'aluno';
+                $api->jwt()->save($data['data']['token']);
                 header('Location: ' . BASE . 'index.php?page=home');
                 exit;
 
             } elseif ($tipo === 'TOTP_SETUP') {
-                // Empresa sem TOTP — precisa escanear o QR code pela primeira vez
-                $_SESSION['tempToken'] = $data['data']['tempToken'];
+                $tempToken = $data['data']['tempToken'];
+                // Salva tempToken como token ativo para que as chamadas com auth=true funcionem
+                $api->jwt()->save($tempToken);
+                $api->jwt()->saveTempToken($tempToken);
                 $_SESSION['totp_tipo'] = 'setup';
 
-                $ch2 = curl_init(API_URL . '/auth/totp/setup');
-                curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch2, CURLOPT_HTTPHEADER, [
-                    'Authorization: Bearer ' . $data['data']['tempToken'],
-                ]);
-                $resp2 = curl_exec($ch2);
-
-                $data2  = json_decode($resp2, true);
-                $qrCode = $data2['data']['qrCode'] ?? '';
+                $setupResp = $api->auth()->totpSetup();
+                $qrCode    = $setupResp['data']['qrCode'] ?? '';
                 $_SESSION['qrCode'] = $qrCode;
                 $mostrarTotp = true;
 
             } elseif ($tipo === 'TOTP_REQUIRED') {
-                // Empresa com TOTP já configurado — só digita o código
-                $_SESSION['tempToken'] = $data['data']['tempToken'];
+                $tempToken = $data['data']['tempToken'];
+                $api->jwt()->save($tempToken);
+                $api->jwt()->saveTempToken($tempToken);
                 $_SESSION['totp_tipo'] = 'verify';
                 $mostrarTotp = true;
             }
@@ -73,34 +57,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Etapa 2: código TOTP ─────────────────────────────────────────────────
     } elseif ($acao === 'totp') {
-        $tempToken = $_SESSION['tempToken'] ?? '';
-        $totpTipo  = $_SESSION['totp_tipo'] ?? 'verify';
+        $totpTipo = $_SESSION['totp_tipo'] ?? 'verify';
+        $codigo   = trim($_POST['codigo'] ?? '');
 
-        $rota = $totpTipo === 'setup'
-            ? API_URL . '/auth/totp/setup/confirm'
-            : API_URL . '/auth/totp/verify';
-
-        $ch = curl_init($rota);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $tempToken,
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            'code' => trim($_POST['codigo'] ?? ''),
-        ]));
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $totpTipo === 'setup'
+            ? $api->auth()->totpSetupConfirm($codigo)
+            : $api->auth()->totpVerify($codigo);
 
         if (!($data['success'] ?? false)) {
             $erro        = $data['message'] ?? 'Código inválido.';
             $mostrarTotp = true;
             $qrCode      = $_SESSION['qrCode'] ?? '';
         } else {
-            $_SESSION['token'] = $data['data']['token'];
-            $_SESSION['role']  = 'empresa';
+            $api->jwt()->save($data['data']['token']);
             unset($_SESSION['tempToken'], $_SESSION['totp_tipo'], $_SESSION['qrCode']);
             header('Location: ' . BASE . 'index.php?page=empresa-dashboard');
             exit;
@@ -137,14 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="hidden" name="acao" value="login">
 
           <div class="col-12">
-            <label class="form-label">E-mail</label>
-            <input type="email" name="email" class="form-control" placeholder="seu@email.com" required>
+            <label class="form-label" for="login-email">E-mail</label>
+            <input type="email" id="login-email" name="email" class="form-control"
+                   placeholder="seu@email.com" autocomplete="email" inputmode="email" required>
           </div>
 
           <div class="col-12">
-            <label class="form-label">Senha</label>
+            <label class="form-label" for="login-senha">Senha</label>
             <div class="input-senha">
-              <input type="password" id="login-senha" name="senha" class="form-control" placeholder="Sua senha" required>
+              <input type="password" id="login-senha" name="senha" class="form-control"
+                     placeholder="Sua senha" autocomplete="current-password" required>
               <button type="button" class="btn-ver-senha" onclick="toggleSenha()">
                 <i class="bi bi-eye" id="icone-senha"></i>
               </button>
@@ -217,7 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <script>
-// Apenas toggle de visibilidade da senha — sem chamada à API
 function toggleSenha() {
   const input = document.getElementById('login-senha');
   const icone = document.getElementById('icone-senha');
