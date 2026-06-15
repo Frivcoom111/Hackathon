@@ -1,9 +1,12 @@
 package com.portal.gui.dashboard;
 
+import com.portal.gui.applications.ApplicationListPanel;
 import com.portal.gui.companies.CompanyListPanel;
 import com.portal.gui.course.CoursePanel;
+import com.portal.gui.jobs.JobListPanel;
 import com.portal.gui.reports.ReportPanel;
 import com.portal.gui.students.StudentListPanel;
+import com.portal.util.ButtonFactory;
 import com.portal.util.Session;
 
 import javax.swing.*;
@@ -32,12 +35,15 @@ public class DashboardFrame extends JFrame {
         root.add(contentArea,   BorderLayout.CENTER);
 
         // Registrar painéis
-        contentArea.add(new CoursePanel(),       "cursos");
-        contentArea.add(new CompanyListPanel(),  "empresas");
-        contentArea.add(new StudentListPanel(),  "alunos");
-        contentArea.add(new ReportPanel(),       "relatorios");
+        contentArea.add(new DashboardHomePanel(),      "home");
+        contentArea.add(new CompanyListPanel(),        "empresas");
+        contentArea.add(new StudentListPanel(),        "alunos");
+        contentArea.add(new CoursePanel(),             "cursos");
+        contentArea.add(new JobListPanel(),            "vagas");
+        contentArea.add(new ApplicationListPanel(),    "candidaturas");
+        contentArea.add(new ReportPanel(),             "relatorios");
 
-        mostrar("empresas");
+        mostrar("home");
         add(root);
     }
 
@@ -81,10 +87,13 @@ public class DashboardFrame extends JFrame {
         sidebar.setPreferredSize(new Dimension(200, 0));
         sidebar.setBorder(new EmptyBorder(16, 0, 16, 0));
 
-        sidebar.add(navItem("Empresas",   "empresas"));
-        sidebar.add(navItem("Alunos",     "alunos"));
-        sidebar.add(navItem("Cursos",     "cursos"));
-        sidebar.add(navItem("Relatórios", "relatorios"));
+        sidebar.add(navItem("Início",        "home"));
+        sidebar.add(navItem("Empresas",      "empresas"));
+        sidebar.add(navItem("Alunos",        "alunos"));
+        sidebar.add(navItem("Cursos",        "cursos"));
+        sidebar.add(navItem("Vagas",         "vagas"));
+        sidebar.add(navItem("Candidaturas",  "candidaturas"));
+        sidebar.add(navItem("Relatórios",    "relatorios"));
 
         return sidebar;
     }

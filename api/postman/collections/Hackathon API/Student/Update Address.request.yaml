@@ -1,0 +1,23 @@
+$kind: http-request
+description: Cria ou atualiza (upsert) o endereço do estudante.
+url: "{{BASE_URL}}/student/address"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "street": "Rua das Flores",
+      "number": "250",
+      "complement": "Apto 41",
+      "district": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipCode": "01001000"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_STUDENT}}"
+order: 3000

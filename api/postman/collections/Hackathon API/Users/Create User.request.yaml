@@ -1,0 +1,20 @@
+$kind: http-request
+description: Criar usuário do banco de dados, neste caso será a rota que somente o Admin logado poderá acessar, pois podemos usar Role para definir papeis e etc.
+url: "{{BASE_URL}}/users"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "Password1@",
+      "role": "USER"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{TOKEN_ADMIN}}"
+order: 3000

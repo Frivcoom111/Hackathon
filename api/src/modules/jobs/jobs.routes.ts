@@ -3,14 +3,11 @@ import { prisma } from "../../lib/prisma";
 import { ConflictError, NotFoundError } from "../../shared/errors/AppError";
 import { authMiddleware, requireStudent } from "../../shared/middlewares/auth.middlewares";
 import { response } from "../../shared/utils/response";
-import { ensurePortalSeed } from "../portalSeed";
 
 const router = Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    await ensurePortalSeed(prisma);
-
     const status = typeof req.query.status === "string" ? req.query.status : "ACTIVE";
     const limit = Number(req.query.limit ?? 50);
 

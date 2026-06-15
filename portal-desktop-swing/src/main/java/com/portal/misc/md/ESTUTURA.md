@@ -101,10 +101,42 @@ src/main/java/com/portal/
 - [ ] Controle de sessão simples (objeto `Session` estático ou singleton)
 
 ### M3 — Gestão de Empresas
-- [ ] `CompanyDAO.java` — listar, buscar por status, atualizar status
-- [ ] `CompanyService.java` — aprovar (PENDING→APPROVED), bloquear (→BLOCKED)
-- [ ] `CompanyListPanel.java` — tabela com filtro por status
-- [ ] `CompanyDetailDialog.java` — visualizar dados + botões Aprovar/Bloquear
+
+**Contexto:** Empresas se cadastram pelo portal PHP com status inicial `PENDING`.
+O admin do Back Office Java aprova ou bloqueia. Só empresas `APPROVED` conseguem publicar vagas.
+
+**Fluxo de status:**
+```
+PENDING → ANALYSING → APPROVED
+                    → BLOCKED
+```
+
+**O que o admin pode fazer:**
+- Ver lista de todas as empresas com filtro por status
+- Abrir detalhes: nome, CNPJ, telefone, descrição, endereço
+- Mover para ANALYSING (começou a analisar)
+- Aprovar empresa (APPROVED) → libera publicação de vagas
+- Bloquear empresa (BLOCKED) → impede acesso ao painel
+
+**Tabela `Company` no banco:**
+| Campo | Tipo | Observação |
+|---|---|---|
+| id | UUID | PK |
+| name | VARCHAR | Nome da empresa |
+| cnpj | VARCHAR | Único |
+| description | LONGTEXT | Apresentação |
+| phone | VARCHAR | Nullable |
+| status | ENUM | PENDING, ANALYSING, APPROVED, BLOCKED |
+| addressId | FK → Address | Nullable |
+| createdAt / updatedAt | DATETIME | — |
+
+**Arquivos a criar:**
+- [ ] `CompanyDAO.java` — `findAll()`, `findByStatus()`, `updateStatus()`
+- [ ] `CompanyService.java` — `analisar()`, `aprovar()`, `bloquear()`
+- [ ] `CompanyListPanel.java` — tabela com filtro por status no topo
+- [ ] `CompanyDetailDialog.java` — dados completos + botões de ação
+
+**Observação:** A tabela `Address` é separada. Para exibir o endereço no detalhe da empresa, precisamos de um JOIN ou busca adicional em `Address` pelo `addressId`.
 
 ### M4 — Gestão de Alunos
 - [ ] `StudentDAO.java` — CRUD completo
@@ -150,6 +182,18 @@ src/main/java/com/portal/
 João Silva;20240001;123.456.789-00;joao@unialfa.edu.br;3;Sistemas de Informação
 Maria Souza;20240002;987.654.321-00;maria@unialfa.edu.br;5;Engenharia de Software
 ```
+
+---
+
+## Design Patterns Aplicados
+
+| Pattern | Onde | Descrição |
+|---|---|---|
+| **Singleton** | `config/DatabaseConfig.java` | Pool HikariCP inicializado uma única vez via static block; construtor privado impede instanciação externa. |
+| **DAO (Data Access Object)** | `dao/BaseDAO.java` + todos os DAOs | Isola o acesso ao banco de dados da lógica de negócio. Cada entidade tem seu próprio DAO. |
+| **Factory Method** | `util/ButtonFactory.java` | Centraliza a criação de botões Swing padronizados (`primary`, `secondary`, `danger`), garantindo consistência visual sem duplicação. |
+| **Facade** | `service/*.java` | Cada Service é uma Facade: expõe operações de alto nível para a GUI sem que ela conheça os DAOs ou SQL. |
+| **Template Method** | `dao/BaseDAO.java` | Define o método `getConnection()` como template reutilizado por todos os DAOs concretos. |
 
 ---
 
