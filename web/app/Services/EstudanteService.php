@@ -35,4 +35,16 @@ class EstudanteService extends BaseService
         }
         return $this->client->post('/address/me', $dados, true);
     }
+
+    // Troca/envia o currículo do aluno (PATCH multipart, campo "resume").
+    public function atualizarCurriculo(array $arquivo): array
+    {
+        return $this->client->patchMultipart('/student/resume', [], $arquivo, true);
+    }
+
+    // Baixa o currículo do próprio aluno autenticado (binário).
+    public function baixarCurriculo(): array
+    {
+        return $this->client->downloadRaw('/student/resume/download', true);
+    }
 }

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { changePasswordSchema, idParamsSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import { requireUser } from "../../shared/utils/requireUser";
 import { response } from "../../shared/utils/response";
+import { sendResumeFile } from "../../shared/utils/sendResumeFile";
 import { updateStudentProfileSchema } from "./student.schema";
 import type { StudentService } from "./student.service";
 
@@ -40,5 +41,17 @@ export class StudentController {
     const { id } = idParamsSchema.parse(req.params);
     const result = await this.studentService.cancelApplication(user.id, id);
     res.status(200).json(response.success(result, "Candidatura cancelada."));
+  }
+
+  async updateResume(req: Request, res: Response): Promise<void> {
+    const user = requireUser(req);
+    const result = await this.studentService.updateResume(user.id, req.file);
+    res.status(200).json(response.success(result, "Currículo atualizado com sucesso."));
+  }
+
+  async downloadResume(req: Request, res: Response): Promise<void> {
+    const user = requireUser(req);
+    const resumePath = await this.studentService.getOwnResumePath(user.id);
+    sendResumeFile(res, resumePath);
   }
 }

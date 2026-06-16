@@ -75,9 +75,9 @@ export class JobsRepository {
     });
   }
 
-  async createApplication(studentId: string, jobId: string) {
+  async createApplication(studentId: string, jobId: string, resumePath?: string) {
     return this.prisma.application.create({
-      data: { studentId, jobId },
+      data: { studentId, jobId, ...(resumePath ? { resumePath } : {}) },
       select: { id: true, status: true, createdAt: true },
     });
   }

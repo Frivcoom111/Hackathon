@@ -8,6 +8,7 @@ use App\Services\CandidaturaService;
 use App\Services\CompanhiaService;
 use App\Services\CursoService;
 use App\Services\EstudanteService;
+use App\Services\NotificacaoService;
 use App\Services\VagaService;
 
 class Api
@@ -21,6 +22,7 @@ class Api
     private ?EstudanteService $estudanteService = null;
     private ?CompanhiaService $companhiaService = null;
     private ?CandidaturaService $candidaturaService = null;
+    private ?NotificacaoService $notificacaoService = null;
 
     public function __construct(ApiClient $client, JwtManager $jwtManager)
     {
@@ -61,5 +63,10 @@ class Api
     public function candidaturas(): CandidaturaService
     {
         return $this->candidaturaService ??= new CandidaturaService($this->client, $this->jwtManager);
+    }
+
+    public function notificacoes(): NotificacaoService
+    {
+        return $this->notificacaoService ??= new NotificacaoService($this->client, $this->jwtManager);
     }
 }

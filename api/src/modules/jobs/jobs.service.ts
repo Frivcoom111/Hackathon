@@ -24,7 +24,7 @@ export class JobsService {
     return job;
   }
 
-  async apply(userId: string, jobId: string) {
+  async apply(userId: string, jobId: string, resumePath?: string) {
     const job = await this.jobsRepository.getJobForApply(jobId);
     if (!job) throw new NotFoundError("Vaga não encontrada.");
     if (job.status !== "ACTIVE" || job.company.status !== "APPROVED") {
@@ -38,7 +38,7 @@ export class JobsService {
 
     let application: Awaited<ReturnType<JobsRepository["createApplication"]>>;
     try {
-      application = await this.jobsRepository.createApplication(student.id, jobId);
+      application = await this.jobsRepository.createApplication(student.id, jobId, resumePath);
     } catch (error) {
       if ((error as { code?: string }).code === "P2002") {
         throw new ConflictError("Você já se candidatou a esta vaga.");

@@ -226,6 +226,23 @@ export class CompanyService {
     return updated;
   }
 
+  // Resolve o caminho do currículo de um candidato, garantindo que a vaga
+  // pertence à empresa do membro autenticado. Usa o currículo da candidatura
+  // e, se ausente, cai para o currículo do perfil do aluno.
+  async getApplicationResumePath(userId: string, jobId: string, applicationId: string): Promise<string> {
+    const member = await this.getMemberOrThrow(userId);
+    await this.assertJobOwnership(jobId, member.companyId);
+
+    const application = await this.companyRepository.getApplicationById(applicationId);
+    if (!application || application.jobId !== jobId) {
+      throw new NotFoundError("Candidatura não encontrada.");
+    }
+
+    const resumePath = application.resumePath ?? application.student.resumePath;
+    if (!resumePath) throw new NotFoundError("Candidato não possui currículo.");
+    return resumePath;
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   private async getMemberOrThrow(userId: string) {

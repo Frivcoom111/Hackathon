@@ -57,6 +57,15 @@ class CompanhiaService extends BaseService
         );
     }
 
+    // Baixa o currículo de um candidato (valida que a vaga é da empresa). Binário.
+    public function baixarCurriculoCandidato(int|string $vagaId, int|string $candidaturaId): array
+    {
+        return $this->client->downloadRaw(
+            "/company/jobs/{$vagaId}/applications/{$candidaturaId}/resume",
+            true
+        );
+    }
+
     // ─── Membros (somente ADMIN da empresa) ─────────────────────────────────
     public function membros(): array
     {

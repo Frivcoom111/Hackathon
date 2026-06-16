@@ -80,6 +80,19 @@ export class StudentService {
     return cancelled;
   }
 
+  async updateResume(userId: string, file?: Express.Multer.File) {
+    if (!file) throw new BadRequestError("Envie um arquivo de currículo (PDF, JPG ou PNG).");
+    const student = await this.getStudentOrThrow(userId);
+    const resumePath = `uploads/resumes/${file.filename}`;
+    return this.studentRepository.updateResume(student.id, resumePath);
+  }
+
+  async getOwnResumePath(userId: string): Promise<string> {
+    const student = await this.studentRepository.getResumePath(userId);
+    if (!student?.resumePath) throw new NotFoundError("Currículo não encontrado.");
+    return student.resumePath;
+  }
+
   private async getStudentOrThrow(userId: string) {
     const student = await this.studentRepository.getStudentByUserId(userId);
     if (!student) throw new NotFoundError("Estudante não encontrado.");

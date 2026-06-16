@@ -107,6 +107,78 @@ class ApiClient
         }
     }
 
+    public function patchMultipart(string $path, array $fields = [], array $file = [], bool $auth = false): array
+    {
+        try {
+            $multipart = [];
+            foreach ($fields as $name => $value) {
+                if ($value !== null && $value !== '') {
+                    $multipart[] = ['name' => $name, 'contents' => (string) $value];
+                }
+            }
+            if (!empty($file)) {
+                $multipart[] = [
+                    'name'     => $file['field'],
+                    'contents' => fopen($file['path'], 'r'),
+                    'filename' => $file['name'],
+                    'headers'  => ['Content-Type' => $file['mime']],
+                ];
+            }
+
+            $options = ['multipart' => $multipart];
+            if ($auth) {
+                $options['headers'] = $this->authHeader();
+            }
+            $response = $this->http->patch($path, $options);
+            return $this->parse($response);
+        } catch (RequestException $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * GET de conteúdo binário (ex.: currículo). NÃO faz json_decode — devolve o
+     * corpo cru e os cabeçalhos relevantes para repassar no proxy de download.
+     * Retorno: ['ok'=>bool,'status'=>int,'body'=>string,'contentType'=>string,'filename'=>?string,'message'=>?string]
+     */
+    public function downloadRaw(string $path, bool $auth = true): array
+    {
+        try {
+            $options = [];
+            if ($auth) {
+                $options['headers'] = $this->authHeader();
+            }
+            $response = $this->http->get($path, $options);
+            $status   = $response->getStatusCode();
+            $body     = (string) $response->getBody();
+
+            if ($status < 200 || $status >= 300) {
+                $json = json_decode($body, true);
+                return [
+                    'ok'      => false,
+                    'status'  => $status,
+                    'message' => is_array($json) ? ($json['message'] ?? 'Falha ao baixar o arquivo.') : 'Falha ao baixar o arquivo.',
+                ];
+            }
+
+            $disposition = $response->getHeaderLine('Content-Disposition');
+            $filename    = null;
+            if ($disposition && preg_match('/filename="?([^"]+)"?/', $disposition, $m)) {
+                $filename = $m[1];
+            }
+
+            return [
+                'ok'          => true,
+                'status'      => $status,
+                'body'        => $body,
+                'contentType' => $response->getHeaderLine('Content-Type') ?: 'application/octet-stream',
+                'filename'    => $filename,
+            ];
+        } catch (RequestException $e) {
+            return ['ok' => false, 'status' => 0, 'message' => $e->getMessage()];
+        }
+    }
+
     private function authHeader(): array
     {
         return ['Authorization' => 'Bearer ' . $this->jwt->get()];

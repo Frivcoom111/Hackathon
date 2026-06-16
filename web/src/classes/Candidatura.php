@@ -17,6 +17,14 @@ class Candidatura {
     private string $criadoEm;
     private string $atualizadoEm;
 
+    // Dados do candidato (vêm aninhados em student na listagem da empresa)
+    private string $alunoNome;
+    private string $alunoRa;
+    private string $alunoEmail;
+    private string $alunoTelefone;
+    private string $alunoCurso;
+    private bool   $temCurriculo;
+
     public function __construct(array $dados) {
         $this->id                 = $dados['id']          ?? '';
         $this->alunoId            = $dados['studentId']   ?? '';
@@ -26,6 +34,15 @@ class Candidatura {
         $this->deletadoEm         = $dados['deletedAt']   ?? null;
         $this->criadoEm           = $dados['createdAt']   ?? '';
         $this->atualizadoEm       = $dados['updatedAt']   ?? '';
+
+        $student = $dados['student'] ?? [];
+        $this->alunoNome     = $student['name']  ?? 'Aluno';
+        $this->alunoRa       = $student['ra']    ?? '';
+        $this->alunoEmail    = $student['user']['email'] ?? '';
+        $this->alunoTelefone = $student['phone'] ?? '';
+        $this->alunoCurso    = $student['courses'][0]['course']['name'] ?? '';
+        // Currículo da candidatura, com fallback para o do perfil do aluno.
+        $this->temCurriculo  = !empty($dados['resumePath']) || !empty($student['resumePath']);
     }
 
     // ── Getters ────────────────────────────────────────────────────────────────
@@ -38,6 +55,13 @@ class Candidatura {
     public function getDeletadoEm(): ?string          { return $this->deletadoEm; }
     public function getCriadoEm(): string             { return $this->criadoEm; }
     public function getAtualizadoEm(): string         { return $this->atualizadoEm; }
+
+    public function getAlunoNome(): string            { return $this->alunoNome; }
+    public function getAlunoRa(): string              { return $this->alunoRa; }
+    public function getAlunoEmail(): string           { return $this->alunoEmail; }
+    public function getAlunoTelefone(): string        { return $this->alunoTelefone; }
+    public function getAlunoCurso(): string           { return $this->alunoCurso; }
+    public function temCurriculo(): bool              { return $this->temCurriculo; }
 
     // ── Setters ────────────────────────────────────────────────────────────────
 

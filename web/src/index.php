@@ -9,6 +9,7 @@ $rotas = [
     'login'             => 'pages/auth/login.php',
     'cadastro'          => 'pages/auth/cadastro.php',
     'perfil'            => 'pages/aluno/perfil.php',
+    'notificacoes'      => 'pages/notificacoes.php',
     'empresa-dashboard'  => 'pages/empresa/dashboard.php',
     'empresa-vaga-form'  => 'pages/empresa/vaga-form.php',
     'empresa-candidatos' => 'pages/empresa/candidatos.php',
@@ -22,6 +23,7 @@ $titulos = [
     'login'             => 'Login',
     'cadastro'          => 'Cadastro',
     'perfil'            => 'Meu Perfil',
+    'notificacoes'      => 'Notificações',
     'empresa-dashboard'  => 'Painel da Empresa',
     'empresa-vaga-form'  => 'Vaga',
     'empresa-candidatos' => 'Candidatos',
@@ -39,6 +41,17 @@ $pagina = $_GET['page'] ?? 'home';
 if ($pagina === 'logout') {
     session_destroy();
     header('Location: ' . BASE . 'index.php?page=login');
+    exit;
+}
+
+// Downloads protegidos (currículo): proxies que buscam o binário na API com o
+// header Authorization e o repassam. Tratados ANTES do layout (saída binária).
+if ($pagina === 'curriculo') {
+    require 'pages/download/curriculo-aluno.php';
+    exit;
+}
+if ($pagina === 'curriculo-candidato') {
+    require 'pages/download/curriculo-candidato.php';
     exit;
 }
 

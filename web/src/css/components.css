@@ -416,6 +416,62 @@
   color: var(--azul-principal);
 }
 
+/* Card de currículo no perfil */
+.profile-resume {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-resume-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f1ff;
+  color: var(--azul-principal);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.profile-resume-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile-resume-info strong {
+  color: var(--texto-titulo);
+}
+
+.profile-resume-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Lista de dados no modal de candidato */
+.candidato-dados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.candidato-dados li {
+  color: var(--texto-padrao);
+  font-size: .92rem;
+}
+
+.candidato-dados i {
+  color: var(--azul-principal);
+  margin-right: 6px;
+}
+
 @media (max-width: 767px) {
   .profile-cover {
     height: 150px;
@@ -440,5 +496,14 @@
   .profile-application {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .profile-resume {
+    flex-wrap: wrap;
+  }
+
+  .profile-resume-actions {
+    margin-left: 0;
+    width: 100%;
   }
 }

@@ -22,6 +22,21 @@ export class StudentRepository {
     });
   }
 
+  async getResumePath(userId: string) {
+    return this.prisma.student.findUnique({
+      where: { userId },
+      select: { resumePath: true },
+    });
+  }
+
+  async updateResume(studentId: string, resumePath: string) {
+    return this.prisma.student.update({
+      where: { id: studentId },
+      data: { resumePath },
+      select: { id: true, resumePath: true },
+    });
+  }
+
   async getProfile(userId: string) {
     return this.prisma.student.findUnique({
       where: { userId },
@@ -32,6 +47,7 @@ export class StudentRepository {
         cpf: true,
         phone: true,
         isEligible: true,
+        resumePath: true,
         user: { select: { id: true, email: true, role: true, isActive: true, createdAt: true } },
         address: { select: addressSelect },
         courses: {

@@ -57,6 +57,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         perfilRedirect();
     }
 
+    if ($acao === 'curriculo') {
+        if (!empty($_FILES['curriculo']['tmp_name']) && is_uploaded_file($_FILES['curriculo']['tmp_name'])) {
+            $arquivo = [
+                'field' => 'resume',
+                'path'  => $_FILES['curriculo']['tmp_name'],
+                'name'  => $_FILES['curriculo']['name'],
+                'mime'  => $_FILES['curriculo']['type'] ?: 'application/octet-stream',
+            ];
+            salvarMensagemPerfil(
+                $api->estudante()->atualizarCurriculo($arquivo),
+                'Currículo atualizado com sucesso.',
+                'Não foi possível atualizar o currículo.'
+            );
+        } else {
+            $_SESSION['perfil_erro'] = 'Selecione um arquivo (PDF, JPG ou PNG).';
+        }
+        perfilRedirect();
+    }
+
     if ($acao === 'cancelar') {
         $id = $_POST['candidatura_id'] ?? '';
         if ($id !== '') {
@@ -94,6 +113,7 @@ $cidade = $endereco['city'] ?? 'Umuarama';
 $estado = $endereco['state'] ?? 'PR';
 $email = $user['email'] ?? '';
 $telefone = $perfilData['phone'] ?? '';
+$curriculoEnviado = !empty($perfilData['resumePath']);
 
 $statusLabels = [
     'ACTIVE' => 'Em andamento',
@@ -179,6 +199,36 @@ $statusLabels = [
               <?php if (!empty($cursoAtual['finishedAt'])): ?>
                 <small>Conclusão: <?= date('d/m/Y', strtotime($cursoAtual['finishedAt'])) ?></small>
               <?php endif; ?>
+            </div>
+          </div>
+        </section>
+
+        <section class="profile-panel">
+          <h2>Currículo</h2>
+          <div class="profile-resume">
+            <div class="profile-resume-icon">
+              <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="profile-resume-info">
+              <?php if ($curriculoEnviado): ?>
+                <strong>Currículo enviado</strong>
+                <span class="text-secondary">Empresas podem visualizá-lo nas suas candidaturas.</span>
+              <?php else: ?>
+                <strong>Nenhum currículo enviado</strong>
+                <span class="text-secondary">Envie um PDF, JPG ou PNG (até 5&nbsp;MB).</span>
+              <?php endif; ?>
+            </div>
+            <div class="profile-resume-actions">
+              <?php if ($curriculoEnviado): ?>
+                <a href="<?= BASE ?>index.php?page=curriculo" target="_blank" rel="noopener"
+                   class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-download me-1"></i> Baixar
+                </a>
+              <?php endif; ?>
+              <button type="button" class="btn btn-primary btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#modalCurriculo">
+                <i class="bi bi-upload me-1"></i> <?= $curriculoEnviado ? 'Trocar' : 'Enviar' ?>
+              </button>
             </div>
           </div>
         </section>
@@ -311,6 +361,29 @@ $statusLabels = [
             <div class="modal-footer">
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
               <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal fade" id="modalCurriculo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <form class="modal-content" method="POST"
+                action="<?= BASE ?>index.php?page=perfil" enctype="multipart/form-data">
+            <input type="hidden" name="acao" value="curriculo">
+            <div class="modal-header">
+              <h5 class="modal-title"><?= $curriculoEnviado ? 'Trocar currículo' : 'Enviar currículo' ?></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <label class="form-label" for="curriculo-arquivo">Arquivo do currículo</label>
+              <input type="file" name="curriculo" id="curriculo-arquivo" class="form-control"
+                     accept=".pdf,.jpg,.jpeg,.png" required>
+              <p class="text-secondary small mt-2 mb-0">Formatos aceitos: PDF, JPG ou PNG (até 5&nbsp;MB).</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Enviar</button>
             </div>
           </form>
         </div>

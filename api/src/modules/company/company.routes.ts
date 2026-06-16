@@ -41,6 +41,7 @@ router.patch("/jobs/:jobId/status", controller.changeJobStatus.bind(controller))
 
 // ─── Candidaturas ────────────────────────────────────────────────────────────────
 router.get("/jobs/:jobId/applications", controller.listApplications.bind(controller));
+router.get("/jobs/:jobId/applications/:id/resume", controller.downloadApplicationResume.bind(controller));
 router.patch("/jobs/:jobId/applications/:id/status", controller.changeApplicationStatus.bind(controller));
 
 export default router;

@@ -5,8 +5,9 @@ import multer from "multer";
 import { BadRequestError } from "../errors/AppError";
 
 const COVER_DIR = path.join("uploads", "covers");
+const RESUME_DIR = path.join("uploads", "resumes");
 
-for (const dir of [COVER_DIR]) {
+for (const dir of [COVER_DIR, RESUME_DIR]) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
@@ -14,6 +15,13 @@ const IMAGE_MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/png": ".png",
   "image/webp": ".webp",
+};
+
+// Currículo aceita PDF além das imagens.
+const RESUME_MIME_TO_EXT: Record<string, string> = {
+  "application/pdf": ".pdf",
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
 };
 
 const makeStorage = (destination: string, mimeMap: Record<string, string>) =>
@@ -46,4 +54,10 @@ export const uploadCoverPhoto = makeUpload(
   COVER_DIR,
   IMAGE_MIME_TO_EXT,
   "Tipo de imagem invalido. Envie JPG, PNG ou WEBP.",
+);
+
+export const uploadResume = makeUpload(
+  RESUME_DIR,
+  RESUME_MIME_TO_EXT,
+  "Tipo de arquivo invalido. Envie PDF, JPG ou PNG.",
 );

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { authMiddleware, requireStudent } from "../../shared/middlewares/auth.middlewares";
+import { uploadResume } from "../../shared/middlewares/upload.middleware";
 import { NotificationRepository } from "../notification/notification.repository";
 import { NotificationService } from "../notification/notification.service";
 import { JobsController } from "./jobs.controller";
@@ -19,6 +20,6 @@ router.use(authMiddleware);
 router.get("/", controller.list.bind(controller));
 router.get("/:jobId", controller.getById.bind(controller));
 
-router.post("/:jobId/apply", requireStudent, controller.apply.bind(controller));
+router.post("/:jobId/apply", requireStudent, uploadResume.single("resume"), controller.apply.bind(controller));
 
 export default router;

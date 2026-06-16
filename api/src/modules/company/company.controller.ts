@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { changePasswordSchema, paginationQuerySchema } from "../../shared/schemas/common.schema";
 import { requireUser } from "../../shared/utils/requireUser";
 import { response } from "../../shared/utils/response";
+import { sendResumeFile } from "../../shared/utils/sendResumeFile";
 import {
   changeApplicationStatusSchema,
   changeJobStatusSchema,
@@ -143,5 +144,12 @@ export class CompanyController {
     const data = changeApplicationStatusSchema.parse(req.body);
     const application = await this.companyService.changeApplicationStatus(user.id, jobId, id, data);
     res.status(200).json(response.success(application, "Status da candidatura atualizado."));
+  }
+
+  async downloadApplicationResume(req: Request, res: Response): Promise<void> {
+    const user = requireUser(req);
+    const { jobId, id } = jobApplicationParamsSchema.parse(req.params);
+    const resumePath = await this.companyService.getApplicationResumePath(user.id, jobId, id);
+    sendResumeFile(res, resumePath);
   }
 }

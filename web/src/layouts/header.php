@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="<?= BASE ?>css/vagas.css">
   <link rel="stylesheet" href="<?= BASE ?>css/login.css">
   <link rel="stylesheet" href="<?= BASE ?>css/cadastro.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/notificacoes.css">
 </head>
 <body>
 
@@ -38,6 +39,18 @@ $ehAluno        = $logado && $api->jwt()->isStudent();
 
 // Login e cadastro ficam sem navbar para deixar o foco no formulario.
 $paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
+
+// Resumo de notificações para o sino (só quando autenticado de verdade).
+$notifNaoLidas = [];
+$notifTotal    = 0;
+if ($logado && $api->jwt()->isAuthenticated()) {
+    require_once __DIR__ . '/../classes/Notificacao.php';
+    $respNotif = $api->notificacoes()->naoLidas(8);
+    foreach ($respNotif['data'] ?? [] as $n) {
+        $notifNaoLidas[] = new Notificacao($n);
+    }
+    $notifTotal = $respNotif['meta']['total'] ?? count($notifNaoLidas);
+}
 ?>
 
 <?php if (!$paginaAuth): ?>
@@ -77,6 +90,47 @@ $paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
       </div>
       <?php else: ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
+
+        <!-- Sino de notificações -->
+        <div class="dropdown notif-dropdown">
+          <button class="btn btn-entrar btn-sm position-relative notif-sino" type="button"
+                  data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                  aria-expanded="false" aria-label="Notificações">
+            <i class="bi bi-bell"></i>
+            <?php if ($notifTotal > 0): ?>
+              <span class="notif-badge"><?= $notifTotal > 99 ? '99+' : $notifTotal ?></span>
+            <?php endif; ?>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end notif-menu">
+            <div class="notif-menu-header">
+              <strong>Notificações</strong>
+              <?php if ($notifTotal > 0): ?>
+                <form method="POST" action="<?= BASE ?>index.php?page=notificacoes" class="m-0">
+                  <input type="hidden" name="acao" value="marcar_todas">
+                  <button type="submit" class="notif-marcar-todas">Marcar todas</button>
+                </form>
+              <?php endif; ?>
+            </div>
+            <div class="notif-menu-body">
+              <?php if (empty($notifNaoLidas)): ?>
+                <p class="notif-vazio">Nenhuma notificação nova.</p>
+              <?php else: ?>
+                <?php foreach ($notifNaoLidas as $n): ?>
+                  <div class="notif-item notif-item--nova">
+                    <i class="bi <?= $n->getIconeClasse() ?>"></i>
+                    <div>
+                      <strong><?= htmlspecialchars($n->getTitulo()) ?></strong>
+                      <span><?= htmlspecialchars($n->getMensagem()) ?></span>
+                      <small><?= htmlspecialchars($n->tempoRelativo()) ?></small>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+            <a href="<?= BASE ?>index.php?page=notificacoes" class="notif-ver-todas">Ver todas</a>
+          </div>
+        </div>
+
         <?php if ($ehEmpresa): ?>
           <a href="<?= BASE ?>index.php?page=empresa-dashboard" class="btn btn-entrar btn-sm px-3">
             <i class="bi bi-grid me-1"></i> Painel
