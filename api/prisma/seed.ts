@@ -1,7 +1,6 @@
 import { prisma } from "../src/lib/prisma";
 import { generateHash } from "../src/shared/utils/bcryptUtils";
 import {
-  TOTP_DEV_SECRET,
   seedAdmin,
   seedApplications,
   seedCompanies,
@@ -95,8 +94,6 @@ async function main() {
           email: seedAdmin.email,
           password: adminHash,
           role: "ADMIN",
-          totpSecret: TOTP_DEV_SECRET,
-          totpEnabled: true,
         },
       });
 
@@ -220,8 +217,7 @@ async function main() {
   console.log("│ Aluno        │ maria@aluno.com              │ Aluno@123│");
   console.log("│ Aluno        │ lucas@aluno.com              │ Aluno@123│");
   console.log("└──────────────┴──────────────────────────────┴──────────┘");
-  console.log(`\nTOTP dev secret (admin e empresa): ${TOTP_DEV_SECRET}`);
-  console.log("Adicione manualmente no Google Authenticator / Authy.\n");
+  console.log("\nOBS: O TOTP é configurado no primeiro login de cada usuário.\n");
 }
 
 main()
