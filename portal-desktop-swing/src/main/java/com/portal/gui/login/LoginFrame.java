@@ -1,10 +1,12 @@
 package com.portal.gui.login;
 
+//Próxima tela que abre após o login, por isso importação
 import com.portal.gui.dashboard.DashboardFrame;
-import com.portal.model.User;
+
 import com.portal.service.AuthException;
+
+//Classe responsável por autenticação, (validação, email, senha, usuario, etc.).
 import com.portal.service.AuthService;
-import com.portal.util.Session;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -81,8 +83,7 @@ public class LoginFrame extends JFrame {
         String email = emailField.getText().trim();
         String senha = new String(senhaField.getPassword());
         try {
-            User user = authService.login(email, senha);
-            Session.setCurrentUser(user);
+            authService.login(email, senha);
             dispose();
             new DashboardFrame().setVisible(true);
         } catch (AuthException ex) {

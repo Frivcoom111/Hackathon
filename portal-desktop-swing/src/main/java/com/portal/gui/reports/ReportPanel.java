@@ -40,7 +40,7 @@ public class ReportPanel extends JPanel {
             BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xE0E0E0)),
             new EmptyBorder(8, 12, 8, 12)));
 
-        JButton escolherBtn = new JButton("📁  Escolher pasta de destino");
+        JButton escolherBtn = new JButton("Escolher pasta de destino");
         escolherBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         escolherBtn.setBackground(new Color(0x1565C0));
         escolherBtn.setForeground(Color.WHITE);
@@ -65,25 +65,21 @@ public class ReportPanel extends JPanel {
         cards.add(buildCard(
             "Empresas Cadastradas",
             "Lista todas as empresas com CNPJ, status e telefone.",
-            new Color(0x1565C0),
             e -> gerar("empresas")));
 
         cards.add(buildCard(
             "Alunos Cadastrados",
             "Lista todos os alunos com RA, CPF e aptidão para estágio.",
-            new Color(0x2E7D32),
             e -> gerar("alunos")));
 
         cards.add(buildCard(
             "Vagas Disponíveis",
             "Lista todas as vagas ativas com área, modalidade e salário.",
-            new Color(0x6A1B9A),
             e -> gerar("vagas")));
 
         cards.add(buildCard(
             "Candidaturas",
             "Lista todas as candidaturas com nome do aluno, vaga e status.",
-            new Color(0xE65100),
             e -> gerar("candidaturas")));
 
         // ── Status ────────────────────────────────────────────────────────────
@@ -105,7 +101,7 @@ public class ReportPanel extends JPanel {
         add(rodape, BorderLayout.SOUTH);
     }
 
-    private JPanel buildCard(String titulo, String descricao, Color cor,
+    private JPanel buildCard(String titulo, String descricao,
                              java.awt.event.ActionListener acao) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);

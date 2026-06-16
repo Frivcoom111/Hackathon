@@ -1,7 +1,8 @@
-package com.portal.gui.applications;
+package com.portal.gui.users;
 
-import com.portal.dao.ApplicationDAO;
-import com.portal.model.Application;
+import com.portal.dao.UserDAO;
+import com.portal.model.User;
+import com.portal.model.enums.Role;
 import com.portal.util.ButtonFactory;
 import com.portal.util.StatusCellRenderer;
 
@@ -12,17 +13,17 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ApplicationListPanel extends JPanel {
+public class UserListPanel extends JPanel {
 
-    private final ApplicationDAO dao = new ApplicationDAO();
+    private final UserDAO dao = new UserDAO();
 
     private JTable tabela;
-    private ApplicationTableModel model;
-    private JComboBox<String> filtroStatus;
+    private UserTableModel model;
+    private JComboBox<String> filtroPerfil;
     private JButton detalhesBtn;
-    private List<Application> todasCandidaturas = List.of();
+    private List<User> todosUsuarios = List.of();
 
-    public ApplicationListPanel() {
+    public UserListPanel() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         build();
@@ -34,33 +35,32 @@ public class ApplicationListPanel extends JPanel {
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(16, 20, 12, 20));
 
-        JLabel titulo = new JLabel("Candidaturas");
+        JLabel titulo = new JLabel("Usuários");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titulo.setForeground(new Color(0x1A237E));
 
         JPanel controles = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         controles.setBackground(Color.WHITE);
 
-        JLabel lblFiltro = new JLabel("Status:");
+        JLabel lblFiltro = new JLabel("Perfil:");
         lblFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        filtroStatus = new JComboBox<>(
-            new String[]{"Todos", "PENDING", "ANALYSING", "APPROVED", "REJECTED", "CANCELLED"});
-        filtroStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        filtroStatus.setPreferredSize(new Dimension(130, 30));
-        filtroStatus.addActionListener(e -> filtrar());
+        filtroPerfil = new JComboBox<>(new String[]{"Todos", "ADMIN", "STUDENT", "COMPANY"});
+        filtroPerfil.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        filtroPerfil.setPreferredSize(new Dimension(120, 30));
+        filtroPerfil.addActionListener(e -> filtrar());
 
         JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
 
         controles.add(lblFiltro);
-        controles.add(filtroStatus);
+        controles.add(filtroPerfil);
         controles.add(atualizarBtn);
 
-        topo.add(titulo, BorderLayout.WEST);
+        topo.add(titulo,    BorderLayout.WEST);
         topo.add(controles, BorderLayout.EAST);
 
-        model = new ApplicationTableModel();
+        model  = new UserTableModel();
         tabela = new JTable(model);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabela.setRowHeight(32);
@@ -70,16 +70,16 @@ public class ApplicationListPanel extends JPanel {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
+        tabela.getColumnModel().getColumn(1).setCellRenderer(new StatusCellRenderer());
         tabela.getColumnModel().getColumn(2).setCellRenderer(new StatusCellRenderer());
 
-        tabela.getColumnModel().getColumn(0).setPreferredWidth(220);
-        tabela.getColumnModel().getColumn(1).setPreferredWidth(240);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tabela.getColumnModel().getColumn(0).setPreferredWidth(300);
+        tabela.getColumnModel().getColumn(1).setPreferredWidth(120);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(100);
 
         tabela.getSelectionModel().addListSelectionListener(e -> atualizarBotoes());
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2) abrirDetalhes();
             }
         });
@@ -98,69 +98,72 @@ public class ApplicationListPanel extends JPanel {
 
         acoes.add(detalhesBtn);
 
-        add(topo, BorderLayout.NORTH);
+        add(topo,   BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
-        add(acoes, BorderLayout.SOUTH);
+        add(acoes,  BorderLayout.SOUTH);
     }
 
     private void carregar() {
-        todasCandidaturas = dao.findAll();
+        todosUsuarios = dao.findAll();
         filtrar();
     }
 
     private void filtrar() {
-        String filtro = (String) filtroStatus.getSelectedItem();
-        List<Application> exibidas = "Todos".equals(filtro)
-            ? todasCandidaturas
-            : todasCandidaturas.stream()
-                .filter(a -> a.getStatus().name().equals(filtro))
+        String filtro = (String) filtroPerfil.getSelectedItem();
+        List<User> exibidos = "Todos".equals(filtro)
+            ? todosUsuarios
+            : todosUsuarios.stream()
+                .filter(u -> u.getRole().name().equals(filtro))
                 .collect(Collectors.toList());
-        model.setCandidaturas(exibidas);
+        model.setUsuarios(exibidos);
         atualizarBotoes();
     }
 
     private void abrirDetalhes() {
-        Application candidatura = getCandidaturaSelecionada();
-        if (candidatura == null) return;
+        User user = getUsuarioSelecionado();
+        if (user == null) return;
         Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
-        new ApplicationDetailDialog(parent, candidatura).setVisible(true);
+        new UserDetailDialog(parent, user).setVisible(true);
     }
 
     private void atualizarBotoes() {
-        detalhesBtn.setEnabled(getCandidaturaSelecionada() != null);
+        detalhesBtn.setEnabled(getUsuarioSelecionado() != null);
     }
 
-    private Application getCandidaturaSelecionada() {
+    private User getUsuarioSelecionado() {
         int row = tabela.getSelectedRow();
-        if (row < 0) return null;
-        return model.getCandidatura(row);
+        return row < 0 ? null : model.getUsuario(row);
     }
 
     // ── TableModel ────────────────────────────────────────────────────────────
 
-    private static class ApplicationTableModel extends AbstractTableModel {
-        private final String[] COLS = {"Aluno", "Vaga", "Status"};
-        private List<Application> candidaturas = List.of();
+    private static class UserTableModel extends AbstractTableModel {
+        private final String[] COLS = {"E-mail", "Perfil", "Status"};
+        private List<User> usuarios = List.of();
 
-        void setCandidaturas(List<Application> candidaturas) {
-            this.candidaturas = candidaturas;
-            fireTableDataChanged();
-        }
+        void setUsuarios(List<User> usuarios) { this.usuarios = usuarios; fireTableDataChanged(); }
+        User getUsuario(int row) { return usuarios.get(row); }
 
-        Application getCandidatura(int row) { return candidaturas.get(row); }
-
-        @Override public int getRowCount()    { return candidaturas.size(); }
+        @Override public int getRowCount()    { return usuarios.size(); }
         @Override public int getColumnCount() { return COLS.length; }
         @Override public String getColumnName(int col) { return COLS[col]; }
 
         @Override
         public Object getValueAt(int row, int col) {
-            Application a = candidaturas.get(row);
+            User u = usuarios.get(row);
             return switch (col) {
-                case 0 -> a.getStudentName() != null ? a.getStudentName() : a.getStudentId();
-                case 1 -> a.getJobTitle() != null ? a.getJobTitle() : a.getJobId();
-                case 2 -> a.getStatus().name();
+                case 0 -> u.getEmail();
+                case 1 -> rotuloRole(u.getRole());
+                case 2 -> u.isActive() ? "Ativo" : "Inativo";
                 default -> "";
+            };
+        }
+
+        private String rotuloRole(Role r) {
+            return switch (r) {
+                case ADMIN   -> "Administrador";
+                case STUDENT -> "Aluno";
+                case COMPANY -> "Recrutador";
             };
         }
     }

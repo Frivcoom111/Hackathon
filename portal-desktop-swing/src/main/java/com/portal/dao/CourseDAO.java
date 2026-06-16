@@ -3,8 +3,6 @@ package com.portal.dao;
 import com.portal.model.Course;
 
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +56,7 @@ public class CourseDAO extends BaseDAO {
         String sql = "INSERT INTO Course (id, name, code, periods, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            Timestamp now = now();
             ps.setString(1, course.getId());
             ps.setString(2, course.getName());
             ps.setString(3, course.getCode());
@@ -77,14 +75,13 @@ public class CourseDAO extends BaseDAO {
         String sql = "UPDATE Course SET name = ?, code = ?, periods = ?, updatedAt = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            Timestamp now = now();
             ps.setString(1, course.getName());
             ps.setString(2, course.getCode());
             ps.setInt(3, course.getPeriods());
             ps.setTimestamp(4, now);
             ps.setString(5, course.getId());
-            int rows = ps.executeUpdate();
-            System.out.println("[CourseDAO.update] id=" + course.getId() + " updatedAt=" + now + " rows=" + rows);
+            ps.executeUpdate();
         } catch (Exception e) {
             System.err.println("Erro ao atualizar curso: " + e.getMessage());
             throw new RuntimeException("Erro ao atualizar curso.", e);

@@ -1,6 +1,7 @@
 package com.portal.gui.applications;
 
 import com.portal.model.Application;
+import com.portal.util.ButtonFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -22,7 +23,7 @@ public class ApplicationDetailDialog extends JDialog {
 
         // ── Cabeçalho ─────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(0xE65100));
+        header.setBackground(new Color(0x1565C0));
         header.setBorder(new EmptyBorder(14, 20, 14, 20));
 
         JLabel lblTitulo = new JLabel("Candidatura");
@@ -72,9 +73,7 @@ public class ApplicationDetailDialog extends JDialog {
         rodape.setBackground(new Color(0xF5F5F5));
         rodape.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
 
-        JButton fecharBtn = new JButton("Fechar");
-        fecharBtn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        fecharBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton fecharBtn = ButtonFactory.secondary("Fechar");
         fecharBtn.addActionListener(e -> dispose());
 
         rodape.add(fecharBtn);

@@ -3,6 +3,8 @@ package com.portal.gui.students;
 import com.portal.model.Student;
 import com.portal.service.StudentService;
 import com.portal.service.ServiceException;
+import com.portal.util.ButtonFactory;
+import com.portal.util.StatusCellRenderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -41,9 +43,9 @@ public class StudentListPanel extends JPanel {
         JPanel botoesDir = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         botoesDir.setBackground(Color.WHITE);
 
-        JButton novoBtn     = criarBotaoPrimario("+ Novo Aluno");
-        JButton importarBtn = criarBotaoSecundario("⬆  Importar .txt");
-        JButton atualizarBtn = criarBotaoSecundario("↻  Atualizar");
+        JButton novoBtn     = ButtonFactory.primary("+ Novo Aluno");
+        JButton importarBtn = ButtonFactory.primary("Importar .txt");
+        JButton atualizarBtn = ButtonFactory.primary("Atualizar");
 
         novoBtn.addActionListener(e -> abrirFormulario(null));
         importarBtn.addActionListener(e -> abrirImportacao());
@@ -66,10 +68,10 @@ public class StudentListPanel extends JPanel {
         campoBusca.setToolTipText("Buscar por nome ou RA");
         campoBusca.addActionListener(e -> buscar());
 
-        JButton buscarBtn = criarBotaoSecundario("Buscar");
+        JButton buscarBtn = ButtonFactory.primary("Buscar");
         buscarBtn.addActionListener(e -> buscar());
 
-        JButton limparBtn = criarBotaoSecundario("Limpar");
+        JButton limparBtn = ButtonFactory.primary("Limpar");
         limparBtn.addActionListener(e -> { campoBusca.setText(""); carregar(); });
 
         barraBusca.add(new JLabel("Buscar:"));
@@ -96,7 +98,7 @@ public class StudentListPanel extends JPanel {
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(1).setCellRenderer(center);  // RA
-        tabela.getColumnModel().getColumn(3).setCellRenderer(new AptidaoRenderer());
+        tabela.getColumnModel().getColumn(3).setCellRenderer(new StatusCellRenderer()); // Aptidão
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(220);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(110);
@@ -120,10 +122,8 @@ public class StudentListPanel extends JPanel {
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
 
-        editarBtn  = new JButton("Editar");
-        toggleBtn  = new JButton("Marcar Inapto");
-        estilizarBotaoSecundario(editarBtn);
-        estilizarBotaoSecundario(toggleBtn);
+        editarBtn  = ButtonFactory.primary("Editar");
+        toggleBtn  = ButtonFactory.primary("Marcar Inapto");
         editarBtn.setEnabled(false);
         toggleBtn.setEnabled(false);
 
@@ -191,35 +191,6 @@ public class StudentListPanel extends JPanel {
         return row < 0 ? null : model.getAluno(row);
     }
 
-    private JButton criarBotaoPrimario(String texto) {
-        JButton btn = new JButton(texto);
-        btn.setBackground(new Color(0x1565C0));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
-
-    private JButton criarBotaoSecundario(String texto) {
-        JButton btn = new JButton(texto);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(new Color(0x1565C0));
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
-
-    private void estilizarBotaoSecundario(JButton btn) {
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
     // ── TableModel ────────────────────────────────────────────────────────────
 
     private static class StudentTableModel extends AbstractTableModel {
@@ -243,26 +214,6 @@ public class StudentListPanel extends JPanel {
                 case 3 -> s.isEligible() ? "Apto" : "Inapto";
                 default -> "";
             };
-        }
-    }
-
-    // ── Renderer de aptidão ───────────────────────────────────────────────────
-
-    private static class AptidaoRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setHorizontalAlignment(SwingConstants.CENTER);
-            setFont(new Font("Segoe UI", Font.BOLD, 12));
-            if (!isSelected) {
-                if ("Apto".equals(value)) {
-                    setBackground(new Color(0xE8F5E9)); setForeground(new Color(0x2E7D32));
-                } else {
-                    setBackground(new Color(0xFFEBEE)); setForeground(new Color(0xC62828));
-                }
-            }
-            return this;
         }
     }
 }

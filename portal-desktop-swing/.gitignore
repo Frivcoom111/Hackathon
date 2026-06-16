@@ -46,3 +46,8 @@ build/
 
 ### Arquivos de teste avulso ###
 **/SimpleTestConnection.java
+**/sqls.md
+**/RodarSql.java
+**/issues.md
+**/GerarHash.java
+**/contexto.md
