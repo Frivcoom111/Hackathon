@@ -131,11 +131,10 @@ export class CompanyRepository {
     });
   }
 
-  // Soft delete: desativa o login; o perfil do membro é preservado.
-  async deactivateMember(userId: string): Promise<void> {
-    await this.prisma.user.update({
+  // Hard delete: remove o User e, por cascata (onDelete: Cascade), o CompanyMember associado.
+  async deleteMember(userId: string): Promise<void> {
+    await this.prisma.user.delete({
       where: { id: userId },
-      data: { isActive: false },
     });
   }
 

@@ -133,10 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
 
-          <div class="col-12 d-flex justify-content-end">
-            <a href="#" class="forgot-link">Esqueci minha senha</a>
-          </div>
-
           <?php if ($erro): ?>
             <div class="col-12">
               <div class="alert alert-danger py-2 mb-0"><?= htmlspecialchars($erro) ?></div>

@@ -21,7 +21,7 @@ router.use(authMiddleware);
 // Endereço do estudante autenticado. Um por estudante.
 router.post("/me", requireStudent, controller.createSelf.bind(controller));
 router.get("/me", requireStudent, controller.getSelf.bind(controller));
-router.put("/me", requireStudent, controller.updateSelf.bind(controller));
+router.patch("/me", requireStudent, controller.updateSelf.bind(controller));
 router.delete("/me", requireStudent, controller.deleteSelf.bind(controller));
 
 // Endereço da empresa: qualquer membro lê; só ADMIN escreve.
