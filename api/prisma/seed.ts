@@ -1,111 +1,154 @@
 import { prisma } from "../src/lib/prisma";
+import { generateHash } from "../src/shared/utils/bcryptUtils";
+import {
+  TOTP_DEV_SECRET,
+  seedAdmin,
+  seedCompanies,
+  seedCourses,
+  seedJobs,
+  seedRecruiter,
+  seedStudent,
+} from "./data";
 
-// Seed idempotente do portal: só insere quando a respectiva tabela está vazia.
-// Rodar com `pnpm db:seed` (ou `prisma db seed`). Não roda no startup da API.
+// Seed idempotente: verifica se o admin já existe antes de rodar.
+// Rodar com `pnpm db:seed`.
 
-const defaultCourses = [
-  { name: "Analise e Desenvolvimento de Sistemas", code: "ADS", periods: 5 },
-  { name: "Administracao", code: "ADM", periods: 8 },
-  { name: "Marketing", code: "MKT", periods: 4 },
-];
-
-const defaultCompanies = [
-  {
-    name: "Tech Local",
-    cnpj: "12345678000190",
-    description: "Empresa de tecnologia focada em sistemas web e automacao.",
-    phone: "44999991000",
-    status: "APPROVED" as const,
-  },
-  {
-    name: "Agencia Alfa",
-    cnpj: "22345678000191",
-    description: "Agencia de comunicacao, marketing digital e producao de conteudo.",
-    phone: "44999992000",
-    status: "APPROVED" as const,
-  },
-  {
-    name: "Winfo",
-    cnpj: "32345678000192",
-    description: "Suporte em TI, infraestrutura e consultoria para empresas locais.",
-    phone: "44999993000",
-    status: "APPROVED" as const,
-  },
-];
-
-export async function ensurePortalSeed() {
-  const courseCount = await prisma.course.count();
-  if (courseCount === 0) {
-    await prisma.course.createMany({ data: defaultCourses });
-  }
-
-  const companyCount = await prisma.company.count();
-  if (companyCount === 0) {
-    await prisma.company.createMany({ data: defaultCompanies });
-  }
-
-  const jobCount = await prisma.job.count();
-  if (jobCount > 0) return;
-
-  const [ads, marketing] = await Promise.all([
-    prisma.course.findFirst({ where: { code: "ADS" } }),
-    prisma.course.findFirst({ where: { code: "MKT" } }),
-  ]);
-
-  const [techLocal, agenciaAlfa, winfo] = await Promise.all([
-    prisma.company.findFirst({ where: { cnpj: "12345678000190" } }),
-    prisma.company.findFirst({ where: { cnpj: "22345678000191" } }),
-    prisma.company.findFirst({ where: { cnpj: "32345678000192" } }),
-  ]);
-
-  if (!techLocal || !agenciaAlfa || !winfo) return;
-
-  await prisma.job.createMany({
-    data: [
-      {
-        companyId: techLocal.id,
-        courseId: ads?.id,
-        title: "Estagio Backend Jr",
-        description: "Apoio no desenvolvimento de APIs, manutencao de sistemas internos e integracoes.",
-        area: "Tecnologia",
-        requirements: "PHP ou JavaScript basico, logica de programacao e vontade de aprender.",
-        salary: 1200,
-        location: "Umuarama, PR",
-        modality: "HYBRID",
-        status: "ACTIVE",
-      },
-      {
-        companyId: agenciaAlfa.id,
-        courseId: marketing?.id,
-        title: "Marketing Digital",
-        description: "Criacao de conteudos, apoio em campanhas e acompanhamento de metricas digitais.",
-        area: "Marketing",
-        requirements: "Boa escrita, criatividade e familiaridade com redes sociais.",
-        salary: 900,
-        location: "Umuarama, PR",
-        modality: "PRESENCIAL",
-        status: "ACTIVE",
-      },
-      {
-        companyId: winfo.id,
-        courseId: ads?.id,
-        title: "Suporte TI",
-        description: "Atendimento a usuarios, configuracao de computadores e apoio a infraestrutura.",
-        area: "Tecnologia",
-        requirements: "Conhecimento basico em redes, Windows e atendimento ao usuario.",
-        salary: 1100,
-        location: "Umuarama, PR",
-        modality: "REMOTE",
-        status: "ACTIVE",
-      },
-    ],
+async function main() {
+  const alreadySeeded = await prisma.user.findFirst({
+    where: { email: seedAdmin.email },
   });
+
+  if (alreadySeeded) {
+    console.log("Seed ja executado anteriormente. Nenhuma alteracao feita.");
+    return;
+  }
+
+  console.log("Iniciando seed...");
+
+  // Hashes feitos fora da transacao para nao prolongar o lock no banco.
+  const [adminHash, recruiterHash, studentHash] = await Promise.all([
+    generateHash(seedAdmin.plainPassword),
+    generateHash(seedRecruiter.plainPassword),
+    generateHash(seedStudent.plainPassword),
+  ]);
+
+  await prisma.$transaction(async (tx) => {
+    // ─── 1. Cursos ───────────────────────────────────────────────────────────
+    const courses = await Promise.all(
+      seedCourses.map((c) =>
+        tx.course.upsert({
+          where: { code: c.code },
+          update: {},
+          create: c,
+        }),
+      ),
+    );
+
+    // Mapa code → id para resolver referências abaixo
+    const courseById = Object.fromEntries(courses.map((c) => [c.code!, c.id]));
+
+    // ─── 2. Empresas ─────────────────────────────────────────────────────────
+    const companies = await Promise.all(
+      seedCompanies.map((c) =>
+        tx.company.upsert({
+          where: { cnpj: c.cnpj },
+          update: {},
+          create: c,
+        }),
+      ),
+    );
+
+    // Mapa cnpj → id para resolver referências abaixo
+    const companyById = Object.fromEntries(companies.map((c) => [c.cnpj, c.id]));
+
+    // ─── 3. Admin da plataforma ───────────────────────────────────────────────
+    await tx.user.create({
+      data: {
+        email: seedAdmin.email,
+        password: adminHash,
+        role: "ADMIN",
+        totpSecret: TOTP_DEV_SECRET,
+        totpEnabled: true,
+      },
+    });
+
+    // ─── 4. Recruiter (membro de empresa) ────────────────────────────────────
+    const recruiterUser = await tx.user.create({
+      data: {
+        email: seedRecruiter.email,
+        password: recruiterHash,
+        role: "COMPANY",
+        totpSecret: TOTP_DEV_SECRET,
+        totpEnabled: true,
+      },
+    });
+
+    await tx.companyMember.create({
+      data: {
+        userId: recruiterUser.id,
+        companyId: companyById[seedRecruiter.companyCnpj],
+        role: seedRecruiter.memberRole,
+        name: seedRecruiter.member.name,
+        cpf: seedRecruiter.member.cpf,
+        phone: seedRecruiter.member.phone,
+      },
+    });
+
+    // ─── 5. Aluno ─────────────────────────────────────────────────────────────
+    const studentUser = await tx.user.create({
+      data: {
+        email: seedStudent.email,
+        password: studentHash,
+        role: "STUDENT",
+      },
+    });
+
+    const student = await tx.student.create({
+      data: {
+        userId: studentUser.id,
+        name: seedStudent.student.name,
+        ra: seedStudent.student.ra,
+        cpf: seedStudent.student.cpf,
+        phone: seedStudent.student.phone,
+      },
+    });
+
+    await tx.studentCourse.create({
+      data: {
+        studentId: student.id,
+        courseId: courseById[seedStudent.courseCode],
+        status: "ACTIVE",
+        startedAt: seedStudent.courseStartedAt,
+      },
+    });
+
+    // ─── 6. Vagas ─────────────────────────────────────────────────────────────
+    await tx.job.createMany({
+      data: seedJobs.map(({ companyCnpj, courseCode, ...rest }) => ({
+        ...rest,
+        companyId: companyById[companyCnpj],
+        courseId: courseCode ? courseById[courseCode] : undefined,
+      })),
+    });
+  });
+
+  console.log("");
+  console.log("Seed concluido com sucesso!");
+  console.log("");
+  console.log("Credenciais de acesso:");
+  console.log("  Admin      →  admin@unialfa.com         /  Admin@123");
+  console.log("  Recruiter  →  recruiter@techlocal.com   /  Recruit@123");
+  console.log("  Aluno      →  joao@aluno.com            /  Aluno@1234");
+  console.log("");
+  console.log("TOTP (admin e recruiter):");
+  console.log(`  Secret Base32: ${TOTP_DEV_SECRET}`);
+  console.log("  Adicione-o manualmente no Google Authenticator / Authy.");
+  console.log("");
 }
 
-ensurePortalSeed()
-  .then(() => console.log("Seed do portal concluido."))
+main()
   .catch((error) => {
-    console.error("Falha no seed do portal:", error);
+    console.error("Falha no seed:", error);
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

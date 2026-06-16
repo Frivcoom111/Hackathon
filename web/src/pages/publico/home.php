@@ -7,16 +7,50 @@ $resp  = $api->vagas()->listar(['limit' => 3]);
 $vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 ?>
 
-<!-- BANNER -->
+<!-- CARROSSEL -->
 <section class="banner-section">
   <div class="container">
     <div class="banner-box">
-      <img src="<?= BASE ?>assets/images/site/login.png" alt="Portal de Estágios UniALFA"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-      <div class="banner-placeholder" style="display:none;">
-        <span>Banner</span>
-      </div>
-    </div>
+
+      <div id="bannerCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="5000">
+
+        <!-- Indicadores -->
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+
+        <!-- Slides -->
+        <div class="carousel-inner h-100">
+
+          <div class="carousel-item active h-100">
+            <img src="<?= BASE ?>assets/images/site/faculdade.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Portal de Estágios UniALFA">
+          </div>
+
+          <div class="carousel-item h-100">
+            <img src="<?= BASE ?>assets/images/site/profs.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Seu Talento Abre Caminhos">
+          </div>
+
+          <div class="carousel-item h-100">
+            <img src="<?= BASE ?>assets/images/site/devs.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Equipe UniALFA">
+          </div>
+
+        </div>
+
+        <!-- Controles anterior / próximo -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Próximo</span>
+        </button>
+
+      </div><!-- /#bannerCarousel -->
+
+    </div><!-- /.banner-box -->
   </div>
 </section>
 
