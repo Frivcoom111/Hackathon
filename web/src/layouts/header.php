@@ -104,12 +104,6 @@ if ($logado && $api->jwt()->isAuthenticated()) {
           <div class="dropdown-menu dropdown-menu-end notif-menu">
             <div class="notif-menu-header">
               <strong>Notificações</strong>
-              <?php if ($notifTotal > 0): ?>
-                <form method="POST" action="<?= BASE ?>index.php?page=notificacoes" class="m-0">
-                  <input type="hidden" name="acao" value="marcar_todas">
-                  <button type="submit" class="notif-marcar-todas">Marcar todas</button>
-                </form>
-              <?php endif; ?>
             </div>
             <div class="notif-menu-body">
               <?php if (empty($notifNaoLidas)): ?>

@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/../bootstrap.php';
 
 // Mapa de rotas: cada chave é o valor do ?page= na URL
