@@ -29,7 +29,9 @@ $bolsaMin    = (int)($_GET['bolsa'] ?? 0);
 $modalidades = $_GET['modalidade'] ?? ['PRESENCIAL', 'REMOTE', 'HYBRID'];
 
 // A API ja retorna apenas vagas ACTIVE de empresas aprovadas (filtro interno).
-$resp  = $api->vagas()->listar();
+// limit=100 é o máximo aceito pela API; os filtros abaixo (cidade, área, bolsa,
+// modalidade) são aplicados aqui no PHP porque a API não os suporta nativamente.
+$resp  = $api->vagas()->listar(['limit' => 100]);
 $vagas = [];
 foreach ($resp['data'] ?? [] as $item) {
     $vaga = new Vaga($item);
@@ -44,6 +46,20 @@ foreach ($resp['data'] ?? [] as $item) {
         'vaga' => $vaga,
         'empresa' => $item['company']['name'] ?? 'Empresa',
     ];
+}
+
+// Paginação client-side (a API já foi consultada com o maior limite possível acima).
+$itensPorPagina = 10;
+$totalVagas     = count($vagas);
+$totalPaginas   = max(1, (int)ceil($totalVagas / $itensPorPagina));
+$pagina         = max(1, min($totalPaginas, (int)($_GET['pagina'] ?? 1)));
+$vagasPagina    = array_slice($vagas, ($pagina - 1) * $itensPorPagina, $itensPorPagina);
+
+function montarUrlPagina(int $pagina): string
+{
+    $query = $_GET;
+    $query['pagina'] = $pagina;
+    return BASE . 'index.php?' . http_build_query($query);
 }
 ?>
 
@@ -158,8 +174,9 @@ foreach ($resp['data'] ?? [] as $item) {
 
         <div class="vagas-lista-header">
           <p class="vagas-total">
-            Mostrando <strong><?= count($vagas) ?></strong>
-            vaga<?= count($vagas) !== 1 ? 's' : '' ?>
+            Mostrando <strong><?= count($vagasPagina) ?></strong>
+            de <strong><?= $totalVagas ?></strong>
+            vaga<?= $totalVagas !== 1 ? 's' : '' ?>
           </p>
         </div>
 
@@ -174,7 +191,7 @@ foreach ($resp['data'] ?? [] as $item) {
 
         <?php else: ?>
           <div class="row g-4">
-            <?php foreach ($vagas as $itemVaga): ?>
+            <?php foreach ($vagasPagina as $itemVaga): ?>
               <?php
                 $vaga = $itemVaga['vaga'];
                 $nomeEmpresa = $itemVaga['empresa'];
@@ -215,6 +232,22 @@ foreach ($resp['data'] ?? [] as $item) {
               </div>
             <?php endforeach; ?>
           </div>
+
+          <nav aria-label="Paginação de vagas" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= htmlspecialchars(montarUrlPagina(max(1, $pagina - 1))) ?>">Anterior</a>
+              </li>
+              <?php for ($p = 1; $p <= $totalPaginas; $p++): ?>
+                <li class="page-item <?= $p === $pagina ? 'active' : '' ?>">
+                  <a class="page-link" href="<?= htmlspecialchars(montarUrlPagina($p)) ?>"><?= $p ?></a>
+                </li>
+              <?php endfor; ?>
+              <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= htmlspecialchars(montarUrlPagina(min($totalPaginas, $pagina + 1))) ?>">Próxima</a>
+              </li>
+            </ul>
+          </nav>
         <?php endif; ?>
 
       </div>
