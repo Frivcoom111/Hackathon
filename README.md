@@ -16,6 +16,7 @@ no caso do desktop, acessam o banco diretamente).
 ## Índice
 
 - [Arquitetura](#arquitetura)
+- [Protótipo de alta fidelidade](#protótipo-de-alta-fidelidade)
 - [Tecnologias](#tecnologias)
 - [Pré-requisitos](#pré-requisitos)
 - [Como rodar (passo a passo)](#como-rodar-passo-a-passo)
@@ -28,6 +29,13 @@ no caso do desktop, acessam o banco diretamente).
 - [Modelo de dados](#modelo-de-dados)
 - [Documentação da API](#documentação-da-api)
 - [Solução de problemas](#solução-de-problemas)
+
+---
+
+## Protótipo de alta fidelidade
+
+O protótipo de alta fidelidade está disponível no Figma:
+[Hackaton](https://www.figma.com/design/CCldso04ATjnHGQjkftcUr/Hackaton?node-id=0-1&p=f&t=kKYaXtljbXayYEaN-0).
 
 ---
 
