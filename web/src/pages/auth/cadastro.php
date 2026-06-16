@@ -333,3 +333,21 @@ function toggleConclusao() {
   if (!finalizado) input.value = '';
 }
 </script>
+
+<script src="https://unpkg.com/imask"></script>
+<script>
+const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }];
+
+// CPF aluno
+IMask(document.querySelector('[name="cpf"]'), { mask: '000.000.000-00' });
+
+// Telefones (aluno + empresa + responsável)
+document.querySelectorAll('[name="phone"], [name="resp_phone"]').forEach(el => {
+  IMask(el, { mask: phoneMask });
+});
+
+// Campos exclusivos do formulário empresa
+IMask(document.querySelector('[name="cnpj"]'),     { mask: '00.000.000/0000-00' });
+IMask(document.querySelector('[name="resp_cpf"]'), { mask: '000.000.000-00' });
+IMask(document.querySelector('[name="cep"]'),      { mask: '00000-000' });
+</script>
