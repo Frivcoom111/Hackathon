@@ -48,4 +48,11 @@ export class AuthController {
 
     res.status(200).json(response.success(result, "Verificação concluída."));
   }
+
+  async me(req: Request, res: Response): Promise<void> {
+    const user = requireUser(req);
+    const profile = await this.authService.me(user.id, user.role);
+
+    res.status(200).json(response.success(profile));
+  }
 }

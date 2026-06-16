@@ -4,6 +4,10 @@ import type { CompanyResponse, RegisterCompanyInput, RegisterStudentInput, Stude
 export class AuthRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async findCourseById(courseId: string) {
+    return this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+  }
+
   // Cria User + Student + StudentCourse atomicamente. `data.password` já vem em hash.
   async createStudent(data: RegisterStudentInput): Promise<StudentResponse> {
     return this.prisma.$transaction(async (tx) => {
@@ -73,40 +77,37 @@ export class AuthRepository {
 
   // ─── Login / TOTP ─────────────────────────────────────────────────────────
 
-  // Credenciais + flags de TOTP. Inclui a hash da senha para comparação no service.
-  async findUserByEmail(email: string) {
+  // Select compartilhado: credenciais + flags de TOTP + dados usados para
+  // montar o token (role do membro) e o publicUser (nome de exibição).
+  private static readonly authUserSelect = {
+    id: true,
+    email: true,
+    password: true,
+    role: true,
+    isActive: true,
+    totpSecret: true,
+    totpEnabled: true,
+    student: { select: { name: true } },
+    companyMember: {
+      select: {
+        role: true,
+        name: true,
+        company: { select: { name: true } },
+      },
+    },
+  } as const;
+
+  async findUserForLogin(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        password: true,
-        role: true,
-        isActive: true,
-        totpSecret: true,
-        totpEnabled: true,
-      },
+      select: AuthRepository.authUserSelect,
     });
   }
 
-  // Usado no login COMPANY e na emissão do token final (role do membro + status da empresa).
-  async findCompanyMemberByUserId(userId: string) {
-    return this.prisma.companyMember.findUnique({
-      where: { userId },
-      select: {
-        id: true,
-        companyId: true,
-        role: true,
-        company: { select: { status: true } },
-      },
-    });
-  }
-
-  // Segredo/flag de TOTP para setup, confirm e verify.
-  async findUserTotp(userId: string) {
+  async findUserForTotp(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, totpSecret: true, totpEnabled: true },
+      select: AuthRepository.authUserSelect,
     });
   }
 

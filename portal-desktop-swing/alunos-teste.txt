@@ -1,0 +1,6 @@
+# Arquivo de teste — importação de alunos
+João da Silva;12345;529.982.247-25;joao.silva@email.com
+Maria Oliveira;67890;871.084.973-28;maria.oliveira@faculdade.edu.br
+Carlos Eduardo Souza;11223;340.532.176-47;carlos.souza@gmail.com
+Ana Paula Costa;44556;568.993.225-40;ana.costa@email.com
+Pedro Henrique Lima;99887;726.534.891-02;pedro.lima@outlook.com
