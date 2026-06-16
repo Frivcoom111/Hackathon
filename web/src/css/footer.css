@@ -27,7 +27,7 @@ footer a:hover { color: var(--amarelo-principal); }
   text-decoration: none;
   margin-bottom: 14px;
 }
-.footer-brand img { height: 46px; width: auto; object-fit: contain; }
+.footer-brand img { height: 80px; width: auto; object-fit: contain; }
 .footer-sobre {
   color: #aebfd6;
   font-size: 0.88rem;

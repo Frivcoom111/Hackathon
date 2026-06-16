@@ -391,3 +391,9 @@ $statusLabels = [
     <?php endif; ?>
   </div>
 </section>
+
+<script src="https://unpkg.com/imask"></script>
+<script>
+IMask(document.querySelector('[name="phone"]'),   { mask: [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }] });
+IMask(document.querySelector('[name="zipCode"]'), { mask: '00000-000' });
+</script>

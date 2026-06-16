@@ -6,7 +6,7 @@
 
 /* logo — ajustada para caber na barra de 64px sem overflow */
 .navbar-brand img {
-  height: 48px;
+  height: 80px;
   width: auto;
   object-fit: contain;
 }
@@ -41,16 +41,43 @@
   .navbar-collapse {
     background-color: var(--azul-escuro);
     border-radius: 0 0 12px 12px;
-    text-align: center;
-    padding: 16px;
+    padding: 12px 16px 16px;
     margin-top: 8px;
   }
 
   .navbar-nav {
     width: 100%;
+    text-align: center;
   }
 
   .navbar-nav .nav-item {
     width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .navbar-nav .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 10px 0;
+  }
+
+  /* Botões de ação (sino, perfil, sair) em linha centralizada */
+  .navbar-collapse .d-flex {
+    flex-wrap: wrap;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+
+  /* Dropdown de notificações — abre centrado no mobile */
+  .notif-dropdown .dropdown-menu {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    min-width: 280px;
   }
 }
