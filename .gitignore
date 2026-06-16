@@ -1,7 +1,6 @@
 # ── Ferramentas internas (Claude Code, Kiro, etc.) ───────────────────────────
 CLAUDE.md
 .mcp.json
-<<<<<<< HEAD
 .claude/
 .kiro/
 .code-review-graph/
@@ -9,23 +8,9 @@ CLAUDE.md
 # ── IDEs ─────────────────────────────────────────────────────────────────────
 .idea/
 .vscode/
-*.iws
-*.iml
-*.ipr
-
-# ── OS ───────────────────────────────────────────────────────────────────────
-.DS_Store
-Thumbs.db
-desktop.ini
 
 # ── PHP — dependências do Composer ───────────────────────────────────────────
 web/vendor/
 
-# ── Logs ─────────────────────────────────────────────────────────────────────
-*.log
-=======
-.claude
-.code-review-graph/*
-.idea
-.kiro/*
->>>>>>> 1a3ae3f8282138848a0af503f49e1c92b40b68ec
+# ── Arquivos de ambiente ─────────────────────────────────────────────────────
+.env
