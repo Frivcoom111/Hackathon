@@ -1,7 +1,24 @@
+# ── Ferramentas internas (Claude Code, Kiro, etc.) ───────────────────────────
 CLAUDE.md
 .mcp.json
-.claude
-.code-review-graph/*
-.idea
-.kiro/*
-./web/vendor/*
+.claude/
+.kiro/
+.code-review-graph/
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── PHP — dependências do Composer ───────────────────────────────────────────
+web/vendor/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
