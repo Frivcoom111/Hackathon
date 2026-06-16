@@ -85,7 +85,7 @@ export class CompanyService {
   async deleteMember(actingUserId: string, memberId: string): Promise<void> {
     const target = await this.getMemberOfSameCompany(actingUserId, memberId);
     this.assertNotSelf(actingUserId, target.userId);
-    await this.companyRepository.deactivateMember(target.userId);
+    await this.companyRepository.deleteMember(target.userId);
   }
 
   async resetMemberTotp(actingUserId: string, memberId: string): Promise<void> {
