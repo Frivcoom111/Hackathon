@@ -24,7 +24,7 @@ export class JobsService {
     return job;
   }
 
-  async apply(userId: string, jobId: string, uploadedResumePath?: string) {
+  async apply(userId: string, jobId: string, resumePath?: string) {
     const job = await this.jobsRepository.getJobForApply(jobId);
     if (!job) throw new NotFoundError("Vaga não encontrada.");
     if (job.status !== "ACTIVE" || job.company.status !== "APPROVED") {
@@ -35,10 +35,6 @@ export class JobsService {
     if (!student) throw new NotFoundError("Estudante não encontrado.");
     if (!student.isEligible) throw new ForbiddenError("Estudante inelegível.");
     if (!student.addressId) throw new BadRequestError("Cadastre um endereço antes de se candidatar.");
-
-    // Currículo enviado na candidatura tem prioridade; senão usa o do perfil. Obrigatório.
-    const resumePath = uploadedResumePath ?? student.resumePath;
-    if (!resumePath) throw new BadRequestError("Cadastre um currículo antes de se candidatar.");
 
     let application: Awaited<ReturnType<JobsRepository["createApplication"]>>;
     try {

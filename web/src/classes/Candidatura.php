@@ -12,22 +12,37 @@ class Candidatura {
     private string $alunoId;
     private string $vagaId;
     private string $status;
-    private ?string $curriculo;
     private ?string $cartaApresentacao;
     private ?string $deletadoEm;
     private string $criadoEm;
     private string $atualizadoEm;
+
+    // Dados do candidato (vêm aninhados em student na listagem da empresa)
+    private string $alunoNome;
+    private string $alunoRa;
+    private string $alunoEmail;
+    private string $alunoTelefone;
+    private string $alunoCurso;
+    private bool   $temCurriculo;
 
     public function __construct(array $dados) {
         $this->id                 = $dados['id']          ?? '';
         $this->alunoId            = $dados['studentId']   ?? '';
         $this->vagaId             = $dados['jobId']       ?? '';
         $this->status             = $dados['status']      ?? self::STATUS_PENDENTE;
-        $this->curriculo          = $dados['resumePath']  ?? null;
         $this->cartaApresentacao  = $dados['coverLetter'] ?? null;
         $this->deletadoEm         = $dados['deletedAt']   ?? null;
         $this->criadoEm           = $dados['createdAt']   ?? '';
         $this->atualizadoEm       = $dados['updatedAt']   ?? '';
+
+        $student = $dados['student'] ?? [];
+        $this->alunoNome     = $student['name']  ?? 'Aluno';
+        $this->alunoRa       = $student['ra']    ?? '';
+        $this->alunoEmail    = $student['user']['email'] ?? '';
+        $this->alunoTelefone = $student['phone'] ?? '';
+        $this->alunoCurso    = $student['courses'][0]['course']['name'] ?? '';
+        // Currículo da candidatura, com fallback para o do perfil do aluno.
+        $this->temCurriculo  = !empty($dados['resumePath']) || !empty($student['resumePath']);
     }
 
     // ── Getters ────────────────────────────────────────────────────────────────
@@ -36,16 +51,21 @@ class Candidatura {
     public function getAlunoId(): string              { return $this->alunoId; }
     public function getVagaId(): string               { return $this->vagaId; }
     public function getStatus(): string               { return $this->status; }
-    public function getCurriculo(): ?string           { return $this->curriculo; }
     public function getCartaApresentacao(): ?string   { return $this->cartaApresentacao; }
     public function getDeletadoEm(): ?string          { return $this->deletadoEm; }
     public function getCriadoEm(): string             { return $this->criadoEm; }
     public function getAtualizadoEm(): string         { return $this->atualizadoEm; }
 
+    public function getAlunoNome(): string            { return $this->alunoNome; }
+    public function getAlunoRa(): string              { return $this->alunoRa; }
+    public function getAlunoEmail(): string           { return $this->alunoEmail; }
+    public function getAlunoTelefone(): string        { return $this->alunoTelefone; }
+    public function getAlunoCurso(): string           { return $this->alunoCurso; }
+    public function temCurriculo(): bool              { return $this->temCurriculo; }
+
     // ── Setters ────────────────────────────────────────────────────────────────
 
     public function setStatus(string $status): void              { $this->status = $status; }
-    public function setCurriculo(?string $path): void            { $this->curriculo = $path; }
     public function setCartaApresentacao(?string $carta): void   { $this->cartaApresentacao = $carta; }
 
     // ── Utilitários ────────────────────────────────────────────────────────────
@@ -90,7 +110,6 @@ class Candidatura {
             'studentId'   => $this->alunoId,
             'jobId'       => $this->vagaId,
             'status'      => $this->status,
-            'resumePath'  => $this->curriculo,
             'coverLetter' => $this->cartaApresentacao,
         ];
     }

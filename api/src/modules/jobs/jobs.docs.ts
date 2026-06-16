@@ -84,27 +84,14 @@ registry.registerPath({
   tags: [TAG],
   security: bearerAuth,
   summary: "Candidata o estudante autenticado a uma vaga.",
-  description:
-    "Requer role STUDENT com endereço cadastrado. O currículo é obrigatório: " +
-    "envie `resume` (multipart) ou tenha um currículo no perfil.",
-  request: {
-    params: jobIdParamsSchema,
-    body: {
-      content: {
-        "multipart/form-data": {
-          schema: z.object({
-            resume: z.string().openapi({ type: "string", format: "binary" }).optional(),
-          }),
-        },
-      },
-    },
-  },
+  description: "Requer role STUDENT com endereco cadastrado. A candidatura usa os dados do perfil do aluno.",
+  request: { params: jobIdParamsSchema },
   responses: {
     201: {
       description: "Candidatura enviada.",
       content: { "application/json": { schema: successResponse(applicationOut) } },
     },
-    400: error("Vaga indisponível, endereço ou currículo ausente."),
+    400: error("Vaga indisponivel ou endereco ausente."),
     401: error("Token inválido ou expirado."),
     403: error("Estudante inelegível."),
     409: error("Você já se candidatou a esta vaga."),

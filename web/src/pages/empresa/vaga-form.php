@@ -1,63 +1,35 @@
 <?php
 require_once __DIR__ . '/../../classes/Vaga.php';
 
-if (empty($_SESSION['token'])) {
-    header('Location: ' . BASE . 'index.php?page=login');
-    exit;
-}
+\App\Auth\Guard::requireCompany($api->jwt());
 
-$token  = $_SESSION['token'];
-$vagaId = trim($_GET['vaga_id'] ?? '');
-$erro   = '';
-$sucesso = '';
+$vagaId  = trim($_GET['vaga_id'] ?? '');
+$erro    = '';
 
-// ── Se vier vaga_id, carrega os dados para edição ─────────────────────────────
 $vaga = null;
 if ($vagaId) {
-    $ch = curl_init(API_URL . '/company/jobs/' . $vagaId);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-    $resp = curl_exec($ch);
-
-    $data = json_decode($resp, true);
-    if (!empty($data['data'])) {
-        $vaga = new Vaga($data['data']);
+    $resp = $api->companhia()->vaga($vagaId);
+    if (!empty($resp['data'])) {
+        $vaga = new Vaga($resp['data']);
     }
 }
 
 $modoEdicao = $vaga !== null;
 
-// ── Processa o envio do formulário ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payload = [
-        'title'        => trim($_POST['titulo']    ?? ''),
-        'description'  => trim($_POST['descricao'] ?? ''),
-        'area'         => trim($_POST['area']       ?? ''),
-        'requirements' => trim($_POST['requisitos'] ?? '') ?: null,
+        'title'        => trim($_POST['titulo']      ?? ''),
+        'description'  => trim($_POST['descricao']   ?? ''),
+        'area'         => trim($_POST['area']         ?? ''),
+        'requirements' => trim($_POST['requisitos']   ?? '') ?: null,
         'salary'       => $_POST['salario'] !== '' ? (float)$_POST['salario'] : null,
-        'location'     => trim($_POST['localizacao'] ?? ''),
-        'modality'     => $_POST['modalidade'] ?? 'PRESENCIAL',
+        'location'     => trim($_POST['localizacao']  ?? ''),
+        'modality'     => $_POST['modalidade']        ?? 'PRESENCIAL',
     ];
 
-    if ($modoEdicao) {
-        // Edição: PATCH /company/jobs/:id
-        $ch = curl_init(API_URL . '/company/jobs/' . $vagaId);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-    } else {
-        // Criação: POST /company/jobs
-        $ch = curl_init(API_URL . '/company/jobs');
-        curl_setopt($ch, CURLOPT_POST, true);
-    }
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $token,
-        'Content-Type: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    $resp = curl_exec($ch);
-
-    $data = json_decode($resp, true);
+    $data = $modoEdicao
+        ? $api->companhia()->atualizarVaga($vagaId, $payload)
+        : $api->companhia()->criarVaga($payload);
 
     if ($data['success'] ?? false) {
         header('Location: ' . BASE . 'index.php?page=empresa-dashboard');
@@ -67,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Valores atuais (para preencher o formulário no modo edição)
 $val = [
     'titulo'      => $vaga ? $vaga->getTitulo()      : ($_POST['titulo']      ?? ''),
     'descricao'   => $vaga ? $vaga->getDescricao()   : ($_POST['descricao']   ?? ''),

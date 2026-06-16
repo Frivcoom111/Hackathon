@@ -24,21 +24,42 @@
   <link rel="stylesheet" href="<?= BASE ?>css/footer.css">
   <link rel="stylesheet" href="<?= BASE ?>css/home.css">
   <link rel="stylesheet" href="<?= BASE ?>css/vagas.css">
-  <link rel="stylesheet" href="<?= BASE ?>css/auth.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/login.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/cadastro.css">
+  <link rel="stylesheet" href="<?= BASE ?>css/notificacoes.css">
 </head>
 <body>
 
 <?php
-$logado = !empty($_SESSION['token']);
-$role   = $_SESSION['role'] ?? '';
+// Papel lido direto da JWT (não mais de $_SESSION['role'], que nunca era setado).
+$logado         = $api->jwt()->hasToken();
+$ehEmpresa      = $logado && $api->jwt()->isCompany();
+$ehAdminEmpresa = $logado && $api->jwt()->isCompanyAdmin();
+$ehAluno        = $logado && $api->jwt()->isStudent();
+
+// Login e cadastro ficam sem navbar para deixar o foco no formulario.
+$paginaAuth = in_array($pagina ?? '', ['login', 'cadastro'], true);
+
+// Resumo de notificações para o sino (só quando autenticado de verdade).
+$notifNaoLidas = [];
+$notifTotal    = 0;
+if ($logado && $api->jwt()->isAuthenticated()) {
+    require_once __DIR__ . '/../classes/Notificacao.php';
+    $respNotif = $api->notificacoes()->naoLidas(8);
+    foreach ($respNotif['data'] ?? [] as $n) {
+        $notifNaoLidas[] = new Notificacao($n);
+    }
+    $notifTotal = $respNotif['meta']['total'] ?? count($notifNaoLidas);
+}
 ?>
 
+<?php if (!$paginaAuth): ?>
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container navbar-container">
 
     <!-- Logo -->
     <a class="navbar-brand fw-bold" href="<?= BASE ?>index.php">
-      <img src="<?= BASE ?>assets/images/site/logo.png" alt="Hackathon">
+      <img src="<?= BASE ?>assets/images/site/logo.png" alt="Portal de Estágios UniALFA">
     </a>
 
     <!-- Botão hamburguer (mobile) -->
@@ -51,11 +72,15 @@ $role   = $_SESSION['role'] ?? '';
     <!-- Conteúdo colapsável -->
     <div class="collapse navbar-collapse" id="navbarMenu">
 
-      <!-- Links centralizados — "Alunos" foi removido pois é exclusivo do admin (back office Java) -->
       <ul class="navbar-nav mx-auto align-items-center gap-lg-1 text-center">
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=home">Início</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresas">Empresas</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=vagas">Vagas</a></li>
+        <?php if ($ehEmpresa): ?>
+          <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresa-dashboard">Painel</a></li>
+          <?php if ($ehAdminEmpresa): ?>
+            <li class="nav-item"><a class="nav-link" href="<?= BASE ?>index.php?page=empresa-membros">Membros</a></li>
+          <?php endif; ?>
+        <?php endif; ?>
       </ul>
 
       <?php if (!$logado): ?>
@@ -63,11 +88,44 @@ $role   = $_SESSION['role'] ?? '';
         <a href="<?= BASE ?>index.php?page=login" class="btn btn-entrar btn-sm px-3">Entrar</a>
         <a href="<?= BASE ?>index.php?page=cadastro" class="btn btn-warning btn-sm px-3 fw-semibold">Cadastrar</a>
       </div>
-      <?php endif; ?>
-
-      <?php if ($logado): ?>
+      <?php else: ?>
       <div class="d-flex align-items-center justify-content-center gap-2 mt-3 mt-lg-0">
-        <?php if ($role === 'empresa'): ?>
+
+        <!-- Sino de notificações -->
+        <div class="dropdown notif-dropdown">
+          <button class="btn btn-entrar btn-sm position-relative notif-sino" type="button"
+                  data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                  aria-expanded="false" aria-label="Notificações">
+            <i class="bi bi-bell"></i>
+            <?php if ($notifTotal > 0): ?>
+              <span class="notif-badge"><?= $notifTotal > 99 ? '99+' : $notifTotal ?></span>
+            <?php endif; ?>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end notif-menu">
+            <div class="notif-menu-header">
+              <strong>Notificações</strong>
+            </div>
+            <div class="notif-menu-body">
+              <?php if (empty($notifNaoLidas)): ?>
+                <p class="notif-vazio">Nenhuma notificação nova.</p>
+              <?php else: ?>
+                <?php foreach ($notifNaoLidas as $n): ?>
+                  <div class="notif-item notif-item--nova">
+                    <i class="bi <?= $n->getIconeClasse() ?>"></i>
+                    <div>
+                      <strong><?= htmlspecialchars($n->getTitulo()) ?></strong>
+                      <span><?= htmlspecialchars($n->getMensagem()) ?></span>
+                      <small><?= htmlspecialchars($n->tempoRelativo()) ?></small>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+            <a href="<?= BASE ?>index.php?page=notificacoes" class="notif-ver-todas">Ver todas</a>
+          </div>
+        </div>
+
+        <?php if ($ehEmpresa): ?>
           <a href="<?= BASE ?>index.php?page=empresa-dashboard" class="btn btn-entrar btn-sm px-3">
             <i class="bi bi-grid me-1"></i> Painel
           </a>
@@ -83,3 +141,4 @@ $role   = $_SESSION['role'] ?? '';
     </div>
   </div>
 </nav>
+<?php endif; ?>

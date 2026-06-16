@@ -20,7 +20,6 @@ router.use(authMiddleware);
 router.get("/", controller.list.bind(controller));
 router.get("/:jobId", controller.getById.bind(controller));
 
-// Candidatura exige estudante autenticado; currículo opcional via multipart.
 router.post("/:jobId/apply", requireStudent, uploadResume.single("resume"), controller.apply.bind(controller));
 
 export default router;

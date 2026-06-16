@@ -22,11 +22,8 @@ export class JobsController {
   async apply(req: Request, res: Response): Promise<void> {
     const user = requireUser(req);
     const { jobId } = jobIdParamsSchema.parse(req.params);
-
-    // Currículo enviado na candidatura tem prioridade; senão usa o do perfil (no service).
-    const uploadedResumePath = req.file ? `uploads/resumes/${req.file.filename}` : undefined;
-
-    const application = await this.jobsService.apply(user.id, jobId, uploadedResumePath);
+    const resumePath = req.file ? `uploads/resumes/${req.file.filename}` : undefined;
+    const application = await this.jobsService.apply(user.id, jobId, resumePath);
     res.status(201).json(response.success(application, "Candidatura enviada com sucesso."));
   }
 }

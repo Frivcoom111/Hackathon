@@ -1,44 +1,107 @@
-/* altura fixa 64px — igual à navbar */
+/* ===== Footer ===== */
 footer {
   background-color: var(--azul-escuro);
   color: var(--branco);
-  font-size: 0.875rem;
-  height: 64px;
-  display: flex;
-  align-items: center;
+  font-size: 0.9rem;
+  padding-top: 48px;
 }
-footer a { color: var(--azul-claro); text-decoration: none; transition: color 0.2s; }
+footer a { color: #c7d8ef; text-decoration: none; transition: color 0.2s; }
 footer a:hover { color: var(--amarelo-principal); }
 
-/* logo | links | copyright em linha única — nunca quebra */
-.footer-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 16px;
-  width: 100%;
+/* Grid de colunas */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 32px;
+  padding-bottom: 32px;
 }
+.footer-col { min-width: 0; }
+
+/* Coluna "Sobre" */
 .footer-brand {
+  display: inline-block;
   color: var(--branco);
   font-family: var(--fonte-titulo);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.05rem;
   text-decoration: none;
-  flex-shrink: 0;
+  margin-bottom: 14px;
 }
-.footer-brand img { height: 40px; width: auto; object-fit: contain; }
+.footer-brand img { height: 46px; width: auto; object-fit: contain; }
+.footer-sobre {
+  color: #aebfd6;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 16px;
+  max-width: 38ch;
+}
+.footer-endereco {
+  display: flex;
+  gap: 8px;
+  color: #aebfd6;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.footer-endereco i { color: var(--amarelo-principal); margin-top: 2px; }
 
-.footer-links {
+/* Títulos de coluna */
+.footer-titulo {
+  color: var(--branco);
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  position: relative;
+  padding-bottom: 10px;
+}
+.footer-titulo::after {
+  content: "";
+  position: absolute; left: 0; bottom: 0;
+  width: 32px; height: 3px; border-radius: 2px;
+  background: var(--amarelo-principal);
+}
+
+/* Listas de links e contato */
+.footer-links,
+.footer-contato {
   list-style: none; margin: 0; padding: 0;
-  display: flex; gap: 20px; flex-wrap: nowrap;
+  display: flex; flex-direction: column; gap: 10px;
 }
-.footer-links a { color: var(--azul-claro); font-size: 0.85rem; text-decoration: none; transition: color 0.2s; white-space: nowrap; }
-.footer-links a:hover { color: var(--amarelo-principal); }
-.footer-copy { font-size: 0.8rem; color: var(--texto-secundario); margin: 0; white-space: nowrap; flex-shrink: 0; }
+.footer-links a,
+.footer-contato a { font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; }
+.footer-contato i { color: var(--amarelo-principal); }
 
-/* mobile — esconde links para caber em uma linha */
-@media (max-width: 767px) {
-  .footer-links { display: none; }
-  .footer-copy  { font-size: 0.7rem; }
+/* Ícones sociais */
+.footer-social { display: flex; gap: 12px; }
+.footer-social a {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.08);
+  color: var(--branco);
+  font-size: 1.1rem;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.footer-social a:hover {
+  background: var(--amarelo-principal);
+  color: var(--azul-escuro);
+  transform: translateY(-2px);
+}
+
+/* Faixa inferior de copyright */
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.1);
+  padding: 18px 0;
+  text-align: center;
+}
+.footer-copy { font-size: 0.82rem; color: #93a6c2; margin: 0; }
+
+/* ── Responsivo ── */
+@media (max-width: 991px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .footer-col--sobre { grid-column: 1 / -1; }
+}
+@media (max-width: 575px) {
+  footer { padding-top: 36px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
 }

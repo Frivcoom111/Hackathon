@@ -231,9 +231,23 @@ export class CompanyRepository {
         select: {
           id: true,
           status: true,
-          resumePath: true,
           createdAt: true,
-          student: { select: { id: true, name: true, ra: true } },
+          resumePath: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              ra: true,
+              phone: true,
+              resumePath: true,
+              user: { select: { email: true } },
+              courses: {
+                where: { status: "ACTIVE" },
+                select: { course: { select: { name: true } } },
+                take: 1,
+              },
+            },
+          },
         },
         skip,
         take,
@@ -252,8 +266,9 @@ export class CompanyRepository {
         id: true,
         status: true,
         jobId: true,
+        resumePath: true,
         job: { select: { companyId: true, title: true } },
-        student: { select: { userId: true } },
+        student: { select: { userId: true, resumePath: true } },
       },
     });
   }

@@ -1,0 +1,318 @@
+/* ===== Login ===== */
+/* Largura e altura unificadas com a tela de cadastro para consistência visual. */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: clamp(16px, 3vw, 34px);
+  background:
+    linear-gradient(90deg, rgba(2, 31, 65, .92), rgba(2, 31, 65, .78)),
+    url("../assets/images/site/login.png") center/cover no-repeat;
+}
+
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 1120px;
+  /* Altura flexível: nunca ultrapassa a viewport (sem scroll de página). */
+  min-height: min(560px, calc(100vh - 48px));
+  max-height: calc(100vh - 48px);
+  margin: 0 auto;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .30);
+}
+
+.login-imagem {
+  flex: 1.08;
+  background: var(--azul-fundo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* O formulário rola internamente se o conteúdo (ex.: TOTP com QR) for alto. */
+.login-form-box {
+  flex: .92;
+  padding: clamp(28px, 4vw, 54px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.login-titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+  margin-bottom: 24px;
+}
+
+/* abas Entrar / Cadastrar */
+.login-tabs {
+  display: flex;
+  background: var(--fundo-pagina);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 28px;
+  gap: 4px;
+}
+
+.login-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  font-family: var(--fonte-titulo);
+}
+
+.login-tab.active {
+  background: var(--amarelo-principal);
+  color: var(--texto-titulo);
+}
+
+.login-tab:not(.active):hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--texto-titulo);
+}
+
+/* campo de senha com botão olho */
+.input-senha {
+  position: relative;
+}
+
+.input-senha .form-control {
+  padding-right: 44px;
+}
+
+.btn-ver-senha {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--texto-secundario);
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.btn-ver-senha:hover {
+  color: var(--azul-principal);
+}
+
+.forgot-link {
+  font-size: 0.82rem;
+  color: var(--azul-principal);
+}
+
+.forgot-link:hover {
+  color: var(--azul-hover);
+}
+
+/* campo do código TOTP — grande e espaçado */
+.input-token {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: var(--texto-titulo);
+  font-family: var(--fonte-titulo);
+}
+
+.btn-voltar {
+  background: none;
+  border: none;
+  color: var(--texto-secundario);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-voltar:hover {
+  color: var(--azul-principal);
+}
+
+.login-cadastro {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--texto-secundario);
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+.authenticator-form-box {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 30px;
+}
+
+.authenticator-header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.authenticator-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 110, 253, .12);
+  color: var(--azul-principal);
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.authenticator-kicker {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: var(--amarelo-hover);
+  font-weight: 700;
+  font-size: .78rem;
+  text-transform: uppercase;
+}
+
+.authenticator-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f2f6fb;
+  color: var(--texto-padrao);
+  font-size: .88rem;
+}
+
+.authenticator-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  text-align: center;
+  grid-template-columns: 1fr;
+  padding-top: 30px;
+  gap: 14px;
+}
+
+.authenticator-qr-card,
+.authenticator-code-card {
+  position: relative;
+  border: 1px solid #d8e3f4;
+  border-radius: 16px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(2, 31, 65, .08);
+}
+
+.authenticator-qr-card {
+  text-align: center;
+}
+
+.authenticator-qr-card img {
+  width: min(210px, 100%);
+  border-radius: 12px;
+}
+
+.authenticator-qr-card p {
+  margin: 12px 0 0;
+  color: var(--texto-secundario);
+  font-size: .88rem;
+}
+
+.authenticator-step {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amarelo-principal);
+  color: var(--texto-titulo);
+  font-weight: 700;
+  font-size: .82rem;
+}
+
+.authenticator-lock {
+  width: 92px;
+  height: 92px;
+  margin: 16px auto 0;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4ff;
+  color: var(--azul-principal);
+  font-size: 2.2rem;
+}
+
+.authenticator-code-card {
+  display: grid;
+  gap: 12px;
+}
+
+.authenticator-back {
+  display: inline-flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Modo "verify" (TOTP já ativo): só o card do código, centralizado. */
+.authenticator-panel--verify {
+  max-width: 360px;
+}
+
+@media (max-width: 767px) {
+  .login-page {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .login-container {
+    flex-direction: column;
+    border-radius: 0;
+    margin: 0;
+    min-height: 100dvh;
+    max-height: none;
+  }
+
+  .login-imagem {
+    min-height: 160px;
+    max-height: 200px;
+    flex: none;
+  }
+
+  .login-form-box {
+    padding: 28px 20px;
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .login-titulo {
+    font-size: 1.55rem;
+  }
+}
