@@ -18,15 +18,13 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
 
-    // Empresa não aprovada (ou bloqueada) fica com isActive=false e não acessa rotas protegidas,
-    // mesmo com token válido. A ativação/bloqueio é feita pelo app Java ao mudar o status da empresa.
     const dbUser = await prisma.user.findUnique({
       where: { id: decoded.sub },
       select: { isActive: true },
     });
 
     if (!dbUser?.isActive) {
-      throw new ForbiddenError("Conta inativa. Aguarde a aprovação da empresa.");
+      throw new ForbiddenError("Conta inativa. Aguarde a aprovacao da empresa.");
     }
 
     req.user = {
@@ -46,12 +44,11 @@ export const authMiddleware = async (req: Request, _res: Response, next: NextFun
   }
 };
 
-// Exige COMPANY + MFA verificada + ser ADMIN da empresa (companyMemberRole).
-// Usar após requireCompany nas rotas restritas a administradores da empresa.
+// Exige role específica e, opcionalmente, MFA verificada.
 export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
-      throw new UnauthorizedError("Token não fornecido.");
+      throw new UnauthorizedError("Token nao fornecido.");
     }
 
     if (req.user.role !== Role.COMPANY || !req.user.mfaVerified) {
@@ -59,7 +56,7 @@ export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunc
     }
 
     if (req.user.companyMemberRole !== CompanyMemberRole.ADMIN) {
-      throw new ForbiddenError("Apenas administradores da empresa podem executar esta ação.");
+      throw new ForbiddenError("Apenas administradores da empresa podem executar esta acao.");
     }
 
     next();
@@ -68,7 +65,6 @@ export const requireCompanyAdmin = (req: Request, _res: Response, next: NextFunc
   }
 };
 
-// Exige role específica e, opcionalmente, MFA verificada.
 const requireRole = (role: Role, options: { mfa: boolean }) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
@@ -91,5 +87,6 @@ const requireRole = (role: Role, options: { mfa: boolean }) => {
   };
 };
 
+export const requireAdmin = requireRole(Role.ADMIN, { mfa: true });
 export const requireCompany = requireRole(Role.COMPANY, { mfa: true });
 export const requireStudent = requireRole(Role.STUDENT, { mfa: false });

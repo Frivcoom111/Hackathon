@@ -45,7 +45,7 @@ public class StudentImportDialog extends JDialog {
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titulo.setForeground(new Color(0x1A237E));
 
-        JLabel formato = new JLabel("Formato esperado: nome;ra;cpf;email;periodo;curso");
+        JLabel formato = new JLabel("Formato esperado: nome;ra;cpf;email");
         formato.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         formato.setForeground(Color.GRAY);
 

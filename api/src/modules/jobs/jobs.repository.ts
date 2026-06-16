@@ -71,13 +71,13 @@ export class JobsRepository {
   async getStudentByUserId(userId: string) {
     return this.prisma.student.findUnique({
       where: { userId },
-      select: { id: true, isEligible: true, addressId: true, resumePath: true },
+      select: { id: true, isEligible: true, addressId: true },
     });
   }
 
-  async createApplication(studentId: string, jobId: string, resumePath: string) {
+  async createApplication(studentId: string, jobId: string, resumePath?: string) {
     return this.prisma.application.create({
-      data: { studentId, jobId, resumePath },
+      data: { studentId, jobId, ...(resumePath ? { resumePath } : {}) },
       select: { id: true, status: true, createdAt: true },
     });
   }

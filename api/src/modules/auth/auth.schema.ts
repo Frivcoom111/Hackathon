@@ -1,92 +1,86 @@
 import { z } from "../../lib/zod";
-import { addressSchema, cnpjSchema, cpfSchema, passwordSchema, phoneSchema } from "../../shared/schemas/common.schema";
+import { passwordSchema } from "../../shared/schemas/common.schema";
 
-// ─── Input Schemas ────────────────────────────────────────────────────────────
+const onlyDigits = (value: string) => value.replace(/\D/g, "");
 
-const studentCourseStatusSchema = z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]);
+export const loginSchema = z.object({
+  email: z.email("E-mail invalido."),
+  password: z.string().min(1, "Senha obrigatoria."),
+});
 
-export const registerStudentSchema = z
-  .object({
-    email: z.email("E-mail inválido."),
-    password: passwordSchema,
-    name: z
+export const totpCodeSchema = z.object({
+  code: z.string().regex(/^\d{6}$/, "Informe o codigo de 6 digitos."),
+});
+
+export const registerStudentSchema = z.object({
+  email: z.email("E-mail invalido."),
+  password: passwordSchema,
+  name: z.string().min(2, "Informe o nome completo."),
+  ra: z.string().min(1, "Informe o RA."),
+  cpf: z.string().transform(onlyDigits).pipe(z.string().length(11, "CPF deve ter 11 digitos.")),
+  phone: z
+    .string()
+    .optional()
+    .transform((value) => (value ? onlyDigits(value) : undefined)),
+  courseId: z.uuid("Curso invalido."),
+  status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),
+  startedAt: z.coerce.date(),
+  finishedAt: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
+});
+
+export const registerCompanySchema = z.object({
+  email: z.email("E-mail invalido."),
+  password: passwordSchema,
+  name: z.string().min(2, "Informe o nome da empresa."),
+  cnpj: z.string().transform(onlyDigits).pipe(z.string().length(14, "CNPJ deve ter 14 digitos.")),
+  description: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .transform((value) => (value ? onlyDigits(value) : undefined)),
+  address: z.object({
+    street: z.string().min(1, "Informe a rua."),
+    number: z.string().min(1, "Informe o numero."),
+    complement: z.string().optional(),
+    district: z.string().min(1, "Informe o bairro."),
+    city: z.string().min(1, "Informe a cidade."),
+    state: z.string().length(2, "UF deve ter 2 letras.").transform((value) => value.toUpperCase()),
+    zipCode: z.string().min(8, "Informe o CEP."),
+  }),
+  member: z.object({
+    name: z.string().min(2, "Informe o responsavel."),
+    cpf: z.string().transform(onlyDigits).pipe(z.string().length(11, "CPF do responsavel deve ter 11 digitos.")),
+    phone: z
       .string()
-      .min(2, "O nome deve ter no mínimo 2 caracteres.")
-      .max(100, "O nome deve ter no máximo 100 caracteres."),
-    ra: z.string().min(1, "O RA é obrigatório.").max(20, "O RA deve ter no máximo 20 caracteres."),
-    cpf: cpfSchema,
-    phone: z.string().min(8).max(20).optional(),
-    resumePath: z.string().optional(),
-    courseId: z.uuid("Curso inválido."),
-    status: studentCourseStatusSchema.default("ACTIVE"),
-    startedAt: z.coerce.date(),
-    finishedAt: z.coerce.date().optional(),
-  })
-  .openapi({ title: "RegisterStudent" });
+      .optional()
+      .transform((value) => (value ? onlyDigits(value) : undefined)),
+  }),
+});
 
-export const registerCompanySchema = z
-  .object({
-    email: z.email("E-mail inválido."),
-    password: passwordSchema,
-    name: z.string().min(2, "O nome deve ter no mínimo 2 caracteres.").max(150),
-    cnpj: cnpjSchema,
-    description: z.string().min(1, "A descrição é obrigatória.").max(2000),
-    phone: phoneSchema,
-    address: addressSchema,
-    member: z.object({
-      name: z.string().min(2, "O nome do responsável é obrigatório.").max(100),
-      cpf: cpfSchema,
-      phone: phoneSchema.optional(),
+export const studentResponseSchema = z.object({
+  userId: z.uuid(),
+  name: z.string(),
+  ra: z.string(),
+  phone: z.string().nullable().optional(),
+});
+
+export const companyResponseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  cnpj: z.string(),
+  status: z.enum(["PENDING", "ANALYSING", "APPROVED", "BLOCKED"]),
+  members: z.array(
+    z.object({
+      userId: z.uuid(),
+      name: z.string(),
+      role: z.enum(["ADMIN", "RECRUITER"]),
     }),
-  })
-  .openapi({ title: "RegisterCompany" });
+  ),
+});
 
-export const loginSchema = z
-  .object({
-    email: z.email("E-mail inválido."),
-    password: z.string().min(1, "A senha é obrigatória."),
-  })
-  .openapi({ title: "Login" });
-
-export const totpCodeSchema = z
-  .object({
-    code: z.string().regex(/^\d{6}$/, "O código deve conter 6 dígitos."),
-  })
-  .openapi({ title: "TotpCode" });
-
-// ─── Response Schemas ─────────────────────────────────────────────────────────
-
-export const studentResponseSchema = z
-  .object({
-    userId: z.uuid(),
-    name: z.string(),
-    ra: z.string(),
-    phone: z.string().nullable(),
-    resumePath: z.string().nullable(),
-  })
-  .openapi({ title: "StudentResponse" });
-
-export const companyResponseSchema = z
-  .object({
-    id: z.uuid(),
-    name: z.string(),
-    cnpj: z.string(),
-    status: z.enum(["PENDING", "ANALYSING", "APPROVED", "BLOCKED"]),
-    members: z.array(
-      z.object({
-        userId: z.uuid(),
-        name: z.string(),
-        role: z.enum(["ADMIN", "RECRUITER"]),
-      }),
-    ),
-  })
-  .openapi({ title: "CompanyResponse" });
-
-// ─── Inferência de Types ────────────────────────────────────────────────────────
-
-export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
-export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type TotpCodeInput = z.infer<typeof totpCodeSchema>;
+export type RegisterStudentInput = z.infer<typeof registerStudentSchema>;
+export type RegisterCompanyInput = z.infer<typeof registerCompanySchema>;
 export type StudentResponse = z.infer<typeof studentResponseSchema>;
 export type CompanyResponse = z.infer<typeof companyResponseSchema>;

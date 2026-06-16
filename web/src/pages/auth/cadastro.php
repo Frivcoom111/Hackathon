@@ -1,8 +1,6 @@
 <?php
-// Todo o fluxo de cadastro é feito aqui no PHP via cURL — sem JS chamando a API
-
 $erro     = '';
-$abaAtiva = 'aluno'; // mantém a aba ativa após erro de validação
+$abaAtiva = 'aluno';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo     = $_POST['tipo'] ?? 'aluno';
@@ -16,34 +14,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Cadastro de aluno ─────────────────────────────────────────────────────
     } elseif ($tipo === 'aluno') {
-        // Monta os campos do formulário para enviar como multipart/form-data
+        $statusCurso = $_POST['statusCurso'] ?? 'ACTIVE';
+
         $campos = [
             'email'     => trim($_POST['email']    ?? ''),
             'password'  => $senha,
             'name'      => trim($_POST['nome']     ?? ''),
             'ra'        => trim($_POST['ra']        ?? ''),
-            'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''), // remove pontuação
+            'cpf'       => preg_replace('/\D/', '', $_POST['cpf']   ?? ''),
             'phone'     => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
             'courseId'  => trim($_POST['courseId'] ?? ''),
+            'status'    => $statusCurso,
             'startedAt' => $_POST['startedAt']     ?? '',
         ];
 
-        // Anexa o currículo se foi enviado
-        if (!empty($_FILES['curriculo']['tmp_name'])) {
-            $campos['resume'] = new CURLFile(
-                $_FILES['curriculo']['tmp_name'],
-                $_FILES['curriculo']['type'] ?: 'application/octet-stream',
-                $_FILES['curriculo']['name']
-            );
+        if ($statusCurso === 'COMPLETED') {
+            $campos['finishedAt'] = $_POST['finishedAt'] ?? '';
         }
 
-        $ch = curl_init(API_URL . '/auth/register/student');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $campos); // cURL detecta CURLFile e usa multipart
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $api->auth()->registrarEstudante($campos);
 
         if ($data['success'] ?? false) {
             $_SESSION['msg_sucesso'] = 'Cadastro realizado! Faça login para continuar.';
@@ -51,11 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $erro = $data['message'] ?? 'Erro ao cadastrar. Tente novamente.';
+            if (!empty($data['details']) && is_array($data['details'])) {
+                $detalhes = array_map(fn($d) => $d['message'] ?? '', $data['details']);
+                $erro .= ' ' . implode(' | ', array_filter($detalhes));
+            }
         }
 
     // ── Cadastro de empresa ───────────────────────────────────────────────────
     } elseif ($tipo === 'empresa') {
-        // Monta o payload JSON com os dados da empresa, endereço e responsável
         $payload = [
             'email'       => trim($_POST['email']     ?? ''),
             'password'    => $senha,
@@ -79,14 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ],
         ];
 
-        $ch = curl_init(API_URL . '/auth/register/company');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        $resp = curl_exec($ch);
-
-        $data = json_decode($resp, true);
+        $data = $api->auth()->registrarEmpresa($payload);
 
         if ($data['success'] ?? false) {
             $_SESSION['msg_sucesso'] = 'Empresa cadastrada! Aguarde a aprovação pelo administrador.';
@@ -94,22 +79,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $erro = $data['message'] ?? 'Erro ao cadastrar empresa. Tente novamente.';
+            if (!empty($data['details']) && is_array($data['details'])) {
+                $detalhes = array_map(fn($d) => $d['message'] ?? '', $data['details']);
+                $erro .= ' ' . implode(' | ', array_filter($detalhes));
+            }
         }
     }
 }
 
-// Busca os cursos disponíveis para o select do formulário de aluno
-$ch = curl_init(API_URL . '/courses');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$resp   = curl_exec($ch);
-$cursos = json_decode($resp, true)['data'] ?? [];
+$cursos     = $api->cursos()->listar();
+$semCursos  = empty($cursos);
 ?>
 
 <main class="cadastro-page">
   <div class="cadastro-container">
 
     <div class="cadastro-imagem">
-      <img src="<?= BASE ?>assets/images/site/cadastro.png" alt="Cadastro">
+      <img src="<?= BASE ?>assets/images/site/login.png" alt="Cadastro">
     </div>
 
     <div class="cadastro-form-box">
@@ -122,7 +108,6 @@ $cursos = json_decode($resp, true)['data'] ?? [];
       <h2 class="cadastro-titulo">Crie sua conta</h2>
       <p class="cadastro-sub">Escolha o tipo de conta para continuar</p>
 
-      <!-- Abas aluno / empresa — JS só para trocar a exibição, sem chamada à API -->
       <div class="cadastro-tabs">
         <button class="cadastro-tab <?= $abaAtiva === 'aluno' ? 'active' : '' ?>"
                 onclick="trocarAba('aluno', this)">Aluno</button>
@@ -136,8 +121,7 @@ $cursos = json_decode($resp, true)['data'] ?? [];
 
       <!-- ── FORMULÁRIO ALUNO ── -->
       <form id="form-aluno" class="cadastro-form <?= $abaAtiva === 'empresa' ? 'd-none' : '' ?>"
-            method="POST" action="<?= BASE ?>index.php?page=cadastro"
-            enctype="multipart/form-data">
+            method="POST" action="<?= BASE ?>index.php?page=cadastro">
         <input type="hidden" name="tipo" value="aluno">
         <div class="row g-3">
 
@@ -167,8 +151,8 @@ $cursos = json_decode($resp, true)['data'] ?? [];
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Curso</label>
-            <select name="courseId" class="form-select" required>
+            <label class="form-label" for="courseId">Curso</label>
+            <select name="courseId" id="courseId" class="form-select" required <?= $semCursos ? 'disabled' : '' ?>>
               <option value="">Selecione o curso</option>
               <?php foreach ($cursos as $curso): ?>
                 <option value="<?= htmlspecialchars($curso['id']) ?>">
@@ -176,16 +160,31 @@ $cursos = json_decode($resp, true)['data'] ?? [];
                 </option>
               <?php endforeach; ?>
             </select>
+            <?php if ($semCursos): ?>
+              <div class="form-text text-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Não foi possível carregar a lista de cursos. Verifique se a API está ativa e tente novamente.
+              </div>
+            <?php endif; ?>
           </div>
 
-          <div class="col-12">
+          <div class="col-md-6">
+            <label class="form-label" for="statusCurso">Status do curso</label>
+            <select name="statusCurso" id="statusCurso" class="form-select" onchange="toggleConclusao()">
+              <option value="ACTIVE">Em andamento</option>
+              <option value="COMPLETED">Finalizado</option>
+              <option value="CANCELLED">Não finalizado</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
             <label class="form-label">Data de início do curso</label>
             <input type="date" name="startedAt" class="form-control" required>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Currículo <span class="text-muted small">(opcional)</span></label>
-            <input type="file" name="curriculo" class="form-control" accept=".pdf,.jpg,.png">
+          <div class="col-12 d-none" id="campoConclusao">
+            <label class="form-label" for="finishedAt">Data de conclusão do curso</label>
+            <input type="date" name="finishedAt" id="finishedAt" class="form-control">
           </div>
 
           <div class="col-12">
@@ -316,11 +315,21 @@ $cursos = json_decode($resp, true)['data'] ?? [];
 </main>
 
 <script>
-// Alterna entre os formulários de aluno e empresa — só troca exibição, sem API
 function trocarAba(tipo, btn) {
   document.querySelectorAll('.cadastro-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('form-aluno').classList.toggle('d-none',   tipo !== 'aluno');
   document.getElementById('form-empresa').classList.toggle('d-none', tipo !== 'empresa');
+}
+
+function toggleConclusao() {
+  const status = document.getElementById('statusCurso').value;
+  const campo = document.getElementById('campoConclusao');
+  const input = document.getElementById('finishedAt');
+  const finalizado = status === 'COMPLETED';
+
+  campo.classList.toggle('d-none', !finalizado);
+  input.required = finalizado;
+  if (!finalizado) input.value = '';
 }
 </script>

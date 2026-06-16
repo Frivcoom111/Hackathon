@@ -1,20 +1,20 @@
 /* variáveis globais de cor e fonte — altere aqui para mudar o tema inteiro */
 :root {
-  --azul-fundo:        #021F41;
-  --azul-principal:    #0D6EFD;
-  --azul-hover:        #0A4FAF;
-  --azul-claro:        #4D9EFF;
-  --azul-escuro:       #032B5C;
+  --azul-fundo: #021F41;
+  --azul-principal: #0D6EFD;
+  --azul-hover: #0A4FAF;
+  --azul-claro: #4D9EFF;
+  --azul-escuro: #032B5C;
   --amarelo-principal: #FFC107;
-  --amarelo-hover:     #E6A700;
-  --branco:            #FFFFFF;
-  --fundo-pagina:      #DADCDD;
-  --borda:             #C4C4C4;
-  --texto-titulo:      #111827;
-  --texto-padrao:      #374151;
-  --texto-secundario:  #6B7280;
-  --fonte-titulo:      'Source Sans 3', sans-serif;
-  --fonte-corpo:       'Inter', sans-serif;
+  --amarelo-hover: #E6A700;
+  --branco: #FFFFFF;
+  --fundo-pagina: #DADCDD;
+  --borda: #C4C4C4;
+  --texto-titulo: #111827;
+  --texto-padrao: #374151;
+  --texto-secundario: #6B7280;
+  --fonte-titulo: 'Source Sans 3', sans-serif;
+  --fonte-corpo: 'Inter', sans-serif;
 }
 
 /* body usa flex para grudar o footer no fundo mesmo em páginas curtas */
@@ -28,29 +28,83 @@ body {
 }
 
 /* main cresce para preencher o espaço entre navbar e footer */
-main { flex: 1; }
+main {
+  flex: 1;
+}
 
-a { color: var(--azul-principal); text-decoration: none; }
-a:hover { color: var(--azul-hover); }
+a {
+  color: var(--azul-principal);
+  text-decoration: none;
+}
 
-h1, h2, h3, h4, h5, h6 {
+a:hover {
+  color: var(--azul-hover);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--fonte-titulo);
   color: var(--texto-titulo);
   font-weight: 700;
 }
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.75rem; }
 
-.subtitulo     { font-size: 1.1rem;  font-weight: 500; color: var(--texto-padrao); }
-.titulo-card   { font-size: 1rem;    font-weight: 600; color: var(--texto-titulo); }
-.descricao     { font-size: 0.95rem; color: var(--texto-secundario); }
-.texto-pequeno { font-size: 0.8rem;  color: var(--texto-secundario); }
+h1 {
+  font-size: 2.25rem;
+}
 
-.text-secundario { color: var(--texto-secundario) !important; }
-.bg-azul-escuro  { background-color: var(--azul-escuro) !important; }
-.bg-azul-fundo   { background-color: var(--azul-fundo) !important; }
-.border-custom   { border: 1px solid var(--borda) !important; }
-.section-dark    { background-color: var(--azul-fundo); color: var(--branco); }
+h2 {
+  font-size: 1.75rem;
+}
+
+.subtitulo {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--texto-padrao);
+}
+
+.titulo-card {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--texto-titulo);
+}
+
+.descricao {
+  font-size: 0.95rem;
+  color: var(--texto-secundario);
+}
+
+.texto-pequeno {
+  font-size: 0.8rem;
+  color: var(--texto-secundario);
+}
+
+.text-secundario {
+  color: var(--texto-secundario) !important;
+}
+
+.bg-azul-escuro {
+  background-color: var(--azul-escuro) !important;
+}
+
+.bg-azul-fundo {
+  background-color: var(--azul-fundo) !important;
+}
+
+.border-custom {
+  border: 1px solid var(--borda) !important;
+}
+
+.section-dark {
+  background-color: var(--azul-fundo);
+  color: var(--branco);
+}
+
 .section-dark h1,
 .section-dark h2,
-.section-dark h3 { color: var(--branco); }
+.section-dark h3 {
+  color: var(--branco);
+}

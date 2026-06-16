@@ -10,9 +10,7 @@ export class AuthController {
   async registerStudent(req: Request, res: Response): Promise<void> {
     const data = registerStudentSchema.parse(req.body);
 
-    const resumePath = req.file ? `uploads/resumes/${req.file.filename}` : undefined;
-
-    const student = await this.authService.registerStudent({ ...data, resumePath });
+    const student = await this.authService.registerStudent(data);
 
     res.status(201).json(response.success(student, "Cadastro realizado com sucesso."));
   }
@@ -33,37 +31,21 @@ export class AuthController {
     res.status(200).json(response.success(result, "Login realizado com sucesso."));
   }
 
-  async totpSetup(req: Request, res: Response): Promise<void> {
-    const user = requireUser(req);
-
-    const result = await this.authService.totpSetup(user.id, user.email);
-
-    res.status(200).json(response.success(result));
-  }
-
   async totpSetupConfirm(req: Request, res: Response): Promise<void> {
     const user = requireUser(req);
-    const { code } = totpCodeSchema.parse(req.body);
+    const data = totpCodeSchema.parse(req.body);
 
-    const result = await this.authService.totpSetupConfirm(user.id, code);
+    const result = await this.authService.confirmTotp(user.id, data);
 
     res.status(200).json(response.success(result, "TOTP configurado com sucesso."));
   }
 
   async totpVerify(req: Request, res: Response): Promise<void> {
     const user = requireUser(req);
-    const { code } = totpCodeSchema.parse(req.body);
+    const data = totpCodeSchema.parse(req.body);
 
-    const result = await this.authService.totpVerify(user.id, code);
+    const result = await this.authService.verifyTotp(user.id, data);
 
     res.status(200).json(response.success(result, "Verificação concluída."));
-  }
-
-  async me(req: Request, res: Response): Promise<void> {
-    const user = requireUser(req);
-
-    const profile = await this.authService.getMe(user.id, user.role);
-
-    res.status(200).json(response.success(profile));
   }
 }

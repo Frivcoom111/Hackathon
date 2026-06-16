@@ -8,9 +8,7 @@ class Aluno {
     private string $ra;
     private string $cpf;
     private ?string $telefone;
-    private int $periodo;
     private bool $elegivel;
-    private ?string $curriculo;
     private string $criadoEm;
     private string $atualizadoEm;
 
@@ -22,9 +20,7 @@ class Aluno {
         $this->ra           = $dados['ra']           ?? '';
         $this->cpf          = $dados['cpf']          ?? '';
         $this->telefone     = $dados['phone']        ?? null;
-        $this->periodo      = (int)($dados['period'] ?? 1);
         $this->elegivel     = (bool)($dados['isEligible'] ?? true);
-        $this->curriculo    = $dados['resumePath']   ?? null;
         $this->criadoEm     = $dados['createdAt']    ?? '';
         $this->atualizadoEm = $dados['updatedAt']    ?? '';
     }
@@ -38,9 +34,7 @@ class Aluno {
     public function getRa(): string        { return $this->ra; }
     public function getCpf(): string       { return $this->cpf; }
     public function getTelefone(): ?string { return $this->telefone; }
-    public function getPeriodo(): int      { return $this->periodo; }
     public function isElegivel(): bool     { return $this->elegivel; }
-    public function getCurriculo(): ?string { return $this->curriculo; }
     public function getCriadoEm(): string  { return $this->criadoEm; }
     public function getAtualizadoEm(): string { return $this->atualizadoEm; }
 
@@ -48,9 +42,7 @@ class Aluno {
 
     public function setNome(string $nome): void        { $this->nome = $nome; }
     public function setTelefone(?string $tel): void    { $this->telefone = $tel; }
-    public function setPeriodo(int $periodo): void     { $this->periodo = $periodo; }
     public function setElegivel(bool $val): void       { $this->elegivel = $val; }
-    public function setCurriculo(?string $path): void  { $this->curriculo = $path; }
 
     // ── Utilitários ────────────────────────────────────────────────────────────
 
@@ -66,9 +58,7 @@ class Aluno {
             'ra'         => $this->ra,
             'cpf'        => $this->cpf,
             'phone'      => $this->telefone,
-            'period'     => $this->periodo,
             'isEligible' => $this->elegivel,
-            'resumePath' => $this->curriculo,
         ];
     }
 

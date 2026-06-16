@@ -1,27 +1,82 @@
-/* ── Banner ── */
-.banner-section { padding: 32px 0 24px; }
+/* ── Banner / Carrossel ── */
+.banner-section {
+  padding: 32px 0 24px;
+}
+
 .banner-box {
+  position: relative;
   width: 100%;
-  border-radius: 12px;
+  /* Proporção ~4:1 dos banners prontos; clamp evita altura excessiva em telas grandes */
+  height: clamp(120px, 25vw, 320px);
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--borda);
+  box-shadow: 0 10px 30px rgba(2, 31, 65, .12);
+  background: #021f41;
 }
-.banner-box img { width: 100%; height: 280px; object-fit: cover; display: block; }
-.banner-placeholder {
-  width: 100%; height: 280px;
-  background: var(--azul-fundo);
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.4);
-  font-size: 1.1rem;
-  font-family: var(--fonte-titulo);
-  letter-spacing: 1px;
+
+/* Carrossel e seus filhos ocupam 100% do banner-box */
+.banner-box .carousel,
+.banner-box .carousel-inner,
+.banner-box .carousel-item {
+  height: 100%;
+}
+
+/* Todos os banners preenchem o container de forma uniforme */
+.banner-slide-img {
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Indicadores */
+.banner-box .carousel-indicators [data-bs-target] {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, .45);
+  border: none;
+  transition: background-color .3s;
+}
+
+.banner-box .carousel-indicators .active {
+  background-color: #fff;
+}
+
+/* Controles anterior / próximo */
+.banner-box .carousel-control-prev,
+.banner-box .carousel-control-next {
+  width: 7%;
+  opacity: .65;
+}
+
+.banner-box .carousel-control-prev:hover,
+.banner-box .carousel-control-next:hover {
+  opacity: 1;
 }
 
 /* ── Seção de vagas em destaque ── */
-.vagas-section { padding: 40px 0 64px; }
+.vagas-section {
+  padding: 40px 0 64px;
+}
+
 .vagas-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   margin-bottom: 28px;
 }
-.vagas-titulo { font-size: 1.6rem; font-weight: 700; color: var(--texto-titulo); margin-bottom: 4px; font-family: var(--fonte-titulo); }
-.vagas-sub    { font-size: 0.9rem; color: var(--texto-secundario); margin: 0; }
+
+.vagas-titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--texto-titulo);
+  margin-bottom: 4px;
+  font-family: var(--fonte-titulo);
+}
+
+.vagas-sub {
+  font-size: 0.9rem;
+  color: var(--texto-secundario);
+  margin: 0;
+}

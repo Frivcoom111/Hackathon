@@ -1,32 +1,56 @@
 <?php
-// Carrega a classe Vaga para representar cada vaga retornada pela API
 require_once __DIR__ . '/../../classes/Vaga.php';
 
-// Chama a API via cURL para buscar as 3 últimas vagas ativas
-$ch = curl_init(API_URL . '/jobs?limit=3&status=ACTIVE');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // retorna a resposta em vez de imprimir
-$resp = curl_exec($ch);
+\App\Auth\Guard::requireLogin($api->jwt());
 
-// Converte o JSON da API em objetos Vaga
-$vagas = [];
-if ($resp) {
-    $data = json_decode($resp, true);
-    foreach ($data['data'] ?? [] as $item) {
-        $vagas[] = new Vaga($item);
-    }
-}
+$resp  = $api->vagas()->listar(['limit' => 3]);
+$vagas = array_map(fn($item) => new Vaga($item), $resp['data'] ?? []);
 ?>
 
-<!-- BANNER -->
+<!-- CARROSSEL -->
 <section class="banner-section">
   <div class="container">
     <div class="banner-box">
-      <img src="assets/images/site/banner.png" alt="Banner"
-           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-      <div class="banner-placeholder" style="display:none;">
-        <span>Banner</span>
-      </div>
-    </div>
+
+      <div id="bannerCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="5000">
+
+        <!-- Indicadores -->
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+
+        <!-- Slides -->
+        <div class="carousel-inner h-100">
+
+          <div class="carousel-item active h-100">
+            <img src="<?= BASE ?>assets/images/site/faculdade.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Portal de Estágios UniALFA">
+          </div>
+
+          <div class="carousel-item h-100">
+            <img src="<?= BASE ?>assets/images/site/profs.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Seu Talento Abre Caminhos">
+          </div>
+
+          <div class="carousel-item h-100">
+            <img src="<?= BASE ?>assets/images/site/devs.jpg" class="d-block w-100 h-100 banner-slide-img" alt="Equipe UniALFA">
+          </div>
+
+        </div>
+
+        <!-- Controles anterior / próximo -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Próximo</span>
+        </button>
+
+      </div><!-- /#bannerCarousel -->
+
+    </div><!-- /.banner-box -->
   </div>
 </section>
 
@@ -45,14 +69,12 @@ if ($resp) {
     <div class="row g-4">
 
       <?php if (empty($vagas)): ?>
-        <!-- Sem vagas: API offline ou nenhuma vaga ativa -->
         <div class="col-12 text-center py-4">
           <i class="bi bi-briefcase fs-2 text-secondary"></i>
           <p class="text-secondary mt-2">Nenhuma vaga disponível no momento.</p>
         </div>
 
       <?php else: ?>
-        <!-- Renderiza um card para cada vaga recebida da API -->
         <?php foreach ($vagas as $vaga): ?>
           <div class="col-lg-4 col-md-6">
             <div class="vaga-card">
@@ -71,7 +93,6 @@ if ($resp) {
                 <span><i class="bi bi-building"></i> <?= htmlspecialchars($vaga->getModalidadeLabel()) ?></span>
               </div>
               <div class="vaga-footer">
-                <!-- getSalarioFormatado() retorna "R$ 1.200,00" ou "A combinar" -->
                 <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
                 <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-primary btn-sm">Ver vaga</a>
               </div>

@@ -18,7 +18,6 @@ export class AuthRepository {
           ra: data.ra,
           cpf: data.cpf,
           phone: data.phone,
-          resumePath: data.resumePath,
           courses: {
             create: {
               status: data.status,
@@ -28,7 +27,7 @@ export class AuthRepository {
             },
           },
         },
-        select: { userId: true, name: true, ra: true, phone: true, resumePath: true },
+        select: { userId: true, name: true, ra: true, phone: true },
       });
     });
   }
@@ -130,7 +129,6 @@ export class AuthRepository {
         ra: true,
         cpf: true,
         phone: true,
-        resumePath: true,
         isEligible: true,
         user: { select: { id: true, email: true, role: true, isActive: true, createdAt: true } },
         address: {

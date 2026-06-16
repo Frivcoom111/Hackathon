@@ -2,38 +2,50 @@
 require_once __DIR__ . '/../../classes/Empresa.php';
 require_once __DIR__ . '/../../classes/Vaga.php';
 
-if (empty($_SESSION['token'])) {
-    header('Location: ' . BASE . 'index.php?page=login');
-    exit;
+\App\Auth\Guard::requireCompany($api->jwt());
+
+// Só o ADMIN da empresa pode editar perfil e gerenciar membros.
+$ehAdminEmpresa = $api->jwt()->isCompanyAdmin();
+
+$erro    = '';
+$sucesso = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = $_POST['acao'] ?? '';
+
+    // Alterar status da vaga — liberado a qualquer membro da empresa.
+    if ($acao === 'status_vaga' && !empty($_POST['vaga_id'])) {
+        $status = in_array($_POST['status'] ?? '', ['ACTIVE', 'PAUSED', 'CLOSED'], true)
+            ? $_POST['status'] : 'ACTIVE';
+        $resp = $api->companhia()->alterarStatusVaga(trim($_POST['vaga_id']), $status);
+        $sucesso = ($resp['success'] ?? false) ? 'Status da vaga atualizado!' : '';
+        $erro    = ($resp['success'] ?? false) ? '' : ($resp['message'] ?? 'Erro ao alterar o status da vaga.');
+
+    // Editar perfil da empresa — somente ADMIN.
+    } elseif ($acao === 'editar_empresa' && $ehAdminEmpresa) {
+        $dados = [
+            'name'        => trim($_POST['nome']      ?? ''),
+            'description' => trim($_POST['descricao'] ?? ''),
+            'phone'       => preg_replace('/\D/', '', $_POST['phone'] ?? ''),
+        ];
+        $resp = $api->companhia()->atualizarPerfil($dados);
+        $sucesso = ($resp['success'] ?? false) ? 'Dados da empresa atualizados!' : '';
+        $erro    = ($resp['success'] ?? false) ? '' : ($resp['message'] ?? 'Erro ao atualizar a empresa.');
+    }
 }
-
-$token = $_SESSION['token'];
-
-// ── Busca o perfil da empresa logada ─────────────────────────────────────────
-$ch = curl_init(API_URL . '/company/profile');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
 
 $empresa = null;
-$data = json_decode($resp, true);
-if (!empty($data['data'])) {
-    $empresa = new Empresa($data['data']);
+$resp    = $api->companhia()->perfil();
+if (!empty($resp['data'])) {
+    $empresa = new Empresa($resp['data']);
 }
 
-// ── Busca as vagas da empresa ─────────────────────────────────────────────────
-$ch = curl_init(API_URL . '/company/jobs?page=1&limit=50');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $token]);
-$resp = curl_exec($ch);
-
-$vagas = [];
-$dataVagas = json_decode($resp, true);
-foreach ($dataVagas['data'] ?? [] as $item) {
+$vagas     = [];
+$respVagas = $api->companhia()->vagas();
+foreach ($respVagas['data'] ?? [] as $item) {
     $vagas[] = new Vaga($item);
 }
 
-// ── Label e badge de status da vaga ──────────────────────────────────────────
 function statusVagaLabel(string $status): string {
     return match($status) {
         'ACTIVE' => 'Ativa',
@@ -63,6 +75,19 @@ function statusVagaBadge(string $status): string {
 
 <section class="vagas-lista-section">
   <div class="container py-4">
+
+    <?php if ($sucesso): ?>
+      <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <?= htmlspecialchars($sucesso) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+    <?php endif; ?>
+    <?php if ($erro): ?>
+      <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <?= htmlspecialchars($erro) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+    <?php endif; ?>
 
     <?php if (!$empresa): ?>
       <div class="text-center py-5">
@@ -94,9 +119,58 @@ function statusVagaBadge(string $status): string {
                 <span><i class="bi bi-info-circle"></i> <?= htmlspecialchars($empresa->getDescricao()) ?></span>
               <?php endif; ?>
             </div>
+
+            <?php if ($ehAdminEmpresa): ?>
+            <div class="vaga-footer flex-wrap gap-2">
+              <button type="button" class="btn btn-outline-primary btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#modal-editar-empresa">
+                <i class="bi bi-pencil me-1"></i> Editar dados
+              </button>
+              <a href="<?= BASE ?>index.php?page=empresa-membros" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-people me-1"></i> Membros
+              </a>
+            </div>
+            <?php endif; ?>
           </div>
         </div>
       </div>
+
+      <?php if ($ehAdminEmpresa): ?>
+      <!-- MODAL: editar dados da empresa (somente ADMIN) -->
+      <div class="modal fade" id="modal-editar-empresa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <form method="POST" action="<?= BASE ?>index.php?page=empresa-dashboard">
+              <input type="hidden" name="acao" value="editar_empresa">
+              <div class="modal-header">
+                <h5 class="modal-title">Editar dados da empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label" for="emp-nome">Nome da empresa</label>
+                  <input type="text" name="nome" id="emp-nome" class="form-control"
+                         value="<?= htmlspecialchars($empresa->getNome()) ?>" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="emp-phone">Telefone</label>
+                  <input type="text" name="phone" id="emp-phone" class="form-control"
+                         value="<?= htmlspecialchars($empresa->getTelefone() ?? '') ?>" placeholder="(44) 99999-9999">
+                </div>
+                <div class="mb-1">
+                  <label class="form-label" for="emp-descricao">Descrição</label>
+                  <textarea name="descricao" id="emp-descricao" class="form-control" rows="3"><?= htmlspecialchars($empresa->getDescricao() ?? '') ?></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar alterações</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <?php endif; ?>
 
       <!-- VAGAS DA EMPRESA -->
       <div class="d-flex align-items-center justify-content-between mb-3">
@@ -132,9 +206,9 @@ function statusVagaBadge(string $status): string {
                   <span><i class="bi bi-laptop"></i> <?= htmlspecialchars($vaga->getArea()) ?></span>
                 </div>
 
-                <div class="vaga-footer">
+                <div class="vaga-footer flex-wrap gap-2">
                   <span class="vaga-bolsa"><?= $vaga->getSalarioFormatado() ?></span>
-                  <div class="d-flex gap-2">
+                  <div class="d-flex gap-2 flex-wrap">
                     <a href="<?= BASE ?>index.php?page=empresa-candidatos&vaga_id=<?= $vaga->getId() ?>"
                        class="btn btn-outline-primary btn-sm">
                       <i class="bi bi-people"></i> Candidatos
@@ -145,6 +219,20 @@ function statusVagaBadge(string $status): string {
                     </a>
                   </div>
                 </div>
+
+                <!-- Alterar status da vaga -->
+                <form method="POST" action="<?= BASE ?>index.php?page=empresa-dashboard"
+                      class="d-flex gap-2 align-items-center mt-2">
+                  <input type="hidden" name="acao" value="status_vaga">
+                  <input type="hidden" name="vaga_id" value="<?= htmlspecialchars($vaga->getId()) ?>">
+                  <label class="form-label small mb-0 text-secondary" for="status-<?= $vaga->getId() ?>">Status:</label>
+                  <select name="status" id="status-<?= $vaga->getId() ?>" class="form-select form-select-sm" style="width:auto;">
+                    <?php foreach (['ACTIVE' => 'Ativa', 'PAUSED' => 'Pausada', 'CLOSED' => 'Encerrada'] as $val => $label): ?>
+                      <option value="<?= $val ?>" <?= $vaga->getStatus() === $val ? 'selected' : '' ?>><?= $label ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                  <button type="submit" class="btn btn-outline-secondary btn-sm">Aplicar</button>
+                </form>
               </div>
             </div>
           <?php endforeach; ?>

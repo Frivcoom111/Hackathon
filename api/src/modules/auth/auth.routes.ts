@@ -1,35 +1,46 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { authMiddleware } from "../../shared/middlewares/auth.middlewares";
-import { authRateLimiter } from "../../shared/middlewares/authRateLimit.middleware";
-import { uploadResume } from "../../shared/middlewares/upload.middleware";
-import { AuthController } from "./auth.controller";
-import { AuthRepository } from "./auth.repository";
+import { response } from "../../shared/utils/response";
+import { loginSchema, registerCompanySchema, registerStudentSchema, totpCodeSchema } from "./auth.schema";
 import { AuthService } from "./auth.service";
 
 const router = Router();
+const service = new AuthService(prisma);
 
-const repository = new AuthRepository(prisma);
-const service = new AuthService(repository);
-const controller = new AuthController(service);
+router.post("/login", async (req, res) => {
+  const data = loginSchema.parse(req.body);
+  const result = await service.login(data);
 
-// `resume` é o currículo (multipart/form-data); o multer valida tipo/tamanho e salva o arquivo.
-router.post(
-  "/register/student",
-  authRateLimiter,
-  uploadResume.single("resume"),
-  controller.registerStudent.bind(controller),
-);
+  res.status(200).json(response.success(result, "Login realizado com sucesso."));
+});
 
-router.post("/register/company", authRateLimiter, controller.registerCompany.bind(controller));
+router.post("/register/student", async (req, res) => {
+  const data = registerStudentSchema.parse(req.body);
+  const result = await service.registerStudent(data);
 
-router.post("/login", authRateLimiter, controller.login.bind(controller));
+  res.status(201).json(response.success(result, "Aluno cadastrado com sucesso."));
+});
 
-// Setup não exige mfaVerified (o usuário ainda está concluindo o TOTP), apenas token válido.
-router.get("/totp/setup", authMiddleware, controller.totpSetup.bind(controller));
-router.post("/totp/setup/confirm", authMiddleware, authRateLimiter, controller.totpSetupConfirm.bind(controller));
-router.post("/totp/verify", authMiddleware, authRateLimiter, controller.totpVerify.bind(controller));
+router.post("/register/company", async (req, res) => {
+  const data = registerCompanySchema.parse(req.body);
+  const result = await service.registerCompany(data);
 
-router.get("/me", authMiddleware, controller.me.bind(controller));
+  res.status(201).json(response.success(result, "Empresa cadastrada com sucesso."));
+});
+
+router.post("/totp/setup/confirm", authMiddleware, async (req, res) => {
+  const data = totpCodeSchema.parse(req.body);
+  const result = await service.confirmTotp(req.user!.id, data);
+
+  res.status(200).json(response.success(result, "Authenticator configurado com sucesso."));
+});
+
+router.post("/totp/verify", authMiddleware, async (req, res) => {
+  const data = totpCodeSchema.parse(req.body);
+  const result = await service.verifyTotp(req.user!.id, data);
+
+  res.status(200).json(response.success(result, "Codigo confirmado com sucesso."));
+});
 
 export default router;

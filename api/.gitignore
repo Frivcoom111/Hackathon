@@ -14,7 +14,7 @@ uploads/resumes/*
 .env
 !.env.example
 
-CLAUDE.md
-.agents/*
-
 /src/generated/prisma
+
+.agents
+*.log
