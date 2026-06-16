@@ -3,15 +3,17 @@ import { generateHash } from "../src/shared/utils/bcryptUtils";
 import {
   TOTP_DEV_SECRET,
   seedAdmin,
+  seedApplications,
   seedCompanies,
+  seedCompanyMembers,
   seedCourses,
   seedJobs,
-  seedRecruiter,
-  seedStudent,
+  seedNotifications,
+  seedStudents,
 } from "./data";
 
-// Seed idempotente: verifica se o admin já existe antes de rodar.
-// Rodar com `pnpm db:seed`.
+// Seed idempotente: se o admin já existir, nada é feito.
+// Rodar com: pnpm db:seed
 
 async function main() {
   const alreadySeeded = await prisma.user.findFirst({
@@ -19,136 +21,214 @@ async function main() {
   });
 
   if (alreadySeeded) {
-    console.log("Seed ja executado anteriormente. Nenhuma alteracao feita.");
+    console.log("Seed ja executado. Nenhuma alteracao feita.");
     return;
   }
 
-  console.log("Iniciando seed...");
+  console.log("Iniciando seed...\n");
 
-  // Hashes feitos fora da transacao para nao prolongar o lock no banco.
-  const [adminHash, recruiterHash, studentHash] = await Promise.all([
-    generateHash(seedAdmin.plainPassword),
-    generateHash(seedRecruiter.plainPassword),
-    generateHash(seedStudent.plainPassword),
-  ]);
+  // Bcrypt fora da transação para não segurar o lock do banco
+  const memberHashes = await Promise.all(
+    seedCompanyMembers.map((m) => generateHash(m.plainPassword)),
+  );
+  const studentHashes = await Promise.all(
+    seedStudents.map((s) => generateHash(s.plainPassword)),
+  );
+  const adminHash = await generateHash(seedAdmin.plainPassword);
 
-  await prisma.$transaction(async (tx) => {
-    // ─── 1. Cursos ───────────────────────────────────────────────────────────
-    const courses = await Promise.all(
-      seedCourses.map((c) =>
-        tx.course.upsert({
-          where: { code: c.code },
-          update: {},
-          create: c,
-        }),
-      ),
-    );
+  await prisma.$transaction(
+    async (tx) => {
+      // ─── 1. Cursos ─────────────────────────────────────────────────────────
+      console.log("  → Cursos...");
+      const courses = await Promise.all(
+        seedCourses.map((c) =>
+          tx.course.upsert({
+            where: { code: c.code },
+            update: {},
+            create: c,
+          }),
+        ),
+      );
+      // Mapa code → id
+      const courseById: Record<string, string> = Object.fromEntries(
+        courses.map((c) => [c.code!, c.id]),
+      );
 
-    // Mapa code → id para resolver referências abaixo
-    const courseById = Object.fromEntries(courses.map((c) => [c.code!, c.id]));
+      // ─── 2. Empresas ───────────────────────────────────────────────────────
+      console.log("  → Empresas...");
+      const companies = await Promise.all(
+        seedCompanies.map((c) =>
+          tx.company.upsert({
+            where: { cnpj: c.cnpj },
+            update: {},
+            create: c,
+          }),
+        ),
+      );
+      // Mapa cnpj → id
+      const companyById: Record<string, string> = Object.fromEntries(
+        companies.map((c) => [c.cnpj, c.id]),
+      );
 
-    // ─── 2. Empresas ─────────────────────────────────────────────────────────
-    const companies = await Promise.all(
-      seedCompanies.map((c) =>
-        tx.company.upsert({
-          where: { cnpj: c.cnpj },
-          update: {},
-          create: c,
-        }),
-      ),
-    );
+      // ─── 3. Vagas ──────────────────────────────────────────────────────────
+      console.log("  → Vagas...");
+      const jobs = await Promise.all(
+        seedJobs.map(({ companyCnpj, courseCode, ...rest }) =>
+          tx.job.create({
+            data: {
+              ...rest,
+              companyId: companyById[companyCnpj],
+              courseId: courseCode ? courseById[courseCode] : undefined,
+            },
+          }),
+        ),
+      );
+      // Mapa title → id (títulos únicos no seed)
+      const jobById: Record<string, string> = Object.fromEntries(
+        jobs.map((j) => [j.title, j.id]),
+      );
 
-    // Mapa cnpj → id para resolver referências abaixo
-    const companyById = Object.fromEntries(companies.map((c) => [c.cnpj, c.id]));
+      // ─── 4. Admin da plataforma ────────────────────────────────────────────
+      console.log("  → Admin...");
+      await tx.user.create({
+        data: {
+          email: seedAdmin.email,
+          password: adminHash,
+          role: "ADMIN",
+          totpSecret: TOTP_DEV_SECRET,
+          totpEnabled: true,
+        },
+      });
 
-    // ─── 3. Admin da plataforma ───────────────────────────────────────────────
-    await tx.user.create({
-      data: {
-        email: seedAdmin.email,
-        password: adminHash,
-        role: "ADMIN",
-        totpSecret: TOTP_DEV_SECRET,
-        totpEnabled: true,
-      },
-    });
+      // ─── 5. Membros de empresa ─────────────────────────────────────────────
+      console.log("  → Membros de empresa...");
+      for (let i = 0; i < seedCompanyMembers.length; i++) {
+        const m = seedCompanyMembers[i];
+        const user = await tx.user.create({
+          data: {
+            email: m.email,
+            password: memberHashes[i],
+            role: "COMPANY",
+            totpSecret: TOTP_DEV_SECRET,
+            totpEnabled: true,
+          },
+        });
+        await tx.companyMember.create({
+          data: {
+            userId: user.id,
+            companyId: companyById[m.companyCnpj],
+            role: m.memberRole,
+            name: m.member.name,
+            cpf: m.member.cpf,
+            phone: m.member.phone,
+          },
+        });
+      }
 
-    // ─── 4. Recruiter (membro de empresa) ────────────────────────────────────
-    const recruiterUser = await tx.user.create({
-      data: {
-        email: seedRecruiter.email,
-        password: recruiterHash,
-        role: "COMPANY",
-        totpSecret: TOTP_DEV_SECRET,
-        totpEnabled: true,
-      },
-    });
+      // ─── 6. Alunos ─────────────────────────────────────────────────────────
+      console.log("  → Alunos...");
+      // Mapa ra → studentId (usado nas candidaturas)
+      const studentById: Record<string, string> = {};
 
-    await tx.companyMember.create({
-      data: {
-        userId: recruiterUser.id,
-        companyId: companyById[seedRecruiter.companyCnpj],
-        role: seedRecruiter.memberRole,
-        name: seedRecruiter.member.name,
-        cpf: seedRecruiter.member.cpf,
-        phone: seedRecruiter.member.phone,
-      },
-    });
+      for (let i = 0; i < seedStudents.length; i++) {
+        const s = seedStudents[i];
 
-    // ─── 5. Aluno ─────────────────────────────────────────────────────────────
-    const studentUser = await tx.user.create({
-      data: {
-        email: seedStudent.email,
-        password: studentHash,
-        role: "STUDENT",
-      },
-    });
+        const address = await tx.address.create({ data: s.address });
 
-    const student = await tx.student.create({
-      data: {
-        userId: studentUser.id,
-        name: seedStudent.student.name,
-        ra: seedStudent.student.ra,
-        cpf: seedStudent.student.cpf,
-        phone: seedStudent.student.phone,
-      },
-    });
+        const user = await tx.user.create({
+          data: {
+            email: s.email,
+            password: studentHashes[i],
+            role: "STUDENT",
+          },
+        });
 
-    await tx.studentCourse.create({
-      data: {
-        studentId: student.id,
-        courseId: courseById[seedStudent.courseCode],
-        status: "ACTIVE",
-        startedAt: seedStudent.courseStartedAt,
-      },
-    });
+        const student = await tx.student.create({
+          data: {
+            userId: user.id,
+            addressId: address.id,
+            name: s.student.name,
+            ra: s.student.ra,
+            cpf: s.student.cpf,
+            phone: s.student.phone,
+          },
+        });
 
-    // ─── 6. Vagas ─────────────────────────────────────────────────────────────
-    await tx.job.createMany({
-      data: seedJobs.map(({ companyCnpj, courseCode, ...rest }) => ({
-        ...rest,
-        companyId: companyById[companyCnpj],
-        courseId: courseCode ? courseById[courseCode] : undefined,
-      })),
-    });
-  });
+        studentById[s.student.ra] = student.id;
 
-  console.log("");
-  console.log("Seed concluido com sucesso!");
-  console.log("");
-  console.log("Credenciais de acesso:");
-  console.log("  Admin      →  admin@unialfa.com         /  Admin@123");
-  console.log("  Recruiter  →  recruiter@techlocal.com   /  Recruit@123");
-  console.log("  Aluno      →  joao@aluno.com            /  Aluno@1234");
-  console.log("");
-  console.log("TOTP (admin e recruiter):");
-  console.log(`  Secret Base32: ${TOTP_DEV_SECRET}`);
-  console.log("  Adicione-o manualmente no Google Authenticator / Authy.");
-  console.log("");
+        await tx.studentCourse.create({
+          data: {
+            studentId: student.id,
+            courseId: courseById[s.courseCode],
+            status: "ACTIVE",
+            startedAt: s.courseStartedAt,
+          },
+        });
+
+        if (s.certificates.length > 0) {
+          await tx.certificate.createMany({
+            data: s.certificates.map((cert) => ({
+              studentId: student.id,
+              name: cert.name,
+              institution: cert.institution,
+              issuedAt: cert.issuedAt,
+            })),
+          });
+        }
+      }
+
+      // ─── 7. Candidaturas ───────────────────────────────────────────────────
+      console.log("  → Candidaturas...");
+      await tx.application.createMany({
+        data: seedApplications.map(({ studentRa, jobTitle, status }) => ({
+          studentId: studentById[studentRa],
+          jobId: jobById[jobTitle],
+          status,
+        })),
+      });
+
+      // ─── 8. Notificações ───────────────────────────────────────────────────
+      console.log("  → Notificacoes...");
+      // Mapa email → userId
+      const allUsers = await tx.user.findMany({
+        select: { id: true, email: true },
+      });
+      const userIdByEmail: Record<string, string> = Object.fromEntries(
+        allUsers.map((u) => [u.email, u.id]),
+      );
+
+      await tx.notification.createMany({
+        data: seedNotifications.map(({ userEmail, ...rest }) => ({
+          userId: userIdByEmail[userEmail],
+          ...rest,
+        })),
+      });
+    },
+    { timeout: 30000 },
+  );
+
+  console.log("\nSeed concluido com sucesso!\n");
+  console.log("┌─────────────────────────────────────────────────────────┐");
+  console.log("│                  CREDENCIAIS DE ACESSO                 │");
+  console.log("├──────────────┬──────────────────────────────┬──────────┤");
+  console.log("│ Tipo         │ E-mail                       │ Senha    │");
+  console.log("├──────────────┼──────────────────────────────┼──────────┤");
+  console.log("│ Admin        │ admin@unialfa.com            │ Admin@123│");
+  console.log("│ Empresa ADM  │ empresa@techlocal.com        │ Empresa@1│");
+  console.log("│ Empresa ADM  │ empresa@agenciaalfa.com      │ Empresa@1│");
+  console.log("│ Empresa ADM  │ empresa@winfo.com            │ Empresa@1│");
+  console.log("│ Recruiter    │ recruiter@techlocal.com      │ Recruit@1│");
+  console.log("│ Aluno        │ joao@aluno.com               │ Aluno@123│");
+  console.log("│ Aluno        │ maria@aluno.com              │ Aluno@123│");
+  console.log("│ Aluno        │ lucas@aluno.com              │ Aluno@123│");
+  console.log("└──────────────┴──────────────────────────────┴──────────┘");
+  console.log(`\nTOTP dev secret (admin e empresa): ${TOTP_DEV_SECRET}`);
+  console.log("Adicione manualmente no Google Authenticator / Authy.\n");
 }
 
 main()
   .catch((error) => {
-    console.error("Falha no seed:", error);
+    console.error("\nFalha no seed:", error);
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

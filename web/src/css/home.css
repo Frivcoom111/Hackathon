@@ -22,9 +22,9 @@
   height: 100%;
 }
 
-/* Todos os banners são 4:1 — exibidos inteiros sem corte */
+/* Todos os banners preenchem o container de forma uniforme */
 .banner-slide-img {
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   display: block;
 }
