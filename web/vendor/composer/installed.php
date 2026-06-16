@@ -3,7 +3,7 @@
         'name' => 'unialfa/portal-estagios',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c659e21d3136cc85a0832c280ed5a7085e4b12f6',
+        'reference' => '027ba5ff76c9bba4f5db2c055df27c9ff450c134',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -112,7 +112,7 @@
         'unialfa/portal-estagios' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c659e21d3136cc85a0832c280ed5a7085e4b12f6',
+            'reference' => '027ba5ff76c9bba4f5db2c055df27c9ff450c134',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

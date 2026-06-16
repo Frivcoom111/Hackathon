@@ -108,9 +108,7 @@ async function main() {
           data: {
             email: m.email,
             password: memberHashes[i],
-            role: "COMPANY",
-            totpSecret: TOTP_DEV_SECRET,
-            totpEnabled: true,
+            role: "COMPANY"
           },
         });
         await tx.companyMember.create({
