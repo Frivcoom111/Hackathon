@@ -38,6 +38,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         perfilRedirect();
     }
 
+    if ($acao === 'senha') {
+        $senhaAtual = $_POST['senhaAtual'] ?? '';
+        $novaSenha = $_POST['novaSenha'] ?? '';
+        $confirmarSenha = $_POST['confirmarSenha'] ?? '';
+
+        salvarMensagemPerfil(
+            $api->estudante()->alterarSenha($senhaAtual, $novaSenha, $confirmarSenha),
+            'Senha alterada com sucesso.',
+            'Não foi possível alterar a senha.'
+        );
+        perfilRedirect();
+    }
+
     if ($acao === 'endereco') {
         $dados = [
             'street'     => trim($_POST['street'] ?? ''),
@@ -170,6 +183,9 @@ $statusLabels = [
               </button>
               <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEndereco">
                 Editar endereço
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalSenha">
+                Alterar senha
               </button>
               <a href="<?= BASE ?>index.php?page=vagas" class="btn btn-outline-secondary btn-sm">Buscar vagas</a>
             </div>
@@ -309,6 +325,37 @@ $statusLabels = [
               <div class="col-12">
                 <label class="form-label">Telefone</label>
                 <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($telefone) ?>">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal fade" id="modalSenha" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <form class="modal-content" method="POST" action="<?= BASE ?>index.php?page=perfil">
+            <input type="hidden" name="acao" value="senha">
+            <div class="modal-header">
+              <h5 class="modal-title">Alterar senha</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body row g-3">
+              <div class="col-12">
+                <label class="form-label">Senha atual</label>
+                <input type="password" name="senhaAtual" class="form-control" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Nova senha</label>
+                <input type="password" name="novaSenha" class="form-control" minlength="8" required>
+                <small class="text-secondary">Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e caractere especial.</small>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Confirmar nova senha</label>
+                <input type="password" name="confirmarSenha" class="form-control" minlength="8" required>
               </div>
             </div>
             <div class="modal-footer">
