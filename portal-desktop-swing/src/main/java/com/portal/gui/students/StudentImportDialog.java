@@ -12,15 +12,21 @@ import java.awt.*;
 import java.io.File;
 import java.util.List;
 
+/**
+ * StudentImportDialog: diálogo para IMPORTAR alunos em massa a partir de um arquivo .txt.
+ *
+ * Fluxo: o usuário escolhe um arquivo no formato "nome;ra;cpf;email"; o sistema mostra
+ * uma PRÉVIA (preview) dos alunos lidos numa tabela; ao confirmar, importa todos de uma vez.
+ */
 public class StudentImportDialog extends JDialog {
 
-    private final StudentService service;
+    private final StudentService service; // Serviço que lê o arquivo e salva os alunos.
 
-    private JLabel arquivoLabel;
-    private File arquivoSelecionado;
-    private PreviewTableModel previewModel;
+    private JLabel arquivoLabel;            // Mostra o nome do arquivo escolhido.
+    private File arquivoSelecionado;        // O arquivo escolhido (null até o usuário escolher).
+    private PreviewTableModel previewModel; // Alimenta a tabela de prévia.
     private JButton importarBtn;
-    private JLabel statusLabel;
+    private JLabel statusLabel;             // Mostra mensagens de status (lidos/importados/erros).
 
     public StudentImportDialog(Frame parent, StudentService service) {
         super(parent, "Importar Alunos via .txt", true);
@@ -36,7 +42,7 @@ public class StudentImportDialog extends JDialog {
         root.setBackground(Color.WHITE);
         root.setBorder(new EmptyBorder(16, 20, 12, 20));
 
-        // ── Cabeçalho ─────────────────────────────────────────────────────────
+        // ── Cabeçalho: título + dica do formato esperado ──────────────────────
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(0, 0, 12, 0));
@@ -67,7 +73,7 @@ public class StudentImportDialog extends JDialog {
         selecao.add(escolherBtn);
         selecao.add(arquivoLabel);
 
-        // ── Preview da tabela ─────────────────────────────────────────────────
+        // ── Tabela de prévia (preview) ────────────────────────────────────────
         previewModel = new PreviewTableModel();
         JTable preview = new JTable(previewModel);
         preview.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -86,7 +92,7 @@ public class StudentImportDialog extends JDialog {
         centro.add(selecao, BorderLayout.NORTH);
         centro.add(scroll,  BorderLayout.CENTER);
 
-        // ── Rodapé ────────────────────────────────────────────────────────────
+        // ── Rodapé: status + botões "Importar"/"Fechar" ───────────────────────
         JPanel rodape = new JPanel(new BorderLayout());
         rodape.setBackground(Color.WHITE);
         rodape.setBorder(new EmptyBorder(10, 0, 0, 0));
@@ -99,7 +105,7 @@ public class StudentImportDialog extends JDialog {
         botoes.setBackground(Color.WHITE);
 
         importarBtn = ButtonFactory.primary("Importar");
-        importarBtn.setEnabled(false);
+        importarBtn.setEnabled(false); // Só habilita depois que um arquivo válido é lido.
         importarBtn.addActionListener(e -> importar());
 
         JButton fecharBtn = ButtonFactory.secondary("Fechar");
@@ -117,45 +123,57 @@ public class StudentImportDialog extends JDialog {
         add(root);
     }
 
+    /**
+     * Abre o seletor de arquivos (.txt), lê o conteúdo e exibe a prévia dos alunos.
+     * Ainda NÃO salva nada — só mostra o que será importado.
+     */
     private void escolherArquivo() {
         JFileChooser chooser = new JFileChooser();
+        // Filtra para mostrar apenas arquivos .txt.
         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivos de texto (*.txt)", "txt"));
         int result = chooser.showOpenDialog(this);
-        if (result != JFileChooser.APPROVE_OPTION) return;
+        if (result != JFileChooser.APPROVE_OPTION) return; // Usuário cancelou.
 
         arquivoSelecionado = chooser.getSelectedFile();
         arquivoLabel.setText(arquivoSelecionado.getName());
         arquivoLabel.setForeground(Color.DARK_GRAY);
 
         try {
+            // Lê e valida o arquivo, gerando a lista de prévia.
             List<Student> preview = com.portal.util.FileImportUtil.parseStudents(arquivoSelecionado.getAbsolutePath());
             previewModel.setAlunos(preview);
             statusLabel.setText(preview.size() + " aluno(s) encontrado(s) no arquivo.");
-            importarBtn.setEnabled(!preview.isEmpty());
+            importarBtn.setEnabled(!preview.isEmpty()); // Só permite importar se houver alunos.
         } catch (Exception ex) {
             statusLabel.setText("Erro ao ler arquivo: " + ex.getMessage());
             statusLabel.setForeground(Color.RED);
         }
     }
 
+    /**
+     * Confirma a importação: chama o serviço para salvar os alunos do arquivo no banco.
+     * Mostra mensagens de sucesso ou de erro conforme o resultado.
+     */
     private void importar() {
         if (arquivoSelecionado == null) return;
         try {
             service.importar(arquivoSelecionado.getAbsolutePath());
             statusLabel.setForeground(new Color(0x2E7D32));
             statusLabel.setText("Importação concluída com sucesso!");
-            importarBtn.setEnabled(false);
+            importarBtn.setEnabled(false); // Evita importar o mesmo arquivo duas vezes.
             JOptionPane.showMessageDialog(this, "Alunos importados com sucesso!", "Sucesso",
                 JOptionPane.INFORMATION_MESSAGE);
         } catch (ServiceException ex) {
+            // O serviço lança ServiceException quando, por exemplo, nenhum aluno pôde ser importado.
             statusLabel.setForeground(Color.RED);
             statusLabel.setText("Erro na importação.");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro na Importação", JOptionPane.WARNING_MESSAGE);
         }
     }
 
-    // ── TableModel do preview ──────────────────────────────────────────────────
+    // ── TableModel da prévia ────────────────────────────────────────────────────
 
+    /** Alimenta a tabela de prévia com os alunos lidos do arquivo. */
     private static class PreviewTableModel extends AbstractTableModel {
         private final String[] COLS = {"Nome", "RA", "CPF", "E-mail"};
         private List<Student> alunos = List.of();

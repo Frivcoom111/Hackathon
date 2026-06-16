@@ -4,13 +4,21 @@ import com.portal.model.Job;
 import com.portal.model.enums.JobModality;
 import com.portal.model.enums.JobStatus;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; // Tipo do salário (valor monetário preciso).
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JobDAO: DAO responsável por acessar os dados das VAGAS (tabela Job) no banco.
+ */
 public class JobDAO extends BaseDAO {
 
+    /**
+     * Lista todas as vagas ativas (não excluídas logicamente), em ordem alfabética de título.
+     *
+     * @return lista de vagas encontradas.
+     */
     public List<Job> findAll() {
         List<Job> list = new ArrayList<>();
         String sql = """
@@ -22,15 +30,19 @@ public class JobDAO extends BaseDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) list.add(map(rs));
+            while (rs.next()) list.add(map(rs)); // Cada linha vira um objeto Job.
         } catch (Exception e) {
             System.err.println("Erro ao listar vagas: " + e.getMessage());
         }
         return list;
     }
 
+    /**
+     * Converte uma linha do ResultSet em um objeto Job.
+     * Os textos de modalidade e status do banco são convertidos para os enums correspondentes.
+     */
     private Job map(ResultSet rs) throws SQLException {
-        BigDecimal salary = rs.getBigDecimal("salary");
+        BigDecimal salary = rs.getBigDecimal("salary"); // Pode vir nulo se a vaga não informa salário.
         return new Job(
             rs.getString("id"),
             rs.getString("title"),

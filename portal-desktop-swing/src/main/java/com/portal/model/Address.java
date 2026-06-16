@@ -1,17 +1,26 @@
 package com.portal.model;
 
+/**
+ * Classe Address (Endereço): representa um endereço físico.
+ *
+ * É usada por outras entidades (User, Student, Company) que precisam guardar
+ * onde a pessoa ou empresa está localizada. Funciona como um "bloco" reutilizável.
+ */
 public class Address {
-    private String id;
-    private String street;
-    private String number;
-    private String complement;
-    private String district;
-    private String city;
-    private String state;
-    private String zipCode;
+    // ===== ATRIBUTOS do endereço =====
+    private String id;          // Identificador único do endereço (chave primária).
+    private String street;      // Logradouro (nome da rua/avenida).
+    private String number;      // Número do imóvel.
+    private String complement;  // Complemento (apartamento, bloco, etc.).
+    private String district;    // Bairro.
+    private String city;        // Cidade.
+    private String state;       // Estado (UF).
+    private String zipCode;     // CEP (armazenado apenas com números, sem traço).
 
+    /** Construtor vazio: cria um endereço "em branco". */
     public Address() {}
 
+    /** Construtor completo: cria um endereço já preenchido. */
     public Address(String id, String street, String number, String complement,
                    String district, String city, String state, String zipCode) {
         this.id         = id;
@@ -24,6 +33,7 @@ public class Address {
         this.zipCode    = zipCode;
     }
 
+    // ===== GETTERS: leem os valores =====
     public String getId()          { return id; }
     public String getStreet()      { return street; }
     public String getNumber()      { return number; }
@@ -33,6 +43,7 @@ public class Address {
     public String getState()       { return state; }
     public String getZipCode()     { return zipCode; }
 
+    // ===== SETTERS: definem/alteram os valores =====
     public void setId(String id)                  { this.id = id; }
     public void setStreet(String street)          { this.street = street; }
     public void setNumber(String number)          { this.number = number; }
@@ -42,8 +53,19 @@ public class Address {
     public void setState(String state)            { this.state = state; }
     public void setZipCode(String zipCode)        { this.zipCode = zipCode; }
 
+    /**
+     * Formata o CEP para exibição no padrão brasileiro "00000-000".
+     *
+     * Internamente o CEP é guardado só com números (ex.: "01001000"). Este método
+     * adiciona o traço para ficar mais legível na tela.
+     *
+     * @return o CEP formatado (ex.: "01001-000"), ou o valor original caso ele
+     *         não tenha exatamente 8 dígitos (proteção contra dados inválidos).
+     */
     public String formatarCep() {
+        // Se o CEP for nulo ou não tiver 8 dígitos, devolve como está (não dá pra formatar).
         if (zipCode == null || zipCode.length() != 8) return zipCode;
+        // Pega os 5 primeiros dígitos + "-" + os 3 últimos. Ex.: "01001" + "-" + "000".
         return zipCode.substring(0, 5) + "-" + zipCode.substring(5);
     }
 }

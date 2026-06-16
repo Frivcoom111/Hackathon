@@ -10,20 +10,27 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.text.NumberFormat;
+import java.text.NumberFormat;        // Formata números como moeda (R$).
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
+import java.util.Locale;              // Define o "idioma/região" (aqui, pt-BR) para a moeda.
+import java.util.stream.Collectors;   // Usado para coletar o resultado do filtro em uma lista.
 
+/**
+ * JobListPanel: painel de listagem das VAGAS (somente leitura, com detalhes).
+ *
+ * Segue o mesmo padrão JTable + TableModel do CoursePanel. Tem também um FILTRO por
+ * status: a lista completa fica guardada em "todasVagas" e o filtro apenas decide
+ * quais dessas vagas são exibidas, sem precisar consultar o banco de novo.
+ */
 public class JobListPanel extends JPanel {
 
-    private final JobDAO dao = new JobDAO();
+    private final JobDAO dao = new JobDAO(); // Aqui a tela usa o DAO direto (não há regra de negócio).
 
     private JTable tabela;
     private JobTableModel model;
-    private JComboBox<String> filtroStatus;
+    private JComboBox<String> filtroStatus;       // Caixa de seleção (dropdown) do filtro de status.
     private JButton detalhesBtn;
-    private List<Job> todasVagas = List.of();
+    private List<Job> todasVagas = List.of();     // Guarda TODAS as vagas carregadas do banco.
 
     public JobListPanel() {
         setLayout(new BorderLayout());
@@ -33,6 +40,7 @@ public class JobListPanel extends JPanel {
     }
 
     private void build() {
+        // ── Cabeçalho: título + filtro de status + botão atualizar ────────────
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(16, 20, 12, 20));
@@ -47,10 +55,11 @@ public class JobListPanel extends JPanel {
         JLabel lblFiltro = new JLabel("Status:");
         lblFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
+        // Opções do filtro: "Todos" + os status possíveis da vaga.
         filtroStatus = new JComboBox<>(new String[]{"Todos", "ACTIVE", "PAUSED", "CLOSED"});
         filtroStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         filtroStatus.setPreferredSize(new Dimension(120, 30));
-        filtroStatus.addActionListener(e -> filtrar());
+        filtroStatus.addActionListener(e -> filtrar()); // Ao trocar o filtro, reaplica.
 
         JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
@@ -62,6 +71,7 @@ public class JobListPanel extends JPanel {
         topo.add(titulo, BorderLayout.WEST);
         topo.add(controles, BorderLayout.EAST);
 
+        // ── Tabela de vagas ───────────────────────────────────────────────────
         model = new JobTableModel();
         tabela = new JTable(model);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -72,6 +82,7 @@ public class JobListPanel extends JPanel {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
+        // Centraliza Modalidade e Salário; aplica cor na coluna Status.
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(2).setCellRenderer(center); // Modalidade
@@ -86,6 +97,7 @@ public class JobListPanel extends JPanel {
         tabela.getColumnModel().getColumn(5).setPreferredWidth(100);
 
         tabela.getSelectionModel().addListSelectionListener(e -> atualizarBotoes());
+        // Duplo clique em uma linha abre os detalhes da vaga.
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -97,6 +109,7 @@ public class JobListPanel extends JPanel {
         scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE0E0E0)));
         scroll.getViewport().setBackground(Color.WHITE);
 
+        // ── Barra de ações ────────────────────────────────────────────────────
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
@@ -112,22 +125,29 @@ public class JobListPanel extends JPanel {
         add(acoes, BorderLayout.SOUTH);
     }
 
+    /** Recarrega TODAS as vagas do banco e reaplica o filtro atual. */
     private void carregar() {
         todasVagas = dao.findAll();
         filtrar();
     }
 
+    /**
+     * Aplica o filtro de status sobre a lista completa.
+     * Se for "Todos", mostra tudo; senão, usa um "stream" para manter apenas as vagas
+     * cujo status bate com o filtro selecionado.
+     */
     private void filtrar() {
         String filtro = (String) filtroStatus.getSelectedItem();
         List<Job> exibidas = "Todos".equals(filtro)
             ? todasVagas
             : todasVagas.stream()
-                .filter(j -> j.getStatus().name().equals(filtro))
+                .filter(j -> j.getStatus().name().equals(filtro)) // Mantém só os que batem.
                 .collect(Collectors.toList());
         model.setVagas(exibidas);
         atualizarBotoes();
     }
 
+    /** Abre o diálogo de detalhes da vaga selecionada. */
     private void abrirDetalhes() {
         Job vaga = getVagaSelecionada();
         if (vaga == null) return;
@@ -135,19 +155,22 @@ public class JobListPanel extends JPanel {
         new JobDetailDialog(parent, vaga).setVisible(true);
     }
 
+    /** O botão "Ver Detalhes" só fica habilitado quando há uma vaga selecionada. */
     private void atualizarBotoes() {
         detalhesBtn.setEnabled(getVagaSelecionada() != null);
     }
 
+    /** Devolve a vaga da linha selecionada, ou null se nada estiver selecionado. */
     private Job getVagaSelecionada() {
         int row = tabela.getSelectedRow();
         if (row < 0) return null;
         return model.getVaga(row);
     }
 
-    // ── TableModel ────────────────────────────────────────────────────────────
+    // ── TableModel das vagas (mesma ideia do CoursePanel) ───────────────────────
 
     private static class JobTableModel extends AbstractTableModel {
+        // Formatador de moeda no padrão brasileiro (ex.: R$ 2.500,00).
         private static final NumberFormat BRL = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
         private final String[] COLS = {"Título", "Área", "Modalidade", "Local", "Status", "Salário"};
         private List<Job> vagas = List.of();
@@ -172,7 +195,7 @@ public class JobListPanel extends JPanel {
                 case 2 -> j.getModality().name();
                 case 3 -> j.getLocation();
                 case 4 -> j.getStatus().name();
-                case 5 -> j.getSalary() != null ? BRL.format(j.getSalary()) : "—";
+                case 5 -> j.getSalary() != null ? BRL.format(j.getSalary()) : "—"; // Salário formatado.
                 default -> "";
             };
         }

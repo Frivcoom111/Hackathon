@@ -1,21 +1,33 @@
 package com.portal.model;
 
+// Enums que descrevem a vaga: modalidade (presencial/remoto...) e status (aberta/fechada...).
 import com.portal.model.enums.JobModality;
 import com.portal.model.enums.JobStatus;
 
+// BigDecimal: tipo ideal para valores monetários, pois evita erros de arredondamento
+// que aconteceriam usando double/float para dinheiro.
 import java.math.BigDecimal;
 
+/**
+ * Classe Job (Vaga): representa uma vaga de emprego/estágio publicada por uma empresa.
+ *
+ * É uma entidade/modelo. Os alunos se candidatam a uma Job, e essa candidatura
+ * é representada pela classe Application.
+ */
 public class Job {
-    private String id;
-    private String title;
-    private String area;
-    private String location;
-    private JobModality modality;
-    private JobStatus status;
-    private BigDecimal salary;
+    // ===== ATRIBUTOS da vaga =====
+    private String id;            // Identificador único da vaga (chave primária).
+    private String title;         // Título da vaga (ex.: "Desenvolvedor Java Júnior").
+    private String area;          // Área de atuação (ex.: "Tecnologia", "Financeiro").
+    private String location;      // Localização da vaga (cidade/região).
+    private JobModality modality; // Modalidade de trabalho (PRESENCIAL, REMOTO, HÍBRIDO...).
+    private JobStatus status;     // Situação da vaga (ABERTA, FECHADA...).
+    private BigDecimal salary;    // Salário oferecido (valor monetário).
 
+    /** Construtor vazio: cria uma vaga "em branco". */
     public Job() {}
 
+    /** Construtor completo: cria uma vaga já preenchida. */
     public Job(String id, String title, String area, String location,
                JobModality modality, JobStatus status, BigDecimal salary) {
         this.id = id;
@@ -27,6 +39,7 @@ public class Job {
         this.salary = salary;
     }
 
+    // ===== GETTERS: leem os valores =====
     public String getId()           { return id; }
     public String getTitle()        { return title; }
     public String getArea()         { return area; }
@@ -35,6 +48,7 @@ public class Job {
     public JobStatus getStatus()    { return status; }
     public BigDecimal getSalary()   { return salary; }
 
+    // ===== SETTERS: definem/alteram os valores =====
     public void setId(String id)                { this.id = id; }
     public void setTitle(String title)          { this.title = title; }
     public void setArea(String area)            { this.area = area; }

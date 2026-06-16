@@ -10,12 +10,20 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * StudentFormDialog: formulário (diálogo) para CRIAR ou EDITAR um aluno.
+ *
+ * Como nos outros formulários, a mesma tela serve para os dois casos: se "studentEdicao"
+ * for null, é cadastro; se vier preenchido, é edição. Os dados ficam organizados em duas
+ * abas: "Dados" (editável) e "Endereço" (somente leitura).
+ */
 public class StudentFormDialog extends JDialog {
 
-    private final Student studentEdicao;
-    private final StudentService service;
-    private boolean saved = false;
+    private final Student studentEdicao;     // Aluno em edição, ou null se for um novo.
+    private final StudentService service;    // Serviço com as regras de negócio dos alunos.
+    private boolean saved = false;           // Indica se houve salvamento (para recarregar a lista).
 
+    // Campos do formulário.
     private JTextField nomeField;
     private JTextField raField;
     private JTextField cpfField;
@@ -32,6 +40,7 @@ public class StudentFormDialog extends JDialog {
         build();
     }
 
+    /** Monta o diálogo: cabeçalho, abas e botões. */
     private void build() {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
@@ -45,13 +54,13 @@ public class StudentFormDialog extends JDialog {
         titulo.setForeground(Color.WHITE);
         header.add(titulo, BorderLayout.WEST);
 
-        // ── Abas ──────────────────────────────────────────────────────────────
+        // ── Abas: "Dados" (editável) e "Endereço" (leitura) ───────────────────
         JTabbedPane abas = new JTabbedPane();
         abas.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         abas.addTab("Dados",    buildDadosTab());
         abas.addTab("Endereço", buildEnderecoTab());
 
-        // ── Botões ────────────────────────────────────────────────────────────
+        // ── Botões "Salvar" e "Cancelar" ──────────────────────────────────────
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         botoes.setBackground(new Color(0xF5F5F5));
         botoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
@@ -70,6 +79,7 @@ public class StudentFormDialog extends JDialog {
         add(root);
     }
 
+    /** Monta a aba "Dados" com os campos editáveis do aluno. */
     private JPanel buildDadosTab() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(Color.WHITE);
@@ -86,22 +96,26 @@ public class StudentFormDialog extends JDialog {
         emailField    = new JTextField(20);
         telefoneField = new JTextField(20);
 
+        // Se estamos editando, preenche os campos com os dados atuais do aluno.
         if (studentEdicao != null) {
             nomeField.setText(studentEdicao.getName());
             raField.setText(studentEdicao.getRa());
             cpfField.setText(studentEdicao.getCpf());
             emailField.setText(studentEdicao.getEmail() != null ? studentEdicao.getEmail() : "");
+            // Na edição, o e-mail NÃO pode ser alterado (é a base do login), então é travado.
             emailField.setEditable(false);
-            emailField.setBackground(new Color(0xF5F5F5));
+            emailField.setBackground(new Color(0xF5F5F5)); // Cinza para indicar campo desativado.
             telefoneField.setText(studentEdicao.getPhone() != null ? studentEdicao.getPhone() : "");
         }
 
+        // Adiciona cada linha (rótulo + campo) na ordem. O * indica campo obrigatório.
         addLinha(panel, gc, "Nome *",    nomeField,     0);
         addLinha(panel, gc, "RA *",      raField,       1);
         addLinha(panel, gc, "CPF *",     cpfField,      2);
         addLinha(panel, gc, "E-mail *",  emailField,    3);
         addLinha(panel, gc, "Telefone",  telefoneField, 4);
 
+        // Só na criação: lembra que a senha inicial do aluno será o CPF.
         if (studentEdicao == null) {
             JLabel hint = new JLabel("* Senha inicial: CPF sem formatação");
             hint.setFont(new Font("Segoe UI", Font.ITALIC, 11));
@@ -112,6 +126,10 @@ public class StudentFormDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * Monta a aba "Endereço" (apenas exibição). Se o aluno não tiver endereço,
+     * mostra uma mensagem indicando isso.
+     */
     private JPanel buildEnderecoTab() {
         Address a = studentEdicao != null ? studentEdicao.getAddress() : null;
 
@@ -157,6 +175,10 @@ public class StudentFormDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * Método auxiliar que adiciona uma linha "rótulo + campo" ao formulário,
+     * evitando repetir o mesmo código para cada campo.
+     */
     private void addLinha(JPanel panel, GridBagConstraints gc, String label, JComponent field, int row) {
         gc.gridx = 0; gc.gridy = row; gc.weightx = 0;
         JLabel lbl = new JLabel(label);
@@ -165,29 +187,35 @@ public class StudentFormDialog extends JDialog {
         panel.add(lbl, gc);
 
         gc.gridx = 1; gc.gridy = row; gc.weightx = 1.0;
+        // "instanceof tf" (pattern matching): se for um JTextField, já o usa com a variável tf.
         if (field instanceof JTextField tf) tf.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         panel.add(field, gc);
     }
 
+    /**
+     * Lê os campos, monta o objeto Student e pede ao serviço para criar ou editar.
+     * Erros de regra (ServiceException) viram um aviso amigável ao usuário.
+     */
     private void salvar() {
         String nome     = nomeField.getText().trim();
         String ra       = raField.getText().trim();
-        String cpf      = cpfField.getText().replaceAll("[^\\d]", "");
+        String cpf      = cpfField.getText().replaceAll("[^\\d]", ""); // Só dígitos.
         String email    = emailField.getText().trim();
         String telefone = telefoneField.getText().trim();
 
+        // Na edição, reaproveita o objeto existente; na criação, cria um novo.
         Student student = studentEdicao != null ? studentEdicao : new Student();
         student.setName(nome);
         student.setRa(ra);
         student.setCpf(cpf);
         student.setEmail(email);
-        student.setPhone(telefone.isBlank() ? null : telefone);
+        student.setPhone(telefone.isBlank() ? null : telefone); // Telefone vazio vira null.
 
         try {
             if (studentEdicao == null) {
-                service.criar(student);
+                service.criar(student);  // Cadastro novo.
             } else {
-                service.editar(student);
+                service.editar(student); // Edição.
             }
             saved = true;
             dispose();
@@ -196,5 +224,6 @@ public class StudentFormDialog extends JDialog {
         }
     }
 
+    /** Informa à tela que abriu o diálogo se o aluno foi salvo. */
     public boolean isSaved() { return saved; }
 }

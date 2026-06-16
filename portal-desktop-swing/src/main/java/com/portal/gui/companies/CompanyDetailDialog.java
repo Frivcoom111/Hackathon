@@ -15,13 +15,25 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * CompanyDetailDialog: diálogo de DETALHES e GERENCIAMENTO de uma empresa.
+ *
+ * É a tela mais rica do módulo de empresas. Mostra, em abas, os dados cadastrais e os
+ * usuários vinculados, e oferece os botões de ação do fluxo de aprovação:
+ *   - Iniciar Análise (PENDING → ANALYSING)
+ *   - Aprovar         (libera a empresa)
+ *   - Bloquear        (suspende a empresa)
+ *
+ * Os botões habilitam/desabilitam conforme o status atual, e o "badge" de status muda
+ * de cor para refletir a situação.
+ */
 public class CompanyDetailDialog extends JDialog {
 
-    private final Company company;
-    private final CompanyService service;
-    private final CompanyMemberDAO memberDAO = new CompanyMemberDAO();
+    private final Company company;             // A empresa exibida/gerenciada.
+    private final CompanyService service;      // Regras de negócio (analisar/aprovar/bloquear).
+    private final CompanyMemberDAO memberDAO = new CompanyMemberDAO(); // Busca os membros da empresa.
 
-    private JLabel statusLabel;
+    private JLabel statusLabel;   // "Badge" colorido que mostra o status atual.
     private JButton analisarBtn;
     private JButton aprovarBtn;
     private JButton bloquearBtn;
@@ -36,6 +48,7 @@ public class CompanyDetailDialog extends JDialog {
         build();
     }
 
+    /** Monta a estrutura do diálogo: cabeçalho, abas e barra de ações. */
     private void build() {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
@@ -48,7 +61,7 @@ public class CompanyDetailDialog extends JDialog {
         add(root);
     }
 
-    // ── Cabeçalho com nome e badge de status ──────────────────────────────────
+    // ── Cabeçalho: nome da empresa + badge de status ──────────────────────────
 
     private JPanel buildHeader() {
         JPanel header = new JPanel(new BorderLayout());
@@ -63,14 +76,14 @@ public class CompanyDetailDialog extends JDialog {
         statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
         statusLabel.setOpaque(true);
-        atualizarCorStatus();
+        atualizarCorStatus(); // Define o texto e a cor do badge conforme o status atual.
 
         header.add(nome,        BorderLayout.WEST);
         header.add(statusLabel, BorderLayout.EAST);
         return header;
     }
 
-    // ── Abas: Dados / Usuários Vinculados ────────────────────────────────────
+    // ── Abas: "Dados da Empresa" e "Usuários Vinculados" ──────────────────────
 
     private JTabbedPane buildTabs() {
         JTabbedPane tabs = new JTabbedPane();
@@ -80,7 +93,7 @@ public class CompanyDetailDialog extends JDialog {
         return tabs;
     }
 
-    // ── Aba 1: Dados cadastrais ───────────────────────────────────────────────
+    // ── Aba 1: dados cadastrais (CNPJ, telefone, descrição) ───────────────────
 
     private JPanel buildTabDados() {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -91,23 +104,27 @@ public class CompanyDetailDialog extends JDialog {
         gc.insets = new Insets(5, 8, 5, 8);
         gc.anchor = GridBagConstraints.WEST;
 
+        // Campos simples (rótulo + valor), já formatando CNPJ e telefone.
         addCampo(panel, gc, "CNPJ:",     ValidationUtil.formatCnpj(company.getCnpj()), 0);
         addCampo(panel, gc, "Telefone:", company.getPhone() != null
                 ? ValidationUtil.formatPhone(company.getPhone()) : "Não informado", 1);
 
+        // Rótulo "Descrição:".
         gc.gridx = 0; gc.gridy = 2;
         JLabel lblDesc = new JLabel("Descrição:");
         lblDesc.setFont(new Font("Segoe UI", Font.BOLD, 13));
         panel.add(lblDesc, gc);
 
+        // A descrição usa um JTextArea (área de texto com várias linhas), somente leitura
+        // e com rolagem, pois pode ser um texto longo.
         gc.gridx = 1; gc.gridy = 2; gc.gridwidth = 2;
         gc.fill = GridBagConstraints.BOTH; gc.weightx = 1.0; gc.weighty = 1.0;
         String descTexto = company.getDescription() != null ? company.getDescription() : "Sem descrição.";
         JTextArea descArea = new JTextArea(descTexto);
         descArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        descArea.setEditable(false);
-        descArea.setWrapStyleWord(true);
-        descArea.setLineWrap(true);
+        descArea.setEditable(false);     // Só leitura.
+        descArea.setWrapStyleWord(true); // Quebra respeitando palavras inteiras.
+        descArea.setLineWrap(true);      // Quebra a linha automaticamente quando chega na borda.
         descArea.setBackground(new Color(0xFAFAFA));
         descArea.setBorder(BorderFactory.createLineBorder(new Color(0xE0E0E0)));
         JScrollPane descScroll = new JScrollPane(descArea);
@@ -118,13 +135,14 @@ public class CompanyDetailDialog extends JDialog {
         return panel;
     }
 
-    // ── Aba 2: Usuários vinculados (CompanyMember + User) ────────────────────
+    // ── Aba 2: usuários vinculados (dados de CompanyMember + User) ─────────────
 
     private JPanel buildTabUsuarios() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(new EmptyBorder(12, 8, 8, 8));
 
+        // Busca no banco os membros desta empresa.
         List<CompanyMember> membros = memberDAO.findByCompanyId(company.getId());
 
         MemberTableModel model = new MemberTableModel(membros);
@@ -137,7 +155,7 @@ public class CompanyDetailDialog extends JDialog {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
-        // Centralizar Perfil e Situação
+        // Centraliza o "Perfil"; a "Situação" usa um renderer próprio que a colore.
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(2).setCellRenderer(center);
@@ -152,6 +170,7 @@ public class CompanyDetailDialog extends JDialog {
         scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE0E0E0)));
         scroll.getViewport().setBackground(Color.WHITE);
 
+        // Se não houver membros, mostra uma mensagem no lugar da tabela.
         if (membros.isEmpty()) {
             JLabel vazio = new JLabel("Nenhum usuário vinculado a esta empresa.", SwingConstants.CENTER);
             vazio.setFont(new Font("Segoe UI", Font.ITALIC, 13));
@@ -164,13 +183,14 @@ public class CompanyDetailDialog extends JDialog {
         return panel;
     }
 
-    // ── Botões de ação ────────────────────────────────────────────────────────
+    // ── Barra de botões de ação (rodapé) ──────────────────────────────────────
 
     private JPanel buildAcoes() {
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         acoes.setBackground(Color.WHITE);
         acoes.setBorder(new EmptyBorder(12, 0, 0, 0));
 
+        // Cada ação tem sua cor: azul (análise), verde (aprovar), vermelho (bloquear), cinza (fechar).
         analisarBtn = criarBotao("Iniciar Análise", new Color(0x1565C0));
         aprovarBtn  = criarBotao("Aprovar",         new Color(0x2E7D32));
         bloquearBtn = criarBotao("Bloquear",        new Color(0xC62828));
@@ -181,7 +201,7 @@ public class CompanyDetailDialog extends JDialog {
         bloquearBtn.addActionListener(e -> executarAcao("bloquear"));
         fecharBtn.addActionListener(e -> dispose());
 
-        atualizarBotoes();
+        atualizarBotoes(); // Liga/desliga os botões conforme o status atual.
 
         acoes.add(analisarBtn);
         acoes.add(aprovarBtn);
@@ -190,8 +210,9 @@ public class CompanyDetailDialog extends JDialog {
         return acoes;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── Métodos auxiliares (helpers) ──────────────────────────────────────────
 
+    /** Adiciona uma linha "rótulo + valor" simples ao painel de dados. */
     private void addCampo(JPanel panel, GridBagConstraints gc, String label, String valor, int row) {
         gc.gridx = 0; gc.gridy = row; gc.gridwidth = 1; gc.fill = GridBagConstraints.NONE;
         gc.weightx = 0; gc.weighty = 0;
@@ -205,6 +226,7 @@ public class CompanyDetailDialog extends JDialog {
         panel.add(val, gc);
     }
 
+    /** Cria um botão de ação com cor de fundo e estilo padronizados. */
     private JButton criarBotao(String texto, Color cor) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -217,7 +239,14 @@ public class CompanyDetailDialog extends JDialog {
         return btn;
     }
 
+    /**
+     * Executa uma das ações de mudança de status (analisar/aprovar/bloquear),
+     * sempre pedindo confirmação antes e tratando os possíveis erros.
+     *
+     * @param acao identificador da ação: "analisar", "aprovar" ou "bloquear".
+     */
     private void executarAcao(String acao) {
+        // Monta o texto da pergunta de confirmação conforme a ação.
         String label = switch (acao) {
             case "analisar" -> "iniciar análise de";
             case "aprovar"  -> "aprovar";
@@ -227,26 +256,31 @@ public class CompanyDetailDialog extends JDialog {
         int confirm = JOptionPane.showConfirmDialog(this,
             "Deseja " + label + " a empresa \"" + company.getName() + "\"?",
             "Confirmação", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (confirm != JOptionPane.YES_OPTION) return; // Usuário desistiu.
 
         try {
+            // Chama o método correspondente do serviço (que aplica as regras de negócio).
             switch (acao) {
                 case "analisar" -> service.analisar(company);
                 case "aprovar"  -> service.aprovar(company);
                 case "bloquear" -> service.bloquear(company);
             }
+            // Após mudar o status, atualiza o badge e os botões na tela.
             atualizarCorStatus();
             atualizarBotoes();
             JOptionPane.showMessageDialog(this, "Status atualizado com sucesso.", "Sucesso",
                 JOptionPane.INFORMATION_MESSAGE);
         } catch (ServiceException ex) {
+            // Erro de regra (ex.: empresa já aprovada): aviso amigável.
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Atenção", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
+            // Erro inesperado.
             JOptionPane.showMessageDialog(this, "Erro inesperado: " + ex.getMessage(), "Erro",
                 JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    /** Atualiza o texto e as cores do badge de status conforme a situação da empresa. */
     private void atualizarCorStatus() {
         statusLabel.setText(company.getStatus().name());
         switch (company.getStatus()) {
@@ -257,6 +291,13 @@ public class CompanyDetailDialog extends JDialog {
         }
     }
 
+    /**
+     * Habilita/desabilita os botões conforme o status atual, garantindo que apenas as
+     * transições válidas fiquem disponíveis:
+     *   - "Iniciar Análise": só faz sentido se a empresa está PENDING.
+     *   - "Aprovar": disponível se está em ANÁLISE ou BLOQUEADA.
+     *   - "Bloquear": disponível em qualquer status, exceto se já estiver BLOQUEADA.
+     */
     private void atualizarBotoes() {
         CompanyStatus s = company.getStatus();
         analisarBtn.setEnabled(s == CompanyStatus.PENDING);
@@ -264,7 +305,7 @@ public class CompanyDetailDialog extends JDialog {
         bloquearBtn.setEnabled(s != CompanyStatus.BLOCKED);
     }
 
-    // ── TableModel dos membros ────────────────────────────────────────────────
+    // ── TableModel dos membros vinculados ─────────────────────────────────────
 
     private static class MemberTableModel extends AbstractTableModel {
         private final String[] COLS = {"Nome", "E-mail", "Perfil", "Situação"};
@@ -289,7 +330,7 @@ public class CompanyDetailDialog extends JDialog {
         }
     }
 
-    // ── Renderer colorido para Situação ───────────────────────────────────────
+    // ── Renderer que pinta a coluna "Situação" (verde = Ativo, vermelho = Inativo) ──
 
     private static class SituacaoRenderer extends DefaultTableCellRenderer {
         @Override
@@ -298,11 +339,12 @@ public class CompanyDetailDialog extends JDialog {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setHorizontalAlignment(SwingConstants.CENTER);
             setFont(new Font("Segoe UI", Font.BOLD, 12));
+            // Só colore quando a linha não está selecionada (para não atrapalhar o destaque).
             if (!isSelected) {
                 if ("Ativo".equals(value)) {
-                    setBackground(new Color(0xE8F5E9)); setForeground(new Color(0x2E7D32));
+                    setBackground(new Color(0xE8F5E9)); setForeground(new Color(0x2E7D32)); // Verde.
                 } else {
-                    setBackground(new Color(0xFFEBEE)); setForeground(new Color(0xC62828));
+                    setBackground(new Color(0xFFEBEE)); setForeground(new Color(0xC62828)); // Vermelho.
                 }
             }
             return this;
