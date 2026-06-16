@@ -7,15 +7,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO extends BaseDAO {
 
     public void save(User user, Connection conn) throws Exception {
         String sql = "INSERT INTO User (id, email, password, role, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, 1, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            Timestamp now = now();
             ps.setString(1, user.getId());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
@@ -36,6 +36,39 @@ public class UserDAO extends BaseDAO {
             System.err.println("Erro ao verificar email: " + e.getMessage());
         }
         return false;
+    }
+
+    public List<User> findAll() {
+        List<User> list = new ArrayList<>();
+        String sql = """
+                SELECT u.id, u.email, u.role, u.isActive,
+                       a.id AS addressId, a.street, a.number, a.complement,
+                       a.district, a.city, a.state, a.zipCode
+                FROM User u
+                LEFT JOIN Student s ON s.userId = u.id
+                LEFT JOIN Address a ON a.id = s.addressId
+                ORDER BY u.role, u.email
+                """;
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(mapFull(rs));
+        } catch (Exception e) {
+            System.err.println("Erro ao listar usuários: " + e.getMessage());
+        }
+        return list;
+    }
+
+    private User mapFull(ResultSet rs) throws Exception {
+        User u = new User(
+            rs.getString("id"),
+            rs.getString("email"),
+            null,
+            Role.valueOf(rs.getString("role").toUpperCase())
+        );
+        u.setActive(rs.getBoolean("isActive"));
+        u.setAddress(mapAddress(rs));
+        return u;
     }
 
     public void setActiveByCompany(String companyId, boolean active) {

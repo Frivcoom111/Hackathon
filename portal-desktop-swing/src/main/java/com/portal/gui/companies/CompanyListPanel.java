@@ -3,6 +3,8 @@ package com.portal.gui.companies;
 import com.portal.model.Company;
 import com.portal.model.enums.CompanyStatus;
 import com.portal.service.CompanyService;
+import com.portal.util.ButtonFactory;
+import com.portal.util.StatusCellRenderer;
 import com.portal.util.ValidationUtil;
 
 import javax.swing.*;
@@ -48,14 +50,7 @@ public class CompanyListPanel extends JPanel {
         filtroStatus.setPreferredSize(new Dimension(130, 30));
         filtroStatus.addActionListener(e -> carregar());
 
-        JButton atualizarBtn = new JButton("↻  Atualizar");
-        atualizarBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        atualizarBtn.setForeground(Color.WHITE);
-        atualizarBtn.setBackground(new Color(0x1565C0));
-        atualizarBtn.setFocusPainted(false);
-        atualizarBtn.setBorderPainted(false);
-        atualizarBtn.setOpaque(true);
-        atualizarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
 
         controles.add(lblFiltro);
@@ -80,7 +75,7 @@ public class CompanyListPanel extends JPanel {
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(1).setCellRenderer(center);
         tabela.getColumnModel().getColumn(2).setCellRenderer(center);
-        tabela.getColumnModel().getColumn(3).setCellRenderer(new StatusRenderer());
+        tabela.getColumnModel().getColumn(3).setCellRenderer(new StatusCellRenderer());
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(240);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(160);
@@ -103,9 +98,7 @@ public class CompanyListPanel extends JPanel {
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
 
-        detalhesBtn = new JButton("Ver Detalhes / Gerenciar");
-        detalhesBtn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        detalhesBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        detalhesBtn = ButtonFactory.primary("Ver Detalhes / Gerenciar");
         detalhesBtn.setEnabled(false);
         detalhesBtn.addActionListener(e -> abrirDetalhes());
 
@@ -174,29 +167,6 @@ public class CompanyListPanel extends JPanel {
                 case 3 -> c.getStatus().name();
                 default -> "";
             };
-        }
-    }
-
-    // ── Renderer colorido para Status ─────────────────────────────────────────
-
-    private static class StatusRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setHorizontalAlignment(SwingConstants.CENTER);
-            setFont(new Font("Segoe UI", Font.BOLD, 12));
-            if (!isSelected) {
-                String status = value != null ? value.toString() : "";
-                switch (status) {
-                    case "PENDING"   -> { setBackground(new Color(0xFFF9C4)); setForeground(new Color(0xF57F17)); }
-                    case "ANALYSING" -> { setBackground(new Color(0xE3F2FD)); setForeground(new Color(0x1565C0)); }
-                    case "APPROVED"  -> { setBackground(new Color(0xE8F5E9)); setForeground(new Color(0x2E7D32)); }
-                    case "BLOCKED"   -> { setBackground(new Color(0xFFEBEE)); setForeground(new Color(0xC62828)); }
-                    default          -> { setBackground(Color.WHITE);         setForeground(Color.BLACK); }
-                }
-            }
-            return this;
         }
     }
 }

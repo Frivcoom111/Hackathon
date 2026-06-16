@@ -9,6 +9,7 @@ public class Student {
     private String email;
     private String phone;
     private boolean eligible;
+    private Address address;
 
     public Student() {}
 
@@ -32,6 +33,7 @@ public class Student {
     public String getEmail()    { return email; }
     public String getPhone()    { return phone; }
     public boolean isEligible() { return eligible; }
+    public Address getAddress() { return address; }
 
     public void setId(String id)          { this.id = id; }
     public void setUserId(String userId)  { this.userId = userId; }
@@ -41,4 +43,5 @@ public class Student {
     public void setEmail(String email)    { this.email = email; }
     public void setPhone(String phone)    { this.phone = phone; }
     public void setEligible(boolean e)    { this.eligible = e; }
+    public void setAddress(Address a)     { this.address = a; }
 }

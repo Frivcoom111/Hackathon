@@ -2,14 +2,17 @@ package com.portal.gui.jobs;
 
 import com.portal.dao.JobDAO;
 import com.portal.model.Job;
-import com.portal.model.enums.JobStatus;
+import com.portal.util.ButtonFactory;
+import com.portal.util.StatusCellRenderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class JobListPanel extends JPanel {
@@ -49,14 +52,7 @@ public class JobListPanel extends JPanel {
         filtroStatus.setPreferredSize(new Dimension(120, 30));
         filtroStatus.addActionListener(e -> filtrar());
 
-        JButton atualizarBtn = new JButton("↻  Atualizar");
-        atualizarBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        atualizarBtn.setForeground(Color.WHITE);
-        atualizarBtn.setBackground(new Color(0x1565C0));
-        atualizarBtn.setFocusPainted(false);
-        atualizarBtn.setBorderPainted(false);
-        atualizarBtn.setOpaque(true);
-        atualizarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
 
         controles.add(lblFiltro);
@@ -72,14 +68,14 @@ public class JobListPanel extends JPanel {
         tabela.setRowHeight(32);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tabela.getTableHeader().setBackground(new Color(0xEDE7F6));
+        tabela.getTableHeader().setBackground(new Color(0xE3F2FD));
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(2).setCellRenderer(center); // Modalidade
-        tabela.getColumnModel().getColumn(4).setCellRenderer(new StatusRenderer()); // Status
+        tabela.getColumnModel().getColumn(4).setCellRenderer(new StatusCellRenderer()); // Status
         tabela.getColumnModel().getColumn(5).setCellRenderer(center); // Salário
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(220);
@@ -105,9 +101,7 @@ public class JobListPanel extends JPanel {
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
 
-        detalhesBtn = new JButton("Ver Detalhes");
-        detalhesBtn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        detalhesBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        detalhesBtn = ButtonFactory.primary("Ver Detalhes");
         detalhesBtn.setEnabled(false);
         detalhesBtn.addActionListener(e -> abrirDetalhes());
 
@@ -154,6 +148,7 @@ public class JobListPanel extends JPanel {
     // ── TableModel ────────────────────────────────────────────────────────────
 
     private static class JobTableModel extends AbstractTableModel {
+        private static final NumberFormat BRL = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
         private final String[] COLS = {"Título", "Área", "Modalidade", "Local", "Status", "Salário"};
         private List<Job> vagas = List.of();
 
@@ -177,31 +172,9 @@ public class JobListPanel extends JPanel {
                 case 2 -> j.getModality().name();
                 case 3 -> j.getLocation();
                 case 4 -> j.getStatus().name();
-                case 5 -> j.getSalary() != null ? "R$ " + j.getSalary() : "—";
+                case 5 -> j.getSalary() != null ? BRL.format(j.getSalary()) : "—";
                 default -> "";
             };
-        }
-    }
-
-    // ── Renderer colorido para Status ─────────────────────────────────────────
-
-    private static class StatusRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setHorizontalAlignment(SwingConstants.CENTER);
-            setFont(new Font("Segoe UI", Font.BOLD, 12));
-            if (!isSelected) {
-                String s = value != null ? value.toString() : "";
-                switch (s) {
-                    case "ACTIVE" -> { setBackground(new Color(0xE8F5E9)); setForeground(new Color(0x2E7D32)); }
-                    case "PAUSED" -> { setBackground(new Color(0xFFF9C4)); setForeground(new Color(0xF57F17)); }
-                    case "CLOSED" -> { setBackground(new Color(0xFFEBEE)); setForeground(new Color(0xC62828)); }
-                    default       -> { setBackground(Color.WHITE);         setForeground(Color.BLACK); }
-                }
-            }
-            return this;
         }
     }
 }

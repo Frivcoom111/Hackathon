@@ -9,6 +9,7 @@ public class Company {
     private String description;
     private String phone;
     private CompanyStatus status;
+    private Address address;
 
     public Company() {}
 
@@ -27,6 +28,7 @@ public class Company {
     public String getDescription()   { return description; }
     public String getPhone()         { return phone; }
     public CompanyStatus getStatus() { return status; }
+    public Address getAddress()      { return address; }
 
     public void setId(String id)                  { this.id = id; }
     public void setName(String name)              { this.name = name; }
@@ -34,4 +36,5 @@ public class Company {
     public void setDescription(String description){ this.description = description; }
     public void setPhone(String phone)            { this.phone = phone; }
     public void setStatus(CompanyStatus status)   { this.status = status; }
+    public void setAddress(Address a)             { this.address = a; }
 }

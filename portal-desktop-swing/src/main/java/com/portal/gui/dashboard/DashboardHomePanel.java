@@ -3,7 +3,6 @@ package com.portal.gui.dashboard;
 import com.portal.dao.DashboardDAO;
 import com.portal.model.DashboardStats;
 import com.portal.util.ButtonFactory;
-import com.portal.util.Session;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,17 +27,16 @@ public class DashboardHomePanel extends JPanel {
     private void build() {
         // ── Topo ─────────────────────────────────────────────────────────────
         JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(0x1565C0));
+        topo.setBackground(new Color(0xE3F2FD));
         topo.setBorder(new EmptyBorder(24, 28, 24, 28));
 
-        String email = Session.getCurrentUser() != null ? Session.getCurrentUser().getEmail() : "";
-        JLabel saudacao = new JLabel("Bem-vindo ao Back Office, " + email);
+        JLabel saudacao = new JLabel("Bem-vindo ao Back Office");
         saudacao.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saudacao.setForeground(Color.WHITE);
+        saudacao.setForeground(new Color(0x1A237E));
 
         JLabel subtitulo = new JLabel("Portal de Estágios — UniALFA");
         subtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        subtitulo.setForeground(new Color(0xC5CAE9));
+        subtitulo.setForeground(new Color(0x555555));
 
         JPanel textos = new JPanel();
         textos.setLayout(new BoxLayout(textos, BoxLayout.Y_AXIS));
@@ -47,7 +45,7 @@ public class DashboardHomePanel extends JPanel {
         textos.add(Box.createVerticalStrut(4));
         textos.add(subtitulo);
 
-        JButton atualizarBtn = ButtonFactory.primary("↻  Atualizar");
+        JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
 
         topo.add(textos,      BorderLayout.WEST);

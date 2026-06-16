@@ -3,6 +3,7 @@ package com.portal.gui.students;
 import com.portal.model.Student;
 import com.portal.service.ServiceException;
 import com.portal.service.StudentService;
+import com.portal.util.ButtonFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -60,14 +61,7 @@ public class StudentImportDialog extends JDialog {
         arquivoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         arquivoLabel.setForeground(Color.GRAY);
 
-        JButton escolherBtn = new JButton("Escolher Arquivo...");
-        escolherBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        escolherBtn.setBackground(new Color(0x1565C0));
-        escolherBtn.setForeground(Color.WHITE);
-        escolherBtn.setFocusPainted(false);
-        escolherBtn.setBorderPainted(false);
-        escolherBtn.setOpaque(true);
-        escolherBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton escolherBtn = ButtonFactory.primary("Escolher Arquivo...");
         escolherBtn.addActionListener(e -> escolherArquivo());
 
         selecao.add(escolherBtn);
@@ -104,25 +98,11 @@ public class StudentImportDialog extends JDialog {
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         botoes.setBackground(Color.WHITE);
 
-        importarBtn = new JButton("Importar");
-        importarBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        importarBtn.setBackground(new Color(0x2E7D32));
-        importarBtn.setForeground(Color.WHITE);
-        importarBtn.setFocusPainted(false);
-        importarBtn.setBorderPainted(false);
-        importarBtn.setOpaque(true);
-        importarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        importarBtn = ButtonFactory.primary("Importar");
         importarBtn.setEnabled(false);
         importarBtn.addActionListener(e -> importar());
 
-        JButton fecharBtn = new JButton("Fechar");
-        fecharBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        fecharBtn.setBackground(new Color(0x616161));
-        fecharBtn.setForeground(Color.WHITE);
-        fecharBtn.setFocusPainted(false);
-        fecharBtn.setBorderPainted(false);
-        fecharBtn.setOpaque(true);
-        fecharBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton fecharBtn = ButtonFactory.secondary("Fechar");
         fecharBtn.addActionListener(e -> dispose());
 
         botoes.add(fecharBtn);

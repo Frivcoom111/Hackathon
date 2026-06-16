@@ -3,6 +3,7 @@ package com.portal.gui.course;
 import com.portal.model.Course;
 import com.portal.service.CourseService;
 import com.portal.service.ServiceException;
+import com.portal.util.ButtonFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -71,11 +72,8 @@ public class CourseFormDialog extends JDialog {
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         botoes.setBackground(Color.WHITE);
 
-        JButton cancelar = new JButton("Cancelar");
-        JButton salvar   = new JButton("Salvar");
-
-        estilizarBotaoSecundario(cancelar);
-        estilizarBotaoPrimario(salvar);
+        JButton cancelar = ButtonFactory.secondary("Cancelar");
+        JButton salvar   = ButtonFactory.primary("Salvar");
 
         cancelar.addActionListener(e -> dispose());
         salvar.addActionListener(e -> salvar());
@@ -122,20 +120,5 @@ public class CourseFormDialog extends JDialog {
         JLabel l = new JLabel(texto);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         return l;
-    }
-
-    private void estilizarBotaoPrimario(JButton btn) {
-        btn.setBackground(new Color(0x1565C0));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
-    private void estilizarBotaoSecundario(JButton btn) {
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 }

@@ -2,6 +2,8 @@ package com.portal.gui.course;
 
 import com.portal.model.Course;
 import com.portal.service.CourseService;
+import com.portal.util.ButtonFactory;
+import com.portal.util.StatusCellRenderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -36,18 +38,10 @@ public class CoursePanel extends JPanel {
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titulo.setForeground(new Color(0x1A237E));
 
-        JButton novoBtn = new JButton("+ Novo Curso");
-        estilizarBotaoPrimario(novoBtn);
+        JButton novoBtn = ButtonFactory.primary("+ Novo Curso");
         novoBtn.addActionListener(e -> abrirFormulario(null));
 
-        JButton atualizarBtn = new JButton("↻  Atualizar");
-        atualizarBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        atualizarBtn.setForeground(Color.WHITE);
-        atualizarBtn.setBackground(new Color(0x1565C0));
-        atualizarBtn.setFocusPainted(false);
-        atualizarBtn.setBorderPainted(false);
-        atualizarBtn.setOpaque(true);
-        atualizarBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton atualizarBtn = ButtonFactory.primary("Atualizar");
         atualizarBtn.addActionListener(e -> carregar());
 
         JPanel botoesDir = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
@@ -69,12 +63,13 @@ public class CoursePanel extends JPanel {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
-        // Centralizar colunas Código, Semestres, Status
+        // Centralizar colunas Código e Semestres
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabela.getColumnModel().getColumn(1).setCellRenderer(center);
         tabela.getColumnModel().getColumn(2).setCellRenderer(center);
-        tabela.getColumnModel().getColumn(3).setCellRenderer(center);
+        // Status com cor (Ativo = verde, Inativo = vermelho) — mesmo padrão das outras telas
+        tabela.getColumnModel().getColumn(3).setCellRenderer(new StatusCellRenderer());
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(260);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
@@ -92,10 +87,8 @@ public class CoursePanel extends JPanel {
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
 
-        editarBtn = new JButton("Editar");
-        toggleBtn = new JButton("Desativar");
-        estilizarBotaoSecundario(editarBtn);
-        estilizarBotaoSecundario(toggleBtn);
+        editarBtn = ButtonFactory.primary("Editar");
+        toggleBtn = ButtonFactory.primary("Desativar");
         editarBtn.setEnabled(false);
         toggleBtn.setEnabled(false);
 
@@ -150,21 +143,6 @@ public class CoursePanel extends JPanel {
         int row = tabela.getSelectedRow();
         if (row < 0) return null;
         return model.getCurso(row);
-    }
-
-    private void estilizarBotaoPrimario(JButton btn) {
-        btn.setBackground(new Color(0x1565C0));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(true);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
-    private void estilizarBotaoSecundario(JButton btn) {
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     // ── TableModel ────────────────────────────────────────────────────────────

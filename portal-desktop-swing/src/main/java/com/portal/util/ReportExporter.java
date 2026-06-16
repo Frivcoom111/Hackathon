@@ -1,5 +1,6 @@
 package com.portal.util;
 
+import com.portal.model.Address;
 import com.portal.model.Application;
 import com.portal.model.Company;
 import com.portal.model.Job;
@@ -39,6 +40,16 @@ public class ReportExporter {
                 writer.newLine();
                 writer.write("Fone:   " + (c.getPhone() != null ? c.getPhone() : "-"));
                 writer.newLine();
+                if (c.getAddress() != null) {
+                    Address a = c.getAddress();
+                    String logradouro = a.getStreet() + ", " + a.getNumber()
+                        + (a.getComplement() != null && !a.getComplement().isBlank() ? " — " + a.getComplement() : "");
+                    writer.write("End.:   " + logradouro);
+                    writer.newLine();
+                    writer.write("        " + a.getDistrict() + " — " + a.getCity() + "/" + a.getState()
+                        + "  CEP " + a.formatarCep());
+                    writer.newLine();
+                }
                 writer.write("-".repeat(40));
                 writer.newLine();
             }
@@ -69,6 +80,16 @@ public class ReportExporter {
                 writer.newLine();
                 writer.write("Apto:  " + (s.isEligible() ? "Sim" : "Não"));
                 writer.newLine();
+                if (s.getAddress() != null) {
+                    Address a = s.getAddress();
+                    String logradouro = a.getStreet() + ", " + a.getNumber()
+                        + (a.getComplement() != null && !a.getComplement().isBlank() ? " — " + a.getComplement() : "");
+                    writer.write("End.:  " + logradouro);
+                    writer.newLine();
+                    writer.write("       " + a.getDistrict() + " — " + a.getCity() + "/" + a.getState()
+                        + "  CEP " + a.formatarCep());
+                    writer.newLine();
+                }
                 writer.write("-".repeat(40));
                 writer.newLine();
             }

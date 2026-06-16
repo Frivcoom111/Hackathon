@@ -5,8 +5,6 @@ import com.portal.model.User;
 import com.portal.model.enums.Role;
 
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,9 +17,12 @@ public class StudentDAO extends BaseDAO {
         List<Student> list = new ArrayList<>();
         String sql = """
                 SELECT s.id, s.userId, s.name, s.ra, s.cpf, s.phone, s.isEligible,
-                       u.email
+                       u.email,
+                       a.id AS addressId, a.street, a.number, a.complement,
+                       a.district, a.city, a.state, a.zipCode
                 FROM Student s
                 JOIN User u ON u.id = s.userId
+                LEFT JOIN Address a ON a.id = s.addressId
                 ORDER BY s.name
                 """;
         try (Connection conn = getConnection();
@@ -38,9 +39,12 @@ public class StudentDAO extends BaseDAO {
         List<Student> list = new ArrayList<>();
         String sql = """
                 SELECT s.id, s.userId, s.name, s.ra, s.cpf, s.phone, s.isEligible,
-                       u.email
+                       u.email,
+                       a.id AS addressId, a.street, a.number, a.complement,
+                       a.district, a.city, a.state, a.zipCode
                 FROM Student s
                 JOIN User u ON u.id = s.userId
+                LEFT JOIN Address a ON a.id = s.addressId
                 WHERE s.name LIKE ? OR s.ra LIKE ?
                 ORDER BY s.name
                 """;
@@ -107,12 +111,11 @@ public class StudentDAO extends BaseDAO {
         String sql = "UPDATE Student SET name = ?, ra = ?, cpf = ?, phone = ?, updatedAt = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
             ps.setString(1, student.getName());
             ps.setString(2, student.getRa());
             ps.setString(3, student.getCpf());
             ps.setString(4, student.getPhone());
-            ps.setTimestamp(5, now);
+            ps.setTimestamp(5, now());
             ps.setString(6, student.getId());
             ps.executeUpdate();
         }
@@ -133,7 +136,7 @@ public class StudentDAO extends BaseDAO {
                 VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            Timestamp now = now();
             ps.setString(1, student.getId());
             ps.setString(2, student.getUserId());
             ps.setString(3, student.getName());
@@ -147,7 +150,7 @@ public class StudentDAO extends BaseDAO {
     }
 
     private Student map(ResultSet rs) throws SQLException {
-        return new Student(
+        Student s = new Student(
             rs.getString("id"),
             rs.getString("userId"),
             rs.getString("name"),
@@ -157,5 +160,7 @@ public class StudentDAO extends BaseDAO {
             rs.getString("phone"),
             rs.getBoolean("isEligible")
         );
+        s.setAddress(mapAddress(rs));
+        return s;
     }
 }

@@ -4,16 +4,22 @@ import com.portal.model.Company;
 import com.portal.model.enums.CompanyStatus;
 
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyDAO extends BaseDAO {
 
+    private static final String SELECT_BASE = """
+            SELECT c.id, c.name, c.cnpj, c.description, c.phone, c.status,
+                   a.id AS addressId, a.street, a.number, a.complement,
+                   a.district, a.city, a.state, a.zipCode
+            FROM Company c
+            LEFT JOIN Address a ON a.id = c.addressId
+            """;
+
     public List<Company> findAll() {
         List<Company> list = new ArrayList<>();
-        String sql = "SELECT id, name, cnpj, description, phone, status FROM Company ORDER BY name";
+        String sql = SELECT_BASE + "ORDER BY c.name";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -26,7 +32,7 @@ public class CompanyDAO extends BaseDAO {
 
     public List<Company> findByStatus(CompanyStatus status) {
         List<Company> list = new ArrayList<>();
-        String sql = "SELECT id, name, cnpj, description, phone, status FROM Company WHERE status = ? ORDER BY name";
+        String sql = SELECT_BASE + "WHERE c.status = ? ORDER BY c.name";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status.name());
@@ -40,7 +46,7 @@ public class CompanyDAO extends BaseDAO {
     }
 
     public Company findById(String id) {
-        String sql = "SELECT id, name, cnpj, description, phone, status FROM Company WHERE id = ?";
+        String sql = SELECT_BASE + "WHERE c.id = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -58,7 +64,7 @@ public class CompanyDAO extends BaseDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status.name());
-            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))));
+            ps.setTimestamp(2, now());
             ps.setString(3, id);
             ps.executeUpdate();
         } catch (Exception e) {
@@ -68,7 +74,7 @@ public class CompanyDAO extends BaseDAO {
     }
 
     private Company map(ResultSet rs) throws SQLException {
-        return new Company(
+        Company c = new Company(
             rs.getString("id"),
             rs.getString("name"),
             rs.getString("cnpj"),
@@ -76,5 +82,7 @@ public class CompanyDAO extends BaseDAO {
             rs.getString("phone"),
             CompanyStatus.valueOf(rs.getString("status"))
         );
+        c.setAddress(mapAddress(rs));
+        return c;
     }
 }

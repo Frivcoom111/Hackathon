@@ -6,8 +6,8 @@ import com.portal.gui.course.CoursePanel;
 import com.portal.gui.jobs.JobListPanel;
 import com.portal.gui.reports.ReportPanel;
 import com.portal.gui.students.StudentListPanel;
+import com.portal.gui.users.UserListPanel;
 import com.portal.util.ButtonFactory;
-import com.portal.util.Session;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,7 +15,16 @@ import java.awt.*;
 
 public class DashboardFrame extends JFrame {
 
+    // Cores do menu lateral
+    private static final Color NAV_BG       = new Color(0x1A237E); // fundo padrão
+    private static final Color NAV_HOVER    = new Color(0x283593); // ao passar o mouse
+    private static final Color NAV_SELECTED = new Color(0x0D47A1); // item selecionado
+    private static final Color NAV_FG       = new Color(0xC5CAE9); // texto padrão
+
     private final JPanel contentArea = new JPanel(new CardLayout());
+
+    private JButton inicioBtn;     // primeiro item, selecionado ao abrir
+    private JButton navSelecionado; // item atualmente selecionado
 
     public DashboardFrame() {
         setTitle("Portal UniALFA — Back Office");
@@ -42,8 +51,9 @@ public class DashboardFrame extends JFrame {
         contentArea.add(new JobListPanel(),            "vagas");
         contentArea.add(new ApplicationListPanel(),    "candidaturas");
         contentArea.add(new ReportPanel(),             "relatorios");
+        contentArea.add(new UserListPanel(),           "usuarios");
 
-        mostrar("home");
+        selecionar(inicioBtn, "home");
         add(root);
     }
 
@@ -56,8 +66,7 @@ public class DashboardFrame extends JFrame {
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titulo.setForeground(Color.WHITE);
 
-        String email = Session.getCurrentUser().getEmail();
-        JLabel userInfo = new JLabel(email + "  |  ADMIN");
+        JLabel userInfo = new JLabel("Back Office");
         userInfo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         userInfo.setForeground(new Color(0xBBDEFB));
 
@@ -69,7 +78,6 @@ public class DashboardFrame extends JFrame {
         sairBtn.setOpaque(true);
         sairBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         sairBtn.addActionListener(e -> {
-            Session.clear();
             dispose();
             new com.portal.gui.login.LoginFrame().setVisible(true);
         });
@@ -87,13 +95,15 @@ public class DashboardFrame extends JFrame {
         sidebar.setPreferredSize(new Dimension(200, 0));
         sidebar.setBorder(new EmptyBorder(16, 0, 16, 0));
 
-        sidebar.add(navItem("Início",        "home"));
+        inicioBtn = navItem("Início", "home");
+        sidebar.add(inicioBtn);
         sidebar.add(navItem("Empresas",      "empresas"));
         sidebar.add(navItem("Alunos",        "alunos"));
         sidebar.add(navItem("Cursos",        "cursos"));
         sidebar.add(navItem("Vagas",         "vagas"));
         sidebar.add(navItem("Candidaturas",  "candidaturas"));
         sidebar.add(navItem("Relatórios",    "relatorios"));
+        sidebar.add(navItem("Usuários",      "usuarios"));
 
         return sidebar;
     }
@@ -103,16 +113,42 @@ public class DashboardFrame extends JFrame {
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btn.setForeground(new Color(0xC5CAE9));
-        btn.setBackground(new Color(0x1A237E));
+        btn.setForeground(NAV_FG);
+        btn.setBackground(NAV_BG);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setOpaque(true);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(0, 20, 0, 0));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.addActionListener(e -> mostrar(card));
+        btn.addActionListener(e -> selecionar(btn, card));
+
+        // Hover: realça o item sob o mouse (sem mexer no que já está selecionado)
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (btn != navSelecionado) btn.setBackground(NAV_HOVER);
+            }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                if (btn != navSelecionado) btn.setBackground(NAV_BG);
+            }
+        });
         return btn;
+    }
+
+    /** Marca o item como selecionado (faixa azul + fundo destacado) e abre o painel. */
+    private void selecionar(JButton btn, String card) {
+        if (navSelecionado != null) {
+            navSelecionado.setBackground(NAV_BG);
+            navSelecionado.setForeground(NAV_FG);
+            navSelecionado.setBorder(new EmptyBorder(0, 20, 0, 0));
+        }
+        navSelecionado = btn;
+        btn.setBackground(NAV_SELECTED);
+        btn.setForeground(Color.WHITE);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(0x64B5F6)), // faixa azul à esquerda
+            new EmptyBorder(0, 16, 0, 0)));
+        mostrar(card);
     }
 
     private void mostrar(String card) {
