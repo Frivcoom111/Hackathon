@@ -40,6 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $erro = $data['message'] ?? 'Erro ao cadastrar. Tente novamente.';
+            if (!empty($data['details']) && is_array($data['details'])) {
+                $detalhes = array_map(fn($d) => $d['message'] ?? '', $data['details']);
+                $erro .= ' ' . implode(' | ', array_filter($detalhes));
+            }
         }
 
     // ── Cadastro de empresa ───────────────────────────────────────────────────
@@ -75,6 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             $erro = $data['message'] ?? 'Erro ao cadastrar empresa. Tente novamente.';
+            if (!empty($data['details']) && is_array($data['details'])) {
+                $detalhes = array_map(fn($d) => $d['message'] ?? '', $data['details']);
+                $erro .= ' ' . implode(' | ', array_filter($detalhes));
+            }
         }
     }
 }

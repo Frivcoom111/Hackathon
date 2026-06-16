@@ -27,9 +27,9 @@ class AuthService extends BaseService
         return $this->client->post('/auth/totp/verify', ['code' => $code], true);
     }
 
-    public function registrarEstudante(array $dados, array $arquivo = []): array
+    public function registrarEstudante(array $dados): array
     {
-        return $this->client->postMultipart('/auth/register/student', $dados, $arquivo);
+        return $this->client->post('/auth/register/student', $dados);
     }
 
     public function registrarEmpresa(array $dados): array
