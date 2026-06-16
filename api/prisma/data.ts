@@ -332,22 +332,20 @@ export const seedStudents: SeedStudent[] = [
     },
     courseCode: "ADM",
     courseStartedAt: new Date("2023-08-01"),
-    certificates: [
-      { name: "Excel Avancado", institution: "Senai", issuedAt: new Date("2024-02-20") },
-    ],
+    certificates: [{ name: "Excel Avancado", institution: "Senai", issuedAt: new Date("2024-02-20") }],
   },
 ];
 
 // ─── Candidaturas ─────────────────────────────────────────────────────────────
 
 export const seedApplications: SeedApplication[] = [
-  { studentRa: "2024001", jobTitle: "Estagio Backend Jr",    status: "ANALYSING" },
-  { studentRa: "2024001", jobTitle: "Estagio Frontend Jr",   status: "PENDING"   },
-  { studentRa: "2024001", jobTitle: "Suporte TI",            status: "PENDING"   },
-  { studentRa: "2024002", jobTitle: "Marketing Digital",     status: "APPROVED"  },
+  { studentRa: "2024001", jobTitle: "Estagio Backend Jr", status: "ANALYSING" },
+  { studentRa: "2024001", jobTitle: "Estagio Frontend Jr", status: "PENDING" },
+  { studentRa: "2024001", jobTitle: "Suporte TI", status: "PENDING" },
+  { studentRa: "2024002", jobTitle: "Marketing Digital", status: "APPROVED" },
   { studentRa: "2024002", jobTitle: "Assistente Administrativo", status: "PENDING" },
   { studentRa: "2024003", jobTitle: "Assistente Administrativo", status: "ANALYSING" },
-  { studentRa: "2024003", jobTitle: "Analista de Dados Jr",  status: "REJECTED"  },
+  { studentRa: "2024003", jobTitle: "Analista de Dados Jr", status: "REJECTED" },
 ];
 
 // ─── Notificações ─────────────────────────────────────────────────────────────

@@ -44,7 +44,10 @@ export const registerCompanySchema = z.object({
     complement: z.string().optional(),
     district: z.string().min(1, "Informe o bairro."),
     city: z.string().min(1, "Informe a cidade."),
-    state: z.string().length(2, "UF deve ter 2 letras.").transform((value) => value.toUpperCase()),
+    state: z
+      .string()
+      .length(2, "UF deve ter 2 letras.")
+      .transform((value) => value.toUpperCase()),
     zipCode: z.string().min(8, "Informe o CEP."),
   }),
   member: z.object({

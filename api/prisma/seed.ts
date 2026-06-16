@@ -27,12 +27,8 @@ async function main() {
   console.log("Iniciando seed...\n");
 
   // Bcrypt fora da transação para não segurar o lock do banco
-  const memberHashes = await Promise.all(
-    seedCompanyMembers.map((m) => generateHash(m.plainPassword)),
-  );
-  const studentHashes = await Promise.all(
-    seedStudents.map((s) => generateHash(s.plainPassword)),
-  );
+  const memberHashes = await Promise.all(seedCompanyMembers.map((m) => generateHash(m.plainPassword)));
+  const studentHashes = await Promise.all(seedStudents.map((s) => generateHash(s.plainPassword)));
   const adminHash = await generateHash(seedAdmin.plainPassword);
 
   await prisma.$transaction(
@@ -49,9 +45,7 @@ async function main() {
         ),
       );
       // Mapa code → id
-      const courseById: Record<string, string> = Object.fromEntries(
-        courses.map((c) => [c.code!, c.id]),
-      );
+      const courseById: Record<string, string> = Object.fromEntries(courses.map((c) => [c.code!, c.id]));
 
       // ─── 2. Empresas ───────────────────────────────────────────────────────
       console.log("  → Empresas...");
@@ -65,9 +59,7 @@ async function main() {
         ),
       );
       // Mapa cnpj → id
-      const companyById: Record<string, string> = Object.fromEntries(
-        companies.map((c) => [c.cnpj, c.id]),
-      );
+      const companyById: Record<string, string> = Object.fromEntries(companies.map((c) => [c.cnpj, c.id]));
 
       // ─── 3. Vagas ──────────────────────────────────────────────────────────
       console.log("  → Vagas...");
@@ -83,9 +75,7 @@ async function main() {
         ),
       );
       // Mapa title → id (títulos únicos no seed)
-      const jobById: Record<string, string> = Object.fromEntries(
-        jobs.map((j) => [j.title, j.id]),
-      );
+      const jobById: Record<string, string> = Object.fromEntries(jobs.map((j) => [j.title, j.id]));
 
       // ─── 4. Admin da plataforma ────────────────────────────────────────────
       console.log("  → Admin...");
@@ -105,7 +95,7 @@ async function main() {
           data: {
             email: m.email,
             password: memberHashes[i],
-            role: "COMPANY"
+            role: "COMPANY",
           },
         });
         await tx.companyMember.create({
@@ -188,9 +178,7 @@ async function main() {
       const allUsers = await tx.user.findMany({
         select: { id: true, email: true },
       });
-      const userIdByEmail: Record<string, string> = Object.fromEntries(
-        allUsers.map((u) => [u.email, u.id]),
-      );
+      const userIdByEmail: Record<string, string> = Object.fromEntries(allUsers.map((u) => [u.email, u.id]));
 
       await tx.notification.createMany({
         data: seedNotifications.map(({ userEmail, ...rest }) => ({
