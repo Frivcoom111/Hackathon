@@ -7,13 +7,20 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.File;
 
+/**
+ * ReportPanel: painel de RELATÓRIOS. Permite escolher uma pasta de destino e gerar
+ * arquivos .txt com empresas, alunos, vagas ou candidaturas.
+ *
+ * Fluxo de uso: (1) o usuário escolhe a pasta; (2) clica em "Gerar .txt" no card
+ * desejado; (3) o ReportService cria o arquivo e o painel oferece abrir a pasta.
+ */
 public class ReportPanel extends JPanel {
 
-    private final ReportService service = new ReportService();
+    private final ReportService service = new ReportService(); // Gera os relatórios.
 
-    private JLabel pastaLabel;
-    private String pastaSelecionada;
-    private JLabel statusLabel;
+    private JLabel pastaLabel;          // Mostra a pasta escolhida.
+    private String pastaSelecionada;    // Caminho da pasta de destino (null até escolher).
+    private JLabel statusLabel;         // Mostra o resultado da última geração (sucesso/erro).
 
     public ReportPanel() {
         setLayout(new BorderLayout());
@@ -22,7 +29,7 @@ public class ReportPanel extends JPanel {
     }
 
     private void build() {
-        // ── Topo ─────────────────────────────────────────────────────────────
+        // ── Topo: título ──────────────────────────────────────────────────────
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(16, 20, 12, 20));
@@ -33,7 +40,7 @@ public class ReportPanel extends JPanel {
 
         topo.add(titulo, BorderLayout.WEST);
 
-        // ── Seleção de pasta ──────────────────────────────────────────────────
+        // ── Seleção da pasta de destino ───────────────────────────────────────
         JPanel painelPasta = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         painelPasta.setBackground(new Color(0xF5F5F5));
         painelPasta.setBorder(BorderFactory.createCompoundBorder(
@@ -57,11 +64,12 @@ public class ReportPanel extends JPanel {
         painelPasta.add(escolherBtn);
         painelPasta.add(pastaLabel);
 
-        // ── Cards de relatórios ───────────────────────────────────────────────
+        // ── Cards de relatórios: 2x2 (um para cada tipo) ──────────────────────
         JPanel cards = new JPanel(new GridLayout(2, 2, 16, 16));
         cards.setBackground(Color.WHITE);
         cards.setBorder(new EmptyBorder(20, 20, 20, 20));
 
+        // Cada card recebe título, descrição e a ação a executar ao clicar em "Gerar .txt".
         cards.add(buildCard(
             "Empresas Cadastradas",
             "Lista todas as empresas com CNPJ, status e telefone.",
@@ -82,7 +90,7 @@ public class ReportPanel extends JPanel {
             "Lista todas as candidaturas com nome do aluno, vaga e status.",
             e -> gerar("candidaturas")));
 
-        // ── Status ────────────────────────────────────────────────────────────
+        // ── Rodapé: mensagem de status da última geração ──────────────────────
         JPanel rodape = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
         rodape.setBackground(new Color(0xF5F5F5));
         rodape.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
@@ -101,6 +109,10 @@ public class ReportPanel extends JPanel {
         add(rodape, BorderLayout.SOUTH);
     }
 
+    /**
+     * Cria um "card" de relatório com título, descrição e botão "Gerar .txt".
+     * @param acao o que acontece ao clicar no botão (passado de fora, via lambda).
+     */
     private JPanel buildCard(String titulo, String descricao,
                              java.awt.event.ActionListener acao) {
         JPanel card = new JPanel(new BorderLayout());
@@ -113,6 +125,7 @@ public class ReportPanel extends JPanel {
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTitulo.setForeground(new Color(0x1565C0));
 
+        // O "<html>" permite que o texto da descrição quebre em várias linhas dentro do card.
         JLabel lblDesc = new JLabel("<html>" + descricao + "</html>");
         lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblDesc.setForeground(Color.DARK_GRAY);
@@ -138,18 +151,23 @@ public class ReportPanel extends JPanel {
         return card;
     }
 
+    /**
+     * Abre uma janela para o usuário escolher a pasta de destino dos relatórios.
+     * JFileChooser configurado para selecionar apenas PASTAS (não arquivos).
+     */
     private void escolherPasta() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle("Escolher pasta para salvar relatórios");
         chooser.setApproveButtonText("Selecionar");
 
-        // Abre na última pasta usada, ou na home
+        // Se já houve uma pasta escolhida antes, reabre a partir dela.
         if (pastaSelecionada != null) {
             chooser.setCurrentDirectory(new File(pastaSelecionada));
         }
 
         int result = chooser.showOpenDialog(this);
+        // Se o usuário confirmou a escolha, guarda o caminho e atualiza o rótulo.
         if (result == JFileChooser.APPROVE_OPTION) {
             pastaSelecionada = chooser.getSelectedFile().getAbsolutePath();
             pastaLabel.setText(pastaSelecionada);
@@ -158,7 +176,14 @@ public class ReportPanel extends JPanel {
         }
     }
 
+    /**
+     * Gera o relatório do tipo informado, salvando na pasta escolhida.
+     * Exige que uma pasta tenha sido selecionada; ao final, oferece abrir a pasta.
+     *
+     * @param tipo um entre "empresas", "alunos", "vagas" ou "candidaturas".
+     */
     private void gerar(String tipo) {
+        // Sem pasta escolhida, avisa e não faz nada.
         if (pastaSelecionada == null) {
             JOptionPane.showMessageDialog(this,
                 "Selecione uma pasta de destino antes de gerar o relatório.",
@@ -167,6 +192,7 @@ public class ReportPanel extends JPanel {
         }
 
         try {
+            // Escolhe o método do serviço conforme o tipo; cada um devolve o caminho gerado.
             String caminho = switch (tipo) {
                 case "empresas"      -> service.gerarEmpresas(pastaSelecionada);
                 case "alunos"        -> service.gerarAlunos(pastaSelecionada);
@@ -175,18 +201,22 @@ public class ReportPanel extends JPanel {
                 default -> throw new IllegalArgumentException("Tipo desconhecido: " + tipo);
             };
 
+            // Mostra mensagem de sucesso (verde) no rodapé.
             statusLabel.setForeground(new Color(0x2E7D32));
             statusLabel.setText("✔  Relatório salvo em: " + caminho);
 
+            // Pergunta se o usuário quer abrir a pasta no explorador de arquivos.
             int abrir = JOptionPane.showConfirmDialog(this,
                 "Relatório gerado com sucesso!\n\n" + caminho + "\n\nDeseja abrir a pasta?",
                 "Sucesso", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
             if (abrir == JOptionPane.YES_OPTION) {
+                // Desktop.open abre a pasta no gerenciador de arquivos do sistema.
                 Desktop.getDesktop().open(new File(pastaSelecionada));
             }
 
         } catch (Exception ex) {
+            // Em caso de erro, mostra mensagem em vermelho e um diálogo de erro.
             statusLabel.setForeground(Color.RED);
             statusLabel.setText("✘  Erro: " + ex.getMessage());
             JOptionPane.showMessageDialog(this, "Erro ao gerar relatório:\n" + ex.getMessage(),

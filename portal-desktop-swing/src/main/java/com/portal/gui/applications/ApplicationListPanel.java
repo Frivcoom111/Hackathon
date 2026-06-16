@@ -12,6 +12,12 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * ApplicationListPanel: painel de listagem das CANDIDATURAS (somente leitura, com detalhes).
+ *
+ * Mesma estrutura do JobListPanel: tabela + TableModel, filtro por status feito em
+ * memória (sobre a lista completa "todasCandidaturas") e diálogo de detalhes.
+ */
 public class ApplicationListPanel extends JPanel {
 
     private final ApplicationDAO dao = new ApplicationDAO();
@@ -20,7 +26,7 @@ public class ApplicationListPanel extends JPanel {
     private ApplicationTableModel model;
     private JComboBox<String> filtroStatus;
     private JButton detalhesBtn;
-    private List<Application> todasCandidaturas = List.of();
+    private List<Application> todasCandidaturas = List.of(); // Lista completa carregada do banco.
 
     public ApplicationListPanel() {
         setLayout(new BorderLayout());
@@ -30,6 +36,7 @@ public class ApplicationListPanel extends JPanel {
     }
 
     private void build() {
+        // ── Cabeçalho: título + filtro de status + atualizar ──────────────────
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(16, 20, 12, 20));
@@ -44,6 +51,7 @@ public class ApplicationListPanel extends JPanel {
         JLabel lblFiltro = new JLabel("Status:");
         lblFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
+        // Opções do filtro: "Todos" + todos os status possíveis de uma candidatura.
         filtroStatus = new JComboBox<>(
             new String[]{"Todos", "PENDING", "ANALYSING", "APPROVED", "REJECTED", "CANCELLED"});
         filtroStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -60,6 +68,7 @@ public class ApplicationListPanel extends JPanel {
         topo.add(titulo, BorderLayout.WEST);
         topo.add(controles, BorderLayout.EAST);
 
+        // ── Tabela de candidaturas ────────────────────────────────────────────
         model = new ApplicationTableModel();
         tabela = new JTable(model);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -70,6 +79,7 @@ public class ApplicationListPanel extends JPanel {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
+        // Coluna "Status" (índice 2) recebe cor conforme o significado.
         tabela.getColumnModel().getColumn(2).setCellRenderer(new StatusCellRenderer());
 
         tabela.getColumnModel().getColumn(0).setPreferredWidth(220);
@@ -77,6 +87,7 @@ public class ApplicationListPanel extends JPanel {
         tabela.getColumnModel().getColumn(2).setPreferredWidth(120);
 
         tabela.getSelectionModel().addListSelectionListener(e -> atualizarBotoes());
+        // Duplo clique abre os detalhes da candidatura.
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -88,6 +99,7 @@ public class ApplicationListPanel extends JPanel {
         scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE0E0E0)));
         scroll.getViewport().setBackground(Color.WHITE);
 
+        // ── Barra de ações ────────────────────────────────────────────────────
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
@@ -103,11 +115,13 @@ public class ApplicationListPanel extends JPanel {
         add(acoes, BorderLayout.SOUTH);
     }
 
+    /** Recarrega todas as candidaturas do banco e reaplica o filtro. */
     private void carregar() {
         todasCandidaturas = dao.findAll();
         filtrar();
     }
 
+    /** Filtra as candidaturas exibidas conforme o status selecionado (em memória). */
     private void filtrar() {
         String filtro = (String) filtroStatus.getSelectedItem();
         List<Application> exibidas = "Todos".equals(filtro)
@@ -119,6 +133,7 @@ public class ApplicationListPanel extends JPanel {
         atualizarBotoes();
     }
 
+    /** Abre o diálogo de detalhes da candidatura selecionada. */
     private void abrirDetalhes() {
         Application candidatura = getCandidaturaSelecionada();
         if (candidatura == null) return;
@@ -136,7 +151,7 @@ public class ApplicationListPanel extends JPanel {
         return model.getCandidatura(row);
     }
 
-    // ── TableModel ────────────────────────────────────────────────────────────
+    // ── TableModel das candidaturas ─────────────────────────────────────────────
 
     private static class ApplicationTableModel extends AbstractTableModel {
         private final String[] COLS = {"Aluno", "Vaga", "Status"};
@@ -157,6 +172,7 @@ public class ApplicationListPanel extends JPanel {
         public Object getValueAt(int row, int col) {
             Application a = candidaturas.get(row);
             return switch (col) {
+                // Prefere mostrar o nome/título; se faltar, usa o id como reserva.
                 case 0 -> a.getStudentName() != null ? a.getStudentName() : a.getStudentId();
                 case 1 -> a.getJobTitle() != null ? a.getJobTitle() : a.getJobId();
                 case 2 -> a.getStatus().name();

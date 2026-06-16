@@ -13,6 +13,13 @@ import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * UserListPanel: painel de listagem dos USUÁRIOS do sistema (somente leitura, com detalhes).
+ *
+ * Mesma estrutura dos demais painéis de lista: tabela + TableModel, filtro por perfil
+ * (em memória) e diálogo de detalhes. O perfil técnico (ADMIN/STUDENT/COMPANY) é
+ * traduzido para rótulos amigáveis em português na coluna "Perfil".
+ */
 public class UserListPanel extends JPanel {
 
     private final UserDAO dao = new UserDAO();
@@ -31,6 +38,7 @@ public class UserListPanel extends JPanel {
     }
 
     private void build() {
+        // ── Cabeçalho: título + filtro de perfil + atualizar ──────────────────
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Color.WHITE);
         topo.setBorder(new EmptyBorder(16, 20, 12, 20));
@@ -45,6 +53,7 @@ public class UserListPanel extends JPanel {
         JLabel lblFiltro = new JLabel("Perfil:");
         lblFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
+        // Filtro pelos perfis técnicos (os valores do enum Role).
         filtroPerfil = new JComboBox<>(new String[]{"Todos", "ADMIN", "STUDENT", "COMPANY"});
         filtroPerfil.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         filtroPerfil.setPreferredSize(new Dimension(120, 30));
@@ -60,6 +69,7 @@ public class UserListPanel extends JPanel {
         topo.add(titulo,    BorderLayout.WEST);
         topo.add(controles, BorderLayout.EAST);
 
+        // ── Tabela de usuários ────────────────────────────────────────────────
         model  = new UserTableModel();
         tabela = new JTable(model);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -70,6 +80,7 @@ public class UserListPanel extends JPanel {
         tabela.setGridColor(new Color(0xE0E0E0));
         tabela.setShowVerticalLines(false);
 
+        // Colunas "Perfil" (1) e "Status" (2) recebem cor pelo StatusCellRenderer.
         tabela.getColumnModel().getColumn(1).setCellRenderer(new StatusCellRenderer());
         tabela.getColumnModel().getColumn(2).setCellRenderer(new StatusCellRenderer());
 
@@ -78,6 +89,7 @@ public class UserListPanel extends JPanel {
         tabela.getColumnModel().getColumn(2).setPreferredWidth(100);
 
         tabela.getSelectionModel().addListSelectionListener(e -> atualizarBotoes());
+        // Duplo clique abre os detalhes do usuário.
         tabela.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2) abrirDetalhes();
@@ -88,6 +100,7 @@ public class UserListPanel extends JPanel {
         scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE0E0E0)));
         scroll.getViewport().setBackground(Color.WHITE);
 
+        // ── Barra de ações ────────────────────────────────────────────────────
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         acoes.setBackground(new Color(0xF5F5F5));
         acoes.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
@@ -103,11 +116,13 @@ public class UserListPanel extends JPanel {
         add(acoes,  BorderLayout.SOUTH);
     }
 
+    /** Recarrega todos os usuários do banco e reaplica o filtro. */
     private void carregar() {
         todosUsuarios = dao.findAll();
         filtrar();
     }
 
+    /** Filtra os usuários exibidos pelo perfil selecionado (em memória). */
     private void filtrar() {
         String filtro = (String) filtroPerfil.getSelectedItem();
         List<User> exibidos = "Todos".equals(filtro)
@@ -119,6 +134,7 @@ public class UserListPanel extends JPanel {
         atualizarBotoes();
     }
 
+    /** Abre o diálogo de detalhes do usuário selecionado. */
     private void abrirDetalhes() {
         User user = getUsuarioSelecionado();
         if (user == null) return;
@@ -135,7 +151,7 @@ public class UserListPanel extends JPanel {
         return row < 0 ? null : model.getUsuario(row);
     }
 
-    // ── TableModel ────────────────────────────────────────────────────────────
+    // ── TableModel dos usuários ─────────────────────────────────────────────────
 
     private static class UserTableModel extends AbstractTableModel {
         private final String[] COLS = {"E-mail", "Perfil", "Status"};
@@ -153,12 +169,13 @@ public class UserListPanel extends JPanel {
             User u = usuarios.get(row);
             return switch (col) {
                 case 0 -> u.getEmail();
-                case 1 -> rotuloRole(u.getRole());
+                case 1 -> rotuloRole(u.getRole());                 // Perfil traduzido.
                 case 2 -> u.isActive() ? "Ativo" : "Inativo";
                 default -> "";
             };
         }
 
+        /** Traduz o perfil técnico (enum) para um rótulo amigável em português. */
         private String rotuloRole(Role r) {
             return switch (r) {
                 case ADMIN   -> "Administrador";

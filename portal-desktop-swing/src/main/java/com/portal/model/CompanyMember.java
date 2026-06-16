@@ -1,20 +1,31 @@
 package com.portal.model;
 
+// Enum que define o papel do membro dentro da empresa (ex.: ADMINISTRADOR, RECRUTADOR...).
 import com.portal.model.enums.CompanyMemberRole;
 
+/**
+ * Classe CompanyMember (Membro da Empresa): representa uma pessoa que trabalha em uma
+ * empresa parceira e tem acesso ao portal em nome dela (ex.: um recrutador).
+ *
+ * É uma entidade/modelo. Liga uma pessoa (com User para login) a uma Company,
+ * definindo qual papel/permissão ela tem dentro daquela empresa.
+ */
 public class CompanyMember {
-    private String id;
-    private String companyId;
-    private String userId;
-    private String name;
-    private String cpf;
-    private String phone;
-    private CompanyMemberRole role;
-    private String email;
-    private boolean userActive;
+    // ===== ATRIBUTOS do membro da empresa =====
+    private String id;                // Identificador único do membro (chave primária).
+    private String companyId;         // ID da empresa à qual o membro pertence.
+    private String userId;            // ID da conta de usuário (User) usada para login.
+    private String name;              // Nome do membro.
+    private String cpf;               // CPF do membro.
+    private String phone;             // Telefone de contato.
+    private CompanyMemberRole role;   // Papel dentro da empresa (ADMINISTRADOR, RECRUTADOR...).
+    private String email;             // E-mail do membro (campo de apoio, vindo do User).
+    private boolean userActive;       // Indica se a conta de login do membro está ativa.
 
+    /** Construtor vazio: cria um membro "em branco". */
     public CompanyMember() {}
 
+    /** Construtor completo: cria um membro já preenchido. */
     public CompanyMember(String id, String companyId, String userId,
                          String name, String cpf, String phone,
                          CompanyMemberRole role, String email, boolean userActive) {
@@ -29,6 +40,7 @@ public class CompanyMember {
         this.userActive = userActive;
     }
 
+    // ===== GETTERS: leem os valores =====
     public String getId()              { return id; }
     public String getCompanyId()       { return companyId; }
     public String getUserId()          { return userId; }
@@ -39,6 +51,7 @@ public class CompanyMember {
     public String getEmail()           { return email; }
     public boolean isUserActive()      { return userActive; }
 
+    // ===== SETTERS: definem/alteram os valores =====
     public void setId(String id)                        { this.id = id; }
     public void setCompanyId(String companyId)          { this.companyId = companyId; }
     public void setUserId(String userId)                { this.userId = userId; }
