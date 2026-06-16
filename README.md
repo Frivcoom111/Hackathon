@@ -13,24 +13,25 @@ no caso do desktop, acessam o banco diretamente).
 
 ---
 
-## 📋 Índice
+## Índice
 
-- [Arquitetura](#-arquitetura)
-- [Tecnologias](#-tecnologias)
-- [Pré-requisitos](#-pré-requisitos)
-- [Como rodar (passo a passo)](#-como-rodar-passo-a-passo)
+- [Arquitetura](#arquitetura)
+- [Tecnologias](#tecnologias)
+- [Pré-requisitos](#pré-requisitos)
+- [Como rodar (passo a passo)](#como-rodar-passo-a-passo)
   - [1. Banco de dados (Docker)](#1-banco-de-dados-docker)
   - [2. API Node.js](#2-api-nodejs)
   - [3. Front-end Web (PHP)](#3-front-end-web-php)
   - [4. Back Office Desktop (Java Swing)](#4-back-office-desktop-java-swing)
-- [Estrutura do projeto](#-estrutura-do-projeto)
-- [Modelo de dados](#-modelo-de-dados)
-- [Documentação da API](#-documentação-da-api)
-- [Solução de problemas](#-solução-de-problemas)
+- [Credenciais de acesso (seed)](#credenciais-de-acesso-seed)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Modelo de dados](#modelo-de-dados)
+- [Documentação da API](#documentação-da-api)
+- [Solução de problemas](#solução-de-problemas)
 
 ---
 
-## 🏗 Arquitetura
+## Arquitetura
 
 ```
                          ┌──────────────────────┐
@@ -65,7 +66,7 @@ no caso do desktop, acessam o banco diretamente).
 
 ---
 
-## 🛠 Tecnologias
+## Tecnologias
 
 - **API:** Node.js, TypeScript, Express 5, Prisma 7, MySQL, Zod, JWT, bcrypt, TOTP (2FA), multer
 - **Web:** PHP 8 (POO), Composer, Guzzle, Bootstrap 5
@@ -74,11 +75,11 @@ no caso do desktop, acessam o banco diretamente).
 
 ---
 
-## ✅ Pré-requisitos
+## Pré-requisitos
 
 Instale antes de começar:
 
-- [Docker Desktop](https://www.docker.com/) (para o banco)
+- [Docker Desktop](https://www.docker.com/) — para o banco de dados
 - [Node.js 20+](https://nodejs.org/) e [pnpm](https://pnpm.io/) (`npm install -g pnpm`)
 - [PHP 8.1+](https://www.php.net/downloads) e [Composer](https://getcomposer.org/)
 - [Java JDK 17+](https://adoptium.net/) e [Maven](https://maven.apache.org/)
@@ -87,9 +88,9 @@ Instale antes de começar:
 
 ---
 
-## 🚀 Como rodar (passo a passo)
+## Como rodar (passo a passo)
 
-A ordem importa: **banco → API → web/desktop**.
+A ordem importa: **banco → API → web / desktop**.
 
 ### 1. Banco de dados (Docker)
 
@@ -101,8 +102,16 @@ docker compose up -d
 
 Isso sobe dois containers:
 
-- **MySQL** em `localhost:3306` (banco `hackathon`, usuário `root`, senha `root`)
-- **phpMyAdmin** em [http://localhost:8081](http://localhost:8081) (servidor: `mysql`, usuário: `root`, senha: `root`)
+- **MySQL** em `localhost:3306` — banco `hackathon`, usuário `root`, senha `root`
+- **phpMyAdmin** em [http://localhost:8081](http://localhost:8081) — servidor: `mysql`, usuário: `root`, senha: `root`
+
+Aguarde o healthcheck do MySQL ficar `healthy` antes de continuar:
+
+```bash
+docker compose ps
+```
+
+---
 
 ### 2. API Node.js
 
@@ -117,7 +126,7 @@ Crie o arquivo `.env` a partir do exemplo:
 cp .env.example .env
 ```
 
-Preencha o `.env` com os valores abaixo (compatíveis com o Docker acima):
+Edite o `.env` com os valores abaixo (compatíveis com o Docker acima):
 
 ```env
 # Server
@@ -125,27 +134,27 @@ PORT=3000
 NODE_ENV=development
 
 # Database
-DATABASE_URL="mysql://root:root@localhost:3306/hackathon"
+DATABASE_URL=mysql://root:root@localhost:3306/hackathon
 DATABASE_HOST=localhost
 DATABASE_PORT=3306
 DATABASE_USER=root
 DATABASE_PASSWORD=root
 DATABASE_NAME=hackathon
 
-# Auth (JWT_SECRET precisa ter no mínimo 32 caracteres)
+# Auth — JWT_SECRET precisa ter no mínimo 32 caracteres
 JWT_SECRET=troque-este-segredo-por-uma-string-bem-longa-123456
 JWT_EXPIRES_IN=1d
 SALT=10
 
 # CORS
-CORS_ORIGIN=*
+FRONTEND_URL=*
 
 # Rate limit
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=100
 ```
 
-Gere o client do Prisma, rode as migrations e popule os dados iniciais (seed):
+Gere o client do Prisma, aplique as migrations e popule o banco:
 
 ```bash
 pnpm db:generate
@@ -167,11 +176,14 @@ interativa em **[http://localhost:3000/docs](http://localhost:3000/docs)**.
 | Comando | O que faz |
 |---|---|
 | `pnpm dev` | Sobe a API com hot-reload |
-| `pnpm db:migrate` | Cria/aplica migrations em desenvolvimento |
-| `pnpm db:migrate:deploy` | Aplica migrations existentes (uso comum) |
-| `pnpm db:seed` | Popula cursos, empresas e vagas iniciais |
-| `pnpm db:studio` | Abre o Prisma Studio (visualizar o banco) |
+| `pnpm db:generate` | Gera o Prisma Client a partir do schema |
+| `pnpm db:migrate` | Cria e aplica uma nova migration (dev) |
+| `pnpm db:migrate:deploy` | Aplica migrations existentes sem criar novas |
+| `pnpm db:seed` | Popula o banco com dados iniciais |
+| `pnpm db:studio` | Abre o Prisma Studio (visualizar/editar o banco) |
 | `pnpm check` | Roda lint + format (Biome) |
+
+---
 
 ### 3. Front-end Web (PHP)
 
@@ -183,8 +195,9 @@ composer install
 ```
 
 A URL da API já vem configurada como `http://localhost:3000` em
-[web/app/Config/Config.php](web/app/Config/Config.php). Suba o servidor embutido
-do PHP a partir da pasta `web/src`:
+[web/app/Config/Config.php](web/app/Config/Config.php) — não é necessário nenhum `.env`.
+
+Suba o servidor embutido do PHP a partir da pasta `web/src`:
 
 ```bash
 php -S localhost:8000 -t src
@@ -194,20 +207,27 @@ Acesse **[http://localhost:8000](http://localhost:8000)**.
 
 Páginas principais (via `?page=`):
 
-- `?page=home` — início
-- `?page=vagas` — listagem de vagas (Portal do Aluno)
-- `?page=login` / `?page=cadastro` — autenticação
-- `?page=empresa-dashboard` — painel da empresa (Back Office web)
+| Página | URL |
+|---|---|
+| Início | `http://localhost:8000` |
+| Lista de vagas | `?page=vagas` |
+| Login | `?page=login` |
+| Cadastro | `?page=cadastro` |
+| Painel da empresa | `?page=empresa-dashboard` |
+| Perfil do aluno | `?page=aluno-perfil` |
+| Notificações | `?page=notificacoes` |
+
+---
 
 ### 4. Back Office Desktop (Java Swing)
 
-Aplicação administrativa da UniALFA. Conecta **direto** no MySQL.
+Aplicação administrativa da UniALFA. Conecta **diretamente** no MySQL (sem passar pela API).
 
 ```bash
 cd portal-desktop-swing
 ```
 
-Crie um arquivo `.env` na pasta `portal-desktop-swing/` com as credenciais do banco:
+Crie um arquivo `.env` dentro de `portal-desktop-swing/` com as credenciais do banco:
 
 ```env
 DB_URL=jdbc:mysql://localhost:3306/hackathon
@@ -222,56 +242,92 @@ mvn clean compile
 mvn exec:java -Dexec.mainClass="com.portal.Main"
 ```
 
-> Alternativa: abra o projeto na sua IDE (IntelliJ/Eclipse) e rode a classe
+> Alternativa: abra o projeto na sua IDE (IntelliJ / Eclipse) e rode a classe
 > [`com.portal.Main`](portal-desktop-swing/src/main/java/com/portal/Main.java).
 
 ---
 
-## 📁 Estrutura do projeto
+## Credenciais de acesso (seed)
+
+Após rodar `pnpm db:seed` as seguintes contas estarão disponíveis:
+
+| Tipo | E-mail | Senha |
+|---|---|---|
+| Admin UniALFA | `admin@unialfa.com` | `Admin@123` |
+| Empresa Admin (Tech Local) | `empresa@techlocal.com` | `Empresa@123` |
+| Empresa Admin (Agência Alfa) | `empresa@agenciaalfa.com` | `Empresa@123` |
+| Empresa Admin (Winfo) | `empresa@winfo.com` | `Empresa@123` |
+| Recruiter (Tech Local) | `recruiter@techlocal.com` | `Recruit@123` |
+| Aluno | `joao@aluno.com` | `Aluno@1234` |
+| Aluno | `maria@aluno.com` | `Aluno@1234` |
+| Aluno | `lucas@aluno.com` | `Aluno@1234` |
+
+> **Atenção — 2FA (TOTP):** As contas de Admin e Empresa possuem autenticação de
+> dois fatores obrigatória. Para logar, adicione a chave abaixo no **Google
+> Authenticator** ou **Authy** e use o código gerado:
+>
+> ```
+> JBSWY3DPEHPK3PXP
+> ```
+>
+> Contas de Aluno **não** exigem 2FA.
+
+---
+
+## Estrutura do projeto
 
 ```
 Hackathon/
-├── docker-compose.yml         # MySQL + phpMyAdmin
-├── api/                       # API REST (Node.js + TypeScript + Prisma)
-│   ├── prisma/                # schema, migrations e seed
+├── docker-compose.yml              # MySQL + phpMyAdmin
+├── api/                            # API REST (Node.js + TypeScript + Prisma)
+│   ├── .env.example                # modelo de variáveis de ambiente
+│   ├── prisma/
+│   │   ├── schema.prisma           # definição do banco
+│   │   ├── migrations/             # histórico de migrations
+│   │   ├── data.ts                 # constantes estáticas do seed
+│   │   └── seed.ts                 # script de seed (transacional)
+│   └── src/
+│       ├── server.ts               # ponto de entrada
+│       ├── app.ts                  # configuração do Express
+│       ├── config/                 # validação de env (Zod)
+│       ├── modules/                # auth, student, company, jobs,
+│       │                           #   address, notification, course
+│       ├── shared/                 # middlewares, erros, utils
+│       └── docs/                   # OpenAPI / Scalar
+├── web/                            # Front-end PHP (POO)
+│   ├── app/
+│   │   ├── Api/                    # ApiClient + Api (facade)
+│   │   ├── Auth/                   # JwtManager, Guard
+│   │   ├── Config/                 # Config.php (URL da API)
+│   │   └── Services/               # AuthService, VagaService, etc.
 │   ├── src/
-│   │   ├── app.ts             # configuração do Express
-│   │   ├── server.ts          # ponto de entrada
-│   │   ├── config/            # validação de env (Zod)
-│   │   ├── modules/           # auth, student, company, jobs, address,
-│   │   │                      #   notification, course (controller/service/repo)
-│   │   ├── shared/            # middlewares, erros, utils
-│   │   └── docs/              # OpenAPI / Scalar
-│   └── docs/                  # documentação por módulo (markdown)
-├── web/                       # Front-end PHP (POO)
-│   ├── app/                   # Api, Auth, Config, Services
-│   ├── src/
-│   │   ├── index.php          # roteador (?page=)
-│   │   ├── classes/           # Aluno, Empresa, Vaga, Candidatura
-│   │   ├── pages/             # telas (publico, aluno, empresa, auth)
-│   │   └── assets/            # css, imagens, Bootstrap
+│   │   ├── index.php               # roteador (?page=)
+│   │   ├── layouts/                # header.php, footer.php
+│   │   ├── classes/                # Aluno, Empresa, Vaga, Candidatura
+│   │   ├── pages/                  # telas (publico, aluno, empresa, auth)
+│   │   └── assets/                 # css, imagens, Bootstrap
 │   └── composer.json
-└── portal-desktop-swing/      # Back Office Java Swing (Maven)
+└── portal-desktop-swing/           # Back Office Java Swing (Maven)
     ├── pom.xml
     └── src/main/java/com/portal/
-        ├── Main.java          # ponto de entrada
-        ├── config/            # pool de conexão (HikariCP)
-        ├── gui/               # telas Swing
-        ├── model/             # entidades de domínio
-        ├── service/           # regras de negócio
-        ├── dao/               # acesso a dados (JDBC)
-        └── util/              # utilitários
+        ├── Main.java               # ponto de entrada
+        ├── config/                 # pool de conexão (HikariCP)
+        ├── gui/                    # telas Swing
+        ├── model/                  # entidades de domínio
+        ├── service/                # regras de negócio
+        ├── dao/                    # acesso a dados (JDBC)
+        └── util/                   # utilitários
 ```
 
 ---
 
-## 🗃 Modelo de dados
+## Modelo de dados
 
 O banco tem **11 tabelas** (MySQL, normalizado em 3NF):
 
 | Tabela | Responsabilidade |
 |---|---|
-| `Address` | Endereço reutilizável (aluno, empresa, membro) |
+| `Address` | Endereço reutilizável (aluno, empresa) |
 | `User` | Autenticação base — email, senha, role, 2FA (TOTP) |
 | `Course` | Cursos da universidade |
 | `Student` | Perfil do aluno — RA, CPF, currículo, elegibilidade |
@@ -292,10 +348,10 @@ O banco tem **11 tabelas** (MySQL, normalizado em 3NF):
 
 ---
 
-## 📚 Documentação da API
+## Documentação da API
 
 Com a API rodando em modo `development`, acesse a referência interativa
-(Scalar/OpenAPI) em:
+(Scalar / OpenAPI) em:
 
 **[http://localhost:3000/docs](http://localhost:3000/docs)**
 
@@ -303,7 +359,7 @@ Rotas principais:
 
 | Prefixo | Módulo |
 |---|---|
-| `/auth` | Login, cadastro, 2FA |
+| `/auth` | Login, cadastro (aluno e empresa), 2FA |
 | `/student` | Alunos e currículos |
 | `/company` | Empresas e membros |
 | `/jobs` | Vagas |
@@ -311,28 +367,27 @@ Rotas principais:
 | `/address` | Endereços |
 | `/notifications` | Notificações |
 
-Há também uma coleção do Insomnia em
-[api/docs/requests/](api/docs/requests/) e docs por módulo em
-[api/docs/modules/](api/docs/modules/).
-
 ---
 
-## 🩺 Solução de problemas
+## Solução de problemas
 
 | Problema | Causa provável | Solução |
 |---|---|---|
-| `Environments incompleto` ao subir a API | `.env` faltando campos | Confira o passo 2 — `JWT_SECRET` precisa de 32+ caracteres |
-| API não conecta no banco | MySQL não está pronto | Aguarde o healthcheck do Docker ou rode `docker compose ps` |
-| Web mostra erro de conexão | API não está rodando | Suba a API (passo 2) antes do PHP |
-| `class not found` no Java | `.env` ausente ou deps faltando | Crie o `.env` e rode `mvn clean compile` |
-| Porta 3306/3000/8000 em uso | Outro serviço ocupando | Pare o serviço ou troque a porta |
+| `Environments incompleto` ao subir a API | `.env` faltando ou com campos errados | Confira o passo 2 — `JWT_SECRET` precisa de 32+ caracteres; use `FRONTEND_URL`, não `CORS_ORIGIN` |
+| API não conecta no banco | MySQL ainda inicializando | Aguarde o healthcheck: `docker compose ps` deve mostrar `healthy` |
+| Web mostra erro de conexão com a API | API não está rodando | Suba a API (passo 2) antes do PHP |
+| Seed já executado (nada criado) | Seed é idempotente — já existe o admin no banco | Reset o banco abaixo ou use as contas existentes |
+| `class not found` no Java | `.env` ausente ou dependências não baixadas | Crie o `.env` e rode `mvn clean compile` |
+| Porta 3306 / 3000 / 8000 em uso | Outro serviço ocupando a porta | Pare o serviço conflitante ou troque a porta no `.env` / comando PHP |
+| Login de admin/empresa não funciona | 2FA não configurado no app autenticador | Adicione a chave `JBSWY3DPEHPK3PXP` no Google Authenticator / Authy |
 
-Para resetar o banco do zero:
+**Resetar o banco do zero:**
 
 ```bash
 docker compose down -v   # apaga o volume do MySQL
 docker compose up -d
-# depois rode novamente as migrations e o seed da API
+# aguarde o healthcheck e rode novamente:
+cd api
+pnpm db:migrate:deploy
+pnpm db:seed
 ```
-</content>
-</invoke>
